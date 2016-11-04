@@ -1,0 +1,21 @@
+-js boidz/bin/canvas.js
+-cp ../
+-cp boidz/src
+-cp boidz
+#-cp /
+-main murmur.Canvas
+#-main Paf
+-lib sui
+-lib dots
+-lib thx.color
+-lib thx.core
+-lib msignal
+-lib thx.stream
+-lib thx.stream.dom
+-lib thx.unit
+-lib postite
+-D benchmark
+-D network-sandbox
+-debug
+#-resource people/n&b1.png@pip
+-cmd open boidz/bin/index.html

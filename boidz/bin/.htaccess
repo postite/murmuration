@@ -1,0 +1,4 @@
+# Enable CORS
+Header set Access-Control-Allow-Origin "*"
+Header set Access-Control-Allow-Methods: "GET,POST,OPTIONS,DELETE,PUT"
+Header set Access-Control-Allow-Headers: X-Haxe-Remoting

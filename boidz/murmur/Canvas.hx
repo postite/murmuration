@@ -10,74 +10,62 @@ using thx.Floats;
 
 import js.Browser;
 import thx.Timer;
-
+import murmur.MurmurTools;
 import murmur.People;
 
 class Canvas {
+
+  /// dimensions
   static var width  = 1900;
   static var height = 1000;
 
-static var document:js.html.Document= js.Browser.document;
+  //storing velocityfunction
+  static var velocityfunc;
+  
+  static var document:js.html.Document= js.Browser.document;
 
-  static function toggleFullScreen() {
-    untyped __js__('
-  if (!document.fullscreenElement &&    // alternative standard method
-      !document.mozFullScreenElement && !document.webkitFullscreenElement) {  // current working methods
-    if (document.documentElement.requestFullscreen) {
-      document.documentElement.requestFullscreen();
-    } else if (document.documentElement.mozRequestFullScreen) {
-      document.documentElement.mozRequestFullScreen();
-    } else if (document.documentElement.webkitRequestFullscreen) {
-      document.documentElement.webkitRequestFullscreen(Element.ALLOW_KEYBOARD_INPUT);
-    }
-  } else {
-    if (document.cancelFullScreen) {
-      document.cancelFullScreen();
-    } else if (document.mozCancelFullScreen) {
-      document.mozCancelFullScreen();
-    } else if (document.webkitCancelFullScreen) {
-      document.webkitCancelFullScreen();
-    }
+  static var paused = 0;
+
+  //boidz specific
+  static var _velocity=1.0;
+  static var _numPeople=50;
+
+  //pausing onspaceBAr
+  static function pause(){
+    velocityfunc(paused);
+    if( paused==0)paused=1
+      else
+      paused=0; 
   }
-  ');
-}
-static var paused = 0;
-static function pause(){
 
-  velfunc(paused);
-  if( paused==0)paused=1
-    else
-    paused=0;
- 
-  //js.Browser.alert(paused);
+  static function spaceKeydown(callback:Void->Void){
+     document.addEventListener("keydown", function(e) {
+  if (e.keyCode == 13) {
+    callback();
+  }
+}, false);
+  }
 
-}
-static var velfunc;
-
-
+  //reload every ...
   static  function timed(){
-
-     // js.Browser.alert("timed");
      js.Browser.location.reload();
-
   }
+
+
+  
 
   public static function main() {
 
+  //activate pausing
+  spaceKeydown(pause);
 
-
-  document.addEventListener("keydown", function(e) {
-  if (e.keyCode == 13) {
-    pause();
-  }
-}, false);
-
- 
-
- var DS:DoneSignal= DoneSignal.getInstance();
+  //listen to reload
+  var DS:DoneSignal= DoneSignal.getInstance();
   DS.add(timed);
-  haxe.Timer.delay(timed,60000);
 
+  //activate reload
+  haxe.Timer.delay(timed,60000);
+ 
 
     var flock  = new Flock(),
         canvas = getCanvas(),
@@ -87,7 +75,7 @@ static var velfunc;
         respectBoundaries = new RespectBoundaries(-300, width+300, -300, height+300, 50, 25),
         waypoints = new IndividualWaypoints(flock, 10),
         
-        velocity = 1.0;
+        velocity = _velocity;
 
 
     //flock.addRule(new SteerTowardCenter(flock));
@@ -95,7 +83,7 @@ static var velfunc;
     //flock.addRule(avoidCollisions);
     //flock.addRule(respectBoundaries);
     
-    addBoids(flock, 300, velocity, respectBoundaries.offset);
+    addBoids(flock, _numPeople, velocity, respectBoundaries.offset);
 
     var canvasBoundaries = new CanvasBoundaries(respectBoundaries),
         canvasWaypoints = new CanvasIndividualWaypoints(waypoints),
@@ -118,6 +106,7 @@ static var velfunc;
         rendering = null,
         frameRate = null,
         start = Timer.time();
+
     thx.Timer.frame(function(delta) {
       delta += residue;
       while(delta - step >= 0) {
@@ -152,7 +141,6 @@ static var velfunc;
       max     = renderings.max().roundTo(1);
       rendering.set('$average ($min -> $max)');
 
-      average = (1000 / frames.average()).roundTo(1);
       min     = (1000 / frames.min()).roundTo(1);
       max     = (1000 / frames.max()).roundTo(1);
       frameRate.set('$average/s ($min -> $max)');
@@ -161,65 +149,7 @@ static var velfunc;
       waypoints.addGoal(e.clientX, e.clientY);
     }, false);
 
-    // UI
-    var sui = new sui.Sui();
-    var ui = sui.folder("flock");
-    ui.int("boids",
-      flock.boids.length, { min : 1, max : 3000 },
-      function(v){
-        if(v > flock.boids.length)
-          addBoids(flock, v - flock.boids.length, velocity, respectBoundaries.offset);
-        else
-          flock.boids.splice(v, flock.boids.length - v);
-      });
-    var randomVelocity = false;
-
-    velfunc =function updateVelocity(?vel=1) {
-      for(boid in flock.boids)
-        boid.v = vel * (randomVelocity ? Math.random() : 1);
-    }
-
-    ui.float("velocity",
-      velocity, { min : 0, max : 20 },
-      function(v){
-        velocity = v;
-        updateVelocity();
-      });
-    ui.bool("random velocity",
-      randomVelocity,
-      function(v) {
-        randomVelocity = v;
-        updateVelocity();
-      });
-    ui = ui.folder("render", { collapsible : false });
-    ui.bind(canvasFlock.renderCentroid);
-    ui.bind(canvasFlock.renderTrail);
-    ui.bind(canvasFlock.trailLength, { min : 1, max : 400 });
-
-    ui = sui.folder("collisions");
-    ui.bind(avoidCollisions.enabled);
-    ui.bind(avoidCollisions.proportional);
-    ui.bind(avoidCollisions.radius, { min : 0, max : 100 });
-    ui.bind(avoidCollisions.maxSteer, { min : 1, max : 90 });
-
-    ui = sui.folder("boundaries");
-    ui.bind(respectBoundaries.enabled);
-    ui.bind(respectBoundaries.offset, { min : 0, max : Math.min(width, height) / 2.1 });
-    ui.bind(respectBoundaries.maxSteer, { min : 1, max : 90 });
-    ui = ui.folder("render", { collapsible : false });
-    ui.bind(canvasBoundaries.enabled);
-
-    ui = sui.folder("waypoints");
-    ui.bind(waypoints.enabled);
-    ui.bind(waypoints.radius, { min : 1, max : 100 });
-    ui.bind(waypoints.maxSteer, { min : 1, max : 90 });
-    ui = ui.folder("render", { collapsible : false });
-    ui.bind(canvasWaypoints.enabled);
-
-    execution = sui.label("...", "execution time");
-    rendering = sui.label("...", "rendering time");
-    frameRate = sui.label("...", "frame rate");
-    //sui.attach();
+    
    // 
    // 
    // 

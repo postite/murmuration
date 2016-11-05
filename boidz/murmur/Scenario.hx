@@ -1,25 +1,63 @@
 package murmur;
 
 class Scenario {
-	public function new(
-      display,
-      flock:boidz.Flock,
-      addBoids,
-      velocity,
-      respectBoundaries:boidz.rules.RespectBoundaries,
-      avoidCollisions:boidz.rules.AvoidCollisions,
-      canvasBoundaries:boidz.render.canvas.CanvasBoundaries,
-      width,
-      height,
-      waypoints:boidz.rules.IndividualWaypoints,
-      canvasWaypoints:boidz.render.canvas.CanvasIndividualWaypoints
-      )
+	var can:murmur.Canvas;
+	var randomVelocity = false;
+	var delay:Int;
+
+	var scenarios=[];
+	var counter=0;
+	public function new(can:murmur.Canvas,delay:Int)
+     
     {
-    	haxe.Timer.delay(doScene,2000);
+    	this.can=can;
+    	scenarios.push(scene1);
+    	scenarios.push(scene2);
+    	scenarios.push(scene3);
+
+    	this.delay=delay;
+    	var timer= new haxe.Timer(delay);
+    	
+    	timer.run=doScene;
+    	//haxe.Timer.(doScene,delay);
     }
 
 
     function doScene(){
-    	//velocity=3;
+    	if(counter<scenarios.length)
+    	scenarios[counter++]();
     }
+
+    function scene1(){
+    	can.velocity=3;
+    	can.updateVelocity();
+    	
+    	can.avoidCollisions.enabled=true;
+    	can.avoidCollisions.radius=80;
+    	can.DS.dispatch();
+    }
+
+    function scene2(){
+    	can.velocity=1;
+    	can.updateVelocity();
+    	
+    	can.avoidCollisions.enabled=true;
+    	can.avoidCollisions.radius=80;
+    	can.DS.dispatch();
+    }
+
+
+    function scene3(){
+    	can.velocity=7;
+    	can.updateVelocity();
+    	
+    	can.avoidCollisions.enabled=true;
+    	can.avoidCollisions.radius=80;
+    	can.DS.dispatch();
+    }
+
+
+
+
+    
 }

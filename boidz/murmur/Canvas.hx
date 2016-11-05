@@ -16,8 +16,8 @@ import murmur.People;
 class Canvas {
 
   /// dimensions
-  static var width  = 1900;
-  static var height = 1000;
+  public var width  = 1900;
+  public var height = 1000;
 
   //storing velocityfunction
   static var velocityfunc;
@@ -27,8 +27,21 @@ class Canvas {
   static var paused = 0;
 
   //boidz specific
-  static var _velocity=1.2;
-  static var _numPeople=50;
+  public var velocity=1.2;
+  static var _numPeople=300;
+public var randomVelocity:Bool=false;
+public var flock:Flock;
+public var canvas:js.html.CanvasElement;
+public var render:boidz.render.canvas.CanvasRender;
+public var display:Display<boidz.render.canvas.CanvasRender>;
+public var avoidCollisions:boidz.rules.AvoidCollisions;
+public var respectBoundaries:boidz.rules.RespectBoundaries;
+public var waypoints:boidz.rules.IndividualWaypoints;
+public var canvasBoundaries:boidz.render.canvas.CanvasBoundaries;
+public var canvasWaypoints:boidz.render.canvas.CanvasIndividualWaypoints;
+public var canvasFlock:People;
+public var zoneBounds:boidz.render.canvas.ZoneBounds;
+public var zone:boidz.rules.SteerTowardZone;
 
   //pausing onspaceBAr
   static function pause(){
@@ -37,6 +50,8 @@ class Canvas {
       else
       paused=0; 
   }
+
+  public var DS:murmur.DoneSignal;
 
   static function spaceKeydown(callback:Void->Void){
      document.addEventListener("keydown", function(e) {
@@ -50,32 +65,35 @@ class Canvas {
   static  function timed(){
      js.Browser.location.reload();
   }
+  public function new(){
+    execute();
+  }
 
+  public static function main(){
+    new Canvas();
+  }
 
-  
-
-  public static function main() {
+  public  function execute() {
 
   //activate pausing
   spaceKeydown(pause);
 
   //listen to reload
-  var DS:DoneSignal= DoneSignal.getInstance();
-  DS.add(timed);
+  DS= DoneSignal.getInstance();
+ // DS.add(timed);
 
   //activate reload
-  haxe.Timer.delay(timed,60000);
+  //haxe.Timer.delay(timed,60000);
  
 
-    var flock  = new Flock(),
-        canvas = getCanvas(),
-        render = new CanvasRender(canvas),
-        display = new Display(render),
-        avoidCollisions = new AvoidCollisions(flock, 3, 25),
-        respectBoundaries = new RespectBoundaries(-300, width+300, -300, height+300, 50, 25),
-        waypoints = new IndividualWaypoints(flock, 10),
-        
-        velocity = _velocity;
+        flock  = new Flock();
+        canvas = getCanvas();
+        render = new CanvasRender(canvas);
+        display = new Display(render);
+        avoidCollisions = new AvoidCollisions(flock, 3, 25);
+        respectBoundaries = new RespectBoundaries(-300, width+300, -300, height+300, 50, 25);
+        waypoints = new IndividualWaypoints(flock, 10);
+        //velocity = _velocity;
 
 
     //flock.addRule(new SteerTowardCenter(flock));
@@ -85,12 +103,12 @@ class Canvas {
     
     addBoids(flock, _numPeople, velocity, respectBoundaries.offset);
 
-    var canvasBoundaries = new CanvasBoundaries(respectBoundaries),
-        canvasWaypoints = new CanvasIndividualWaypoints(waypoints),
-        canvasFlock = new People(flock),
-        zoneBounds= new ZoneBounds(new RespectBoundaries(20+Math.random()*800, 30+Math.random()*600, 30+Math.random()*300, 40+Math.random()*600, 50, 25));
+    canvasBoundaries = new CanvasBoundaries(respectBoundaries);
+    canvasWaypoints = new CanvasIndividualWaypoints(waypoints);
+    canvasFlock = new People(flock);
+    zoneBounds= new ZoneBounds(new RespectBoundaries(20+Math.random()*800, 30+Math.random()*600, 30+Math.random()*300, 40+Math.random()*600, 50, 25));
 
-    var zone= new SteerTowardZone(flock,zoneBounds);
+    zone= new SteerTowardZone(flock,zoneBounds);
     //flock.addRule(zone);
    // display.addRenderable(new boidz.render.canvas.TargetZone(zone.points));
    // display.addRenderable(canvasBoundaries);
@@ -160,30 +178,21 @@ class Canvas {
     }, 2000);
 
     #if debug
-    var ui = new UI(display,flock,addBoids,velocity,respectBoundaries,avoidCollisions,canvasBoundaries,width,height,waypoints,canvasWaypoints,
-      cast execution,
-      cast rendering,
-      cast frameRate);
+    // var ui = new UI(display,flock,addBoids,velocity,respectBoundaries,avoidCollisions,canvasBoundaries,width,height,waypoints,canvasWaypoints,
+    //   cast execution,
+    //   cast rendering,
+    //   cast frameRate);
+    var ui= new UI(this);
+    DS.dispatch();
  #end
 
-    var scenario= new Scenario(
-      display,
-      flock,
-      addBoids,
-      velocity,
-      respectBoundaries,
-      avoidCollisions,
-      canvasBoundaries,
-      width,
-      height,
-      waypoints,
-      canvasWaypoints
+    var scenario= new Scenario(this,2000
       );
 
     //new crowded.Crowd();
   }
 
-  static function getCanvas() {
+   function getCanvas() {
     var canvas = Browser.document.createCanvasElement();
     canvas.width = width;
     canvas.height = height;
@@ -194,7 +203,7 @@ class Canvas {
     return canvas;
   }
 
-  static function addBoids(flock : Flock, howMany : Int, velocity : Float, offset : Float) {
+  public function addBoids(flock : Flock, howMany : Int, velocity : Float, offset : Float) {
     var w = Math.min(width, height);
     for (i in 0...howMany) {
       // create a new boid and add it to the stage
@@ -206,4 +215,9 @@ class Canvas {
       flock.boids.push(b);
     }
   }
+
+  public function updateVelocity() {
+      for(boid in flock.boids)
+        boid.v = velocity * (randomVelocity ? Math.random() : velocity);
+    }
 }

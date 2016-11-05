@@ -2420,7 +2420,13 @@ msignal_SlotList.prototype = {
 	}
 	,__class__: msignal_SlotList
 };
-var murmur_Canvas = function() { };
+var murmur_Canvas = function() {
+	this.randomVelocity = false;
+	this.velocity = 1.2;
+	this.height = 1000;
+	this.width = 1900;
+	this.execute();
+};
 murmur_Canvas.__name__ = ["murmur","Canvas"];
 murmur_Canvas.pause = function() {
 	murmur_Canvas.velocityfunc(murmur_Canvas.paused);
@@ -2435,98 +2441,129 @@ murmur_Canvas.timed = function() {
 	window.location.reload();
 };
 murmur_Canvas.main = function() {
-	murmur_Canvas.spaceKeydown(murmur_Canvas.pause);
-	var DS = murmur_DoneSignal.getInstance();
-	DS.add(murmur_Canvas.timed);
-	haxe_Timer.delay(murmur_Canvas.timed,60000);
-	var flock = new boidz_Flock();
-	var canvas = murmur_Canvas.getCanvas();
-	var render = new boidz_render_canvas_CanvasRender(canvas);
-	var display = new boidz_Display(render);
-	var avoidCollisions = new boidz_rules_AvoidCollisions(flock,3,25);
-	var respectBoundaries = new boidz_rules_RespectBoundaries(-300,murmur_Canvas.width + 300,-300,murmur_Canvas.height + 300,50,25);
-	var waypoints = new boidz_rules_IndividualWaypoints(flock,10);
-	var velocity = murmur_Canvas._velocity;
-	flock.addRule(waypoints);
-	flock.addRule(avoidCollisions);
-	flock.addRule(respectBoundaries);
-	murmur_Canvas.addBoids(flock,murmur_Canvas._numPeople,velocity,respectBoundaries.offset);
-	var canvasBoundaries = new boidz_render_canvas_CanvasBoundaries(respectBoundaries);
-	var canvasWaypoints = new boidz_render_canvas_CanvasIndividualWaypoints(waypoints);
-	var canvasFlock = new murmur_People(flock);
-	var zoneBounds = new boidz_render_canvas_ZoneBounds(new boidz_rules_RespectBoundaries(20 + Math.random() * 800,30 + Math.random() * 600,30 + Math.random() * 300,40 + Math.random() * 600,50,25));
-	var zone = new boidz_rules_SteerTowardZone(flock,zoneBounds);
-	display.addRenderable(canvasWaypoints);
-	display.addRenderable(canvasFlock);
-	canvas.addEventListener("click",function(e) {
-		waypoints.addGoal(e.clientX,e.clientY);
-	},false);
-	var benchmarks = [];
-	var frames = [];
-	var renderings = [];
-	var residue = 0.0;
-	var step = flock.step * 1000;
-	var execution = null;
-	var rendering = null;
-	var frameRate = null;
-	var start = performance.now();
-	thx_Timer.frame(function(delta) {
-		delta += residue;
-		while(delta - step >= 0) {
-			var time = performance.now();
-			flock.update();
-			benchmarks.splice(1,10);
-			benchmarks.push(performance.now() - time);
-			delta -= step;
-		}
-		residue = delta;
-		var before = performance.now();
-		display.render();
-		renderings.splice(1,10);
-		renderings.push(performance.now() - before);
-		var n = performance.now();
-		frames.splice(1,10);
-		frames.push(n - start);
-		start = n;
-	});
-	thx_Timer.repeat(function() {
-		var average = thx_Floats.roundTo(thx_ArrayFloats.average(benchmarks),2);
-		var min = thx_Floats.roundTo(thx_ArrayFloats.min(benchmarks),2);
-		var max = thx_Floats.roundTo(thx_ArrayFloats.max(benchmarks),2);
-		execution.set("" + average + " (" + min + " -> " + max + ")");
-		average = thx_Floats.roundTo(thx_ArrayFloats.average(renderings),1);
-		min = thx_Floats.roundTo(thx_ArrayFloats.min(renderings),1);
-		max = thx_Floats.roundTo(thx_ArrayFloats.max(renderings),1);
-		rendering.set("" + average + " (" + min + " -> " + max + ")");
-		min = thx_Floats.roundTo(1000 / thx_ArrayFloats.min(frames),1);
-		max = thx_Floats.roundTo(1000 / thx_ArrayFloats.max(frames),1);
-		frameRate.set("" + average + "/s (" + min + " -> " + max + ")");
-	},2000);
-	var ui = new murmur_UI(display,flock,murmur_Canvas.addBoids,velocity,respectBoundaries,avoidCollisions,canvasBoundaries,murmur_Canvas.width,murmur_Canvas.height,waypoints,canvasWaypoints,execution,rendering,frameRate);
-	var scenario = new murmur_Scenario(display,flock,murmur_Canvas.addBoids,velocity,respectBoundaries,avoidCollisions,canvasBoundaries,murmur_Canvas.width,murmur_Canvas.height,waypoints,canvasWaypoints);
+	new murmur_Canvas();
 };
-murmur_Canvas.getCanvas = function() {
-	var canvas;
-	var _this = window.document;
-	canvas = _this.createElement("canvas");
-	canvas.width = murmur_Canvas.width;
-	canvas.height = murmur_Canvas.height;
-	window.document.body.appendChild(canvas);
-	return canvas;
-};
-murmur_Canvas.addBoids = function(flock,howMany,velocity,offset) {
-	var w = Math.min(murmur_Canvas.width,murmur_Canvas.height);
-	var _g = 0;
-	while(_g < howMany) {
-		var i = _g++;
-		var b = new boidz_Boid(offset + (murmur_Canvas.width - offset * 2) * Math.random(),offset + (murmur_Canvas.height - offset * 2) * Math.random(),velocity,(function($this) {
-			var $r;
-			var value = Math.random() * 360;
-			$r = value;
-			return $r;
-		}(this)));
-		flock.boids.push(b);
+murmur_Canvas.prototype = {
+	width: null
+	,height: null
+	,velocity: null
+	,randomVelocity: null
+	,flock: null
+	,canvas: null
+	,render: null
+	,display: null
+	,avoidCollisions: null
+	,respectBoundaries: null
+	,waypoints: null
+	,canvasBoundaries: null
+	,canvasWaypoints: null
+	,canvasFlock: null
+	,zoneBounds: null
+	,zone: null
+	,DS: null
+	,execute: function() {
+		var _g = this;
+		murmur_Canvas.spaceKeydown(murmur_Canvas.pause);
+		this.DS = murmur_DoneSignal.getInstance();
+		this.flock = new boidz_Flock();
+		this.canvas = this.getCanvas();
+		this.render = new boidz_render_canvas_CanvasRender(this.canvas);
+		this.display = new boidz_Display(this.render);
+		this.avoidCollisions = new boidz_rules_AvoidCollisions(this.flock,3,25);
+		this.respectBoundaries = new boidz_rules_RespectBoundaries(-300,this.width + 300,-300,this.height + 300,50,25);
+		this.waypoints = new boidz_rules_IndividualWaypoints(this.flock,10);
+		this.flock.addRule(this.waypoints);
+		this.flock.addRule(this.avoidCollisions);
+		this.flock.addRule(this.respectBoundaries);
+		this.addBoids(this.flock,murmur_Canvas._numPeople,this.velocity,this.respectBoundaries.offset);
+		this.canvasBoundaries = new boidz_render_canvas_CanvasBoundaries(this.respectBoundaries);
+		this.canvasWaypoints = new boidz_render_canvas_CanvasIndividualWaypoints(this.waypoints);
+		this.canvasFlock = new murmur_People(this.flock);
+		this.zoneBounds = new boidz_render_canvas_ZoneBounds(new boidz_rules_RespectBoundaries(20 + Math.random() * 800,30 + Math.random() * 600,30 + Math.random() * 300,40 + Math.random() * 600,50,25));
+		this.zone = new boidz_rules_SteerTowardZone(this.flock,this.zoneBounds);
+		this.display.addRenderable(this.canvasWaypoints);
+		this.display.addRenderable(this.canvasFlock);
+		this.canvas.addEventListener("click",function(e) {
+			_g.waypoints.addGoal(e.clientX,e.clientY);
+		},false);
+		var benchmarks = [];
+		var frames = [];
+		var renderings = [];
+		var residue = 0.0;
+		var step = this.flock.step * 1000;
+		var execution = null;
+		var rendering = null;
+		var frameRate = null;
+		var start = performance.now();
+		thx_Timer.frame(function(delta) {
+			delta += residue;
+			while(delta - step >= 0) {
+				var time = performance.now();
+				_g.flock.update();
+				benchmarks.splice(1,10);
+				benchmarks.push(performance.now() - time);
+				delta -= step;
+			}
+			residue = delta;
+			var before = performance.now();
+			_g.display.render();
+			renderings.splice(1,10);
+			renderings.push(performance.now() - before);
+			var n = performance.now();
+			frames.splice(1,10);
+			frames.push(n - start);
+			start = n;
+		});
+		thx_Timer.repeat(function() {
+			var average = thx_Floats.roundTo(thx_ArrayFloats.average(benchmarks),2);
+			var min = thx_Floats.roundTo(thx_ArrayFloats.min(benchmarks),2);
+			var max = thx_Floats.roundTo(thx_ArrayFloats.max(benchmarks),2);
+			execution.set("" + average + " (" + min + " -> " + max + ")");
+			average = thx_Floats.roundTo(thx_ArrayFloats.average(renderings),1);
+			min = thx_Floats.roundTo(thx_ArrayFloats.min(renderings),1);
+			max = thx_Floats.roundTo(thx_ArrayFloats.max(renderings),1);
+			rendering.set("" + average + " (" + min + " -> " + max + ")");
+			min = thx_Floats.roundTo(1000 / thx_ArrayFloats.min(frames),1);
+			max = thx_Floats.roundTo(1000 / thx_ArrayFloats.max(frames),1);
+			frameRate.set("" + average + "/s (" + min + " -> " + max + ")");
+		},2000);
+		var ui = new murmur_UI(this);
+		this.DS.dispatch();
+		var scenario = new murmur_Scenario(this,2000);
 	}
+	,getCanvas: function() {
+		var canvas;
+		var _this = window.document;
+		canvas = _this.createElement("canvas");
+		canvas.width = this.width;
+		canvas.height = this.height;
+		window.document.body.appendChild(canvas);
+		return canvas;
+	}
+	,addBoids: function(flock,howMany,velocity,offset) {
+		var w = Math.min(this.width,this.height);
+		var _g = 0;
+		while(_g < howMany) {
+			var i = _g++;
+			var b = new boidz_Boid(offset + (this.width - offset * 2) * Math.random(),offset + (this.height - offset * 2) * Math.random(),velocity,(function($this) {
+				var $r;
+				var value = Math.random() * 360;
+				$r = value;
+				return $r;
+			}(this)));
+			flock.boids.push(b);
+		}
+	}
+	,updateVelocity: function() {
+		var _g = 0;
+		var _g1 = this.flock.boids;
+		while(_g < _g1.length) {
+			var boid = _g1[_g];
+			++_g;
+			boid.v = this.velocity * (this.randomVelocity?Math.random():this.velocity);
+		}
+	}
+	,__class__: murmur_Canvas
 };
 var murmur_DoneSignal = function() {
 	msignal_Signal0.call(this);
@@ -2692,92 +2729,121 @@ murmur_PeopleImage.prototype = {
 	}
 	,__class__: murmur_PeopleImage
 };
-var murmur_Scenario = function(display,flock,addBoids,velocity,respectBoundaries,avoidCollisions,canvasBoundaries,width,height,waypoints,canvasWaypoints) {
-	haxe_Timer.delay($bind(this,this.doScene),2000);
+var murmur_Scenario = function(can,delay) {
+	this.counter = 0;
+	this.scenarios = [];
+	this.randomVelocity = false;
+	this.can = can;
+	this.scenarios.push($bind(this,this.scene1));
+	this.scenarios.push($bind(this,this.scene2));
+	this.scenarios.push($bind(this,this.scene3));
+	this.delay = delay;
+	var timer = new haxe_Timer(delay);
+	timer.run = $bind(this,this.doScene);
 };
 murmur_Scenario.__name__ = ["murmur","Scenario"];
 murmur_Scenario.prototype = {
-	doScene: function() {
+	can: null
+	,randomVelocity: null
+	,delay: null
+	,scenarios: null
+	,counter: null
+	,doScene: function() {
+		if(this.counter < this.scenarios.length) this.scenarios[this.counter++]();
+	}
+	,scene1: function() {
+		this.can.velocity = 3;
+		this.can.updateVelocity();
+		this.can.avoidCollisions.enabled = true;
+		this.can.avoidCollisions.set_radius(80);
+		this.can.DS.dispatch();
+	}
+	,scene2: function() {
+		this.can.velocity = 1;
+		this.can.updateVelocity();
+		this.can.avoidCollisions.enabled = true;
+		this.can.avoidCollisions.set_radius(80);
+		this.can.DS.dispatch();
+	}
+	,scene3: function() {
+		this.can.velocity = 7;
+		this.can.updateVelocity();
+		this.can.avoidCollisions.enabled = true;
+		this.can.avoidCollisions.set_radius(80);
+		this.can.DS.dispatch();
 	}
 	,__class__: murmur_Scenario
 };
-var murmur_UI = function(display,flock,addBoids,velocity,respectBoundaries,avoidCollisions,canvasBoundaries,width,height,waypoints,canvasWaypoints,execution,rendering,frameRate) {
-	var sui1 = new sui_Sui();
-	var ui = sui1.folder("flock");
-	ui["int"]("boids",flock.boids.length,{ min : 1, max : 3000},function(v) {
-		if(v > flock.boids.length) addBoids(flock,v - flock.boids.length,velocity,respectBoundaries.offset); else flock.boids.splice(v,flock.boids.length - v);
-	});
-	var randomVelocity = false;
-	var updateVelocity = function() {
-		var _g = 0;
-		var _g1 = flock.boids;
-		while(_g < _g1.length) {
-			var boid = _g1[_g];
-			++_g;
-			boid.v = velocity * (randomVelocity?Math.random():velocity);
-		}
-	};
-	ui["float"]("velocity",velocity,{ min : 0, max : 20},function(v1) {
-		velocity = v1;
-		updateVelocity();
-	});
-	ui.bool("random velocity",randomVelocity,null,function(v2) {
-		randomVelocity = v2;
-		updateVelocity();
-	});
-	ui = sui1.folder("collisions");
-	ui.bool("enabled",avoidCollisions.enabled,null,function(v3) {
-		avoidCollisions.enabled = v3;
-	});
-	ui.bool("proportional",avoidCollisions.proportional,null,function(v4) {
-		avoidCollisions.proportional = v4;
-	});
-	ui["float"]("radius",avoidCollisions.get_radius(),{ min : 0, max : 100},function(v5) {
-		avoidCollisions.set_radius(v5);
-	});
-	ui["float"]("max steer",avoidCollisions.maxSteer,{ min : 1, max : 90},function(v6) {
-		avoidCollisions.maxSteer = v6;
-	});
-	ui = sui1.folder("boundaries");
-	ui.bool("enabled",respectBoundaries.enabled,null,function(v7) {
-		respectBoundaries.enabled = v7;
-	});
-	ui["float"]("offset",respectBoundaries.offset,{ min : 0, max : Math.min(width,height) / 2.1},function(v8) {
-		respectBoundaries.offset = v8;
-	});
-	ui["float"]("max steer",respectBoundaries.maxSteer,{ min : 1, max : 90},function(v9) {
-		respectBoundaries.maxSteer = v9;
-	});
-	ui = ui.folder("render",{ collapsible : false});
-	ui.bool("enabled",canvasBoundaries.enabled,null,function(v10) {
-		canvasBoundaries.enabled = v10;
-	});
-	ui = sui1.folder("waypoints");
-	ui.bool("enabled",waypoints.enabled,null,function(v11) {
-		waypoints.enabled = v11;
-	});
-	ui["float"]("radius",waypoints.radius,{ min : 1, max : 100},function(v12) {
-		waypoints.radius = v12;
-	});
-	ui["float"]("max steer",waypoints.get_maxSteer(),{ min : 1, max : 90},function(v13) {
-		waypoints.set_maxSteer(v13);
-	});
-	ui = ui.folder("render",{ collapsible : false});
-	ui.bool("enabled",canvasWaypoints.enabled,null,function(v14) {
-		canvasWaypoints.enabled = v14;
-	});
-	execution = sui1.label("...","execution time");
-	rendering = sui1.label("...","rendering time");
-	frameRate = sui1.label("...","frame rate");
-	sui1.attach();
+var murmur_UI = function(can) {
+	this.can = can;
+	can.DS.add($bind(this,this.update));
 };
 murmur_UI.__name__ = ["murmur","UI"];
 murmur_UI.prototype = {
-	flock: null
-	,addBoids: null
-	,randomVelocity: null
-	,velocityfunc: null
-	,respectBoundaries: null
+	can: null
+	,sui: null
+	,update: function() {
+		var _g = this;
+		if(this.sui != null) {
+			window.document.body.removeChild(this.sui.el);
+			this.sui = null;
+		}
+		this.sui = new sui_Sui();
+		var ui = this.sui.folder("flock");
+		ui["int"]("boids",this.can.flock.boids.length,{ min : 1, max : 3000},function(v) {
+			if(v > _g.can.flock.boids.length) _g.can.addBoids(_g.can.flock,v - _g.can.flock.boids.length,_g.can.velocity,_g.can.respectBoundaries.offset); else _g.can.flock.boids.splice(v,_g.can.flock.boids.length - v);
+		});
+		ui["float"]("velocity",this.can.velocity,{ min : 0, max : 20},function(v1) {
+			_g.can.velocity = v1;
+			_g.can.updateVelocity();
+		});
+		ui.bool("random velocity",this.can.randomVelocity,null,function(v2) {
+			_g.can.randomVelocity = v2;
+			_g.can.updateVelocity();
+		});
+		ui = this.sui.folder("collisions");
+		ui.bool("avoid collisions.enabled",this.can.avoidCollisions.enabled,null,function(v3) {
+			_g.can.avoidCollisions.enabled = v3;
+		});
+		ui.bool("avoid collisions.proportional",this.can.avoidCollisions.proportional,null,function(v4) {
+			_g.can.avoidCollisions.proportional = v4;
+		});
+		ui["float"]("avoid collisions.radius",this.can.avoidCollisions.get_radius(),{ min : 0, max : 100},function(v5) {
+			_g.can.avoidCollisions.set_radius(v5);
+		});
+		ui["float"]("avoid collisions.max steer",this.can.avoidCollisions.maxSteer,{ min : 1, max : 90},function(v6) {
+			_g.can.avoidCollisions.maxSteer = v6;
+		});
+		ui = this.sui.folder("boundaries");
+		ui.bool("respect boundaries.enabled",this.can.respectBoundaries.enabled,null,function(v7) {
+			_g.can.respectBoundaries.enabled = v7;
+		});
+		ui["float"]("respect boundaries.offset",this.can.respectBoundaries.offset,{ min : 0, max : Math.min(this.can.width,this.can.height) / 2.1},function(v8) {
+			_g.can.respectBoundaries.offset = v8;
+		});
+		ui["float"]("respect boundaries.max steer",this.can.respectBoundaries.maxSteer,{ min : 1, max : 90},function(v9) {
+			_g.can.respectBoundaries.maxSteer = v9;
+		});
+		ui = ui.folder("render",{ collapsible : false});
+		ui.bool("canvas boundaries.enabled",this.can.canvasBoundaries.enabled,null,function(v10) {
+			_g.can.canvasBoundaries.enabled = v10;
+		});
+		ui = this.sui.folder("waypoints");
+		ui.bool("waypoints.enabled",this.can.waypoints.enabled,null,function(v11) {
+			_g.can.waypoints.enabled = v11;
+		});
+		ui["float"]("waypoints.radius",this.can.waypoints.radius,{ min : 1, max : 100},function(v12) {
+			_g.can.waypoints.radius = v12;
+		});
+		ui["float"]("waypoints.max steer",this.can.waypoints.get_maxSteer(),{ min : 1, max : 90},function(v13) {
+			_g.can.waypoints.set_maxSteer(v13);
+		});
+		ui = ui.folder("render",{ collapsible : false});
+		ui.bool("canvas waypoints.enabled",this.can.canvasWaypoints.enabled,null,function(v14) {
+			_g.can.canvasWaypoints.enabled = v14;
+		});
+		this.sui.attach();
+	}
 	,__class__: murmur_UI
 };
 var sui_Sui = function() {
@@ -17249,12 +17315,9 @@ haxe_io_FPHelper.i64tmp = (function($this) {
 }(this));
 js_Boot.__toStr = {}.toString;
 js_html_compat_Uint8Array.BYTES_PER_ELEMENT = 1;
-murmur_Canvas.width = 1900;
-murmur_Canvas.height = 1000;
 murmur_Canvas.document = window.document;
 murmur_Canvas.paused = 0;
-murmur_Canvas._velocity = 1.2;
-murmur_Canvas._numPeople = 50;
+murmur_Canvas._numPeople = 300;
 murmur_PeopleImage.count = 0;
 sui_controls_ColorControl.PATTERN = new EReg("^[#][0-9a-f]{6}$","i");
 sui_controls_DataList.nid = 0;

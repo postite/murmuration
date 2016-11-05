@@ -6,71 +6,45 @@ using thx.Floats;
 class UI {
 // UI
 // 
-    //dependency
-    var flock:Flock;
-    var addBoids:Flock->Int->Float->Float->Void;
     
-    var randomVelocity:Bool;
-    var velocityfunc:Dynamic;
-    //var velocity:Float;
-    var respectBoundaries:boidz.rules.RespectBoundaries;
-    // var canvasFlock;
-    // var avoidCollisions;
-    // var canvasBoundaries;
-    // var waypoints;
-    // var canvasWaypoints;
-
-    public function new(
-      display,
-      flock:Flock,
-      addBoids,
-      velocity,
-      respectBoundaries:boidz.rules.RespectBoundaries,
-      avoidCollisions:boidz.rules.AvoidCollisions,
-      canvasBoundaries:boidz.render.canvas.CanvasBoundaries,
-      width,
-      height,
-      waypoints:boidz.rules.IndividualWaypoints,
-      canvasWaypoints:boidz.render.canvas.CanvasIndividualWaypoints,
-      execution,
-      rendering,
-      frameRate
-      )
+    var can:murmur.Canvas;
+    var sui:sui.Sui;
+    public function new(can:murmur.Canvas)
     {
-      
-    var sui = new sui.Sui();
-    var ui = sui.folder("flock");
-    ui.int("boids",
-      flock.boids.length, { min : 1, max : 3000 },
-      function(v){
-        if(v > flock.boids.length)
-          addBoids(flock, v - flock.boids.length, velocity, respectBoundaries.offset);
-        else
-          flock.boids.splice(v, flock.boids.length - v);
-      });
-    var randomVelocity = false;
-
-    // velocityfunc =function updateVelocity(?vel=1) {
-    //   for(boid in flock.boids)
-    //     boid.v = vel * (randomVelocity ? Math.random() : 1);
-    // }
-
-    function updateVelocity() {
-      for(boid in flock.boids)
-        boid.v = velocity * (randomVelocity ? Math.random() : velocity);
+      this.can=can;
+      can.DS.add(update);
+      //update();
     }
 
-    ui.float("velocity",
-      velocity, { min : 0, max : 20 },
+    public function update(){
+    if( sui!=null){
+     js.Browser.document.body.removeChild(sui.el);
+      sui=null;
+    }
+    sui = new sui.Sui();
+    
+    var ui = sui.folder("flock");
+    ui.int("boids",
+      can.flock.boids.length, { min : 1, max : 3000 },
       function(v){
-        velocity = cast v;
-        updateVelocity();
+        if(v > can.flock.boids.length)
+          can.addBoids(can.flock, v - can.flock.boids.length, can.velocity, can.respectBoundaries.offset);
+        else
+          can.flock.boids.splice(v, can.flock.boids.length - v);
+      });
+   
+
+    ui.float("velocity",
+      can.velocity, { min : 0, max : 20 },
+      function(v){
+        can.velocity = cast v;
+        can.updateVelocity();
       });
     ui.bool("random velocity",
-      randomVelocity,
+      can.randomVelocity,
       function(v) {
-        randomVelocity = v;
-        updateVelocity();
+        can.randomVelocity = v;
+        can.updateVelocity();
       });
 
 
@@ -81,26 +55,26 @@ class UI {
     ui.bind(canvasFlock.trailLength, { min : 1, max : 400 });
 */
     ui = sui.folder("collisions");
-    ui.bind(avoidCollisions.enabled);
-    ui.bind(avoidCollisions.proportional);
-    ui.bind(avoidCollisions.radius, { min : 0, max : 100 });
-    ui.bind(avoidCollisions.maxSteer, { min : 1, max : 90 });
+    ui.bind(can.avoidCollisions.enabled);
+    ui.bind(can.avoidCollisions.proportional);
+    ui.bind(can.avoidCollisions.radius, { min : 0, max : 100 });
+    ui.bind(can.avoidCollisions.maxSteer, { min : 1, max : 90 });
 
 
     ui = sui.folder("boundaries");
-    ui.bind(respectBoundaries.enabled);
-    ui.bind(respectBoundaries.offset, { min : 0, max : Math.min(width, height) / 2.1 });
-    ui.bind(respectBoundaries.maxSteer, { min : 1, max : 90 });
+    ui.bind(can.respectBoundaries.enabled);
+    ui.bind(can.respectBoundaries.offset, { min : 0, max : Math.min(can.width,can.height) / 2.1 });
+    ui.bind(can.respectBoundaries.maxSteer, { min : 1, max : 90 });
 
     ui = ui.folder("render", { collapsible : false });
-    ui.bind(canvasBoundaries.enabled);
+    ui.bind(can.canvasBoundaries.enabled);
 
     ui = sui.folder("waypoints");
-    ui.bind(waypoints.enabled);
-    ui.bind(waypoints.radius, { min : 1, max : 100 });
-    ui.bind(waypoints.maxSteer, { min : 1, max : 90 });
+    ui.bind(can.waypoints.enabled);
+    ui.bind(can.waypoints.radius, { min : 1, max : 100 });
+    ui.bind(can.waypoints.maxSteer, { min : 1, max : 90 });
     ui = ui.folder("render", { collapsible : false });
-    ui.bind(canvasWaypoints.enabled);
+    ui.bind(can.canvasWaypoints.enabled);
 
    
    
@@ -111,9 +85,9 @@ class UI {
    
     ///
     
-    execution = sui.label("...", "execution time");
-    rendering = sui.label("...", "rendering time");
-    frameRate = sui.label("...", "frame rate");
+    // execution = sui.label("...", "execution time");
+    // rendering = sui.label("...", "rendering time");
+    // frameRate = sui.label("...", "frame rate");
    // #end
     sui.attach();
     //

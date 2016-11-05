@@ -27,7 +27,7 @@ class Canvas {
   static var paused = 0;
 
   //boidz specific
-  static var _velocity=1.0;
+  static var _velocity=1.2;
   static var _numPeople=50;
 
   //pausing onspaceBAr
@@ -79,9 +79,9 @@ class Canvas {
 
 
     //flock.addRule(new SteerTowardCenter(flock));
-    //flFflock.ock.addRule(waypoints);
-    //flock.addRule(avoidCollisions);
-    //flock.addRule(respectBoundaries);
+    flock.addRule(waypoints);
+    flock.addRule(avoidCollisions);
+    flock.addRule(respectBoundaries);
     
     addBoids(flock, _numPeople, velocity, respectBoundaries.offset);
 
@@ -91,12 +91,23 @@ class Canvas {
         zoneBounds= new ZoneBounds(new RespectBoundaries(20+Math.random()*800, 30+Math.random()*600, 30+Math.random()*300, 40+Math.random()*600, 50, 25));
 
     var zone= new SteerTowardZone(flock,zoneBounds);
-    flock.addRule(zone);
+    //flock.addRule(zone);
    // display.addRenderable(new boidz.render.canvas.TargetZone(zone.points));
    // display.addRenderable(canvasBoundaries);
-    //display.addRenderable(canvasWaypoints);
+    #if debug display.addRenderable(canvasWaypoints);#end
     display.addRenderable(canvasFlock);
     //display.addRenderable(zoneBounds);
+    
+
+
+
+
+
+    canvas.addEventListener("click", function(e) {
+      waypoints.addGoal(e.clientX, e.clientY);
+    }, false);
+
+    
     var benchmarks = [],
         frames = [],
         renderings = [],
@@ -105,6 +116,7 @@ class Canvas {
         execution = null,
         rendering = null,
         frameRate = null,
+
         start = Timer.time();
 
     thx.Timer.frame(function(delta) {
@@ -130,6 +142,7 @@ class Canvas {
       start = n;
     });
 
+
     thx.Timer.repeat(function() {
       var average = benchmarks.average().roundTo(2),
           min     = benchmarks.min().roundTo(2),
@@ -145,16 +158,29 @@ class Canvas {
       max     = (1000 / frames.max()).roundTo(1);
       frameRate.set('$average/s ($min -> $max)');
     }, 2000);
-    canvas.addEventListener("click", function(e) {
-      waypoints.addGoal(e.clientX, e.clientY);
-    }, false);
 
-    
-   // 
-   // 
-   // 
-   // 
-    new crowded.Crowd();
+    #if debug
+    var ui = new UI(display,flock,addBoids,velocity,respectBoundaries,avoidCollisions,canvasBoundaries,width,height,waypoints,canvasWaypoints,
+      cast execution,
+      cast rendering,
+      cast frameRate);
+ #end
+
+    var scenario= new Scenario(
+      display,
+      flock,
+      addBoids,
+      velocity,
+      respectBoundaries,
+      avoidCollisions,
+      canvasBoundaries,
+      width,
+      height,
+      waypoints,
+      canvasWaypoints
+      );
+
+    //new crowded.Crowd();
   }
 
   static function getCanvas() {

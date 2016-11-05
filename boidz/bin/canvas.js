@@ -162,47 +162,12 @@ Lambda.has = function(it,elt) {
 	}
 	return false;
 };
-Lambda.exists = function(it,f) {
-	var $it0 = $iterator(it)();
-	while( $it0.hasNext() ) {
-		var x = $it0.next();
-		if(f(x)) return true;
-	}
-	return false;
-};
-var List = function() {
-	this.length = 0;
-};
-List.__name__ = ["List"];
-List.prototype = {
-	h: null
-	,length: null
-	,iterator: function() {
-		return new _$List_ListIterator(this.h);
-	}
-	,__class__: List
-};
-var _$List_ListIterator = function(head) {
-	this.head = head;
-	this.val = null;
-};
-_$List_ListIterator.__name__ = ["_List","ListIterator"];
-_$List_ListIterator.prototype = {
-	head: null
-	,val: null
-	,hasNext: function() {
-		return this.head != null;
-	}
-	,next: function() {
-		this.val = this.head[0];
-		this.head = this.head[1];
-		return this.val;
-	}
-	,__class__: _$List_ListIterator
-};
 Math.__name__ = ["Math"];
 var Reflect = function() { };
 Reflect.__name__ = ["Reflect"];
+Reflect.hasField = function(o,field) {
+	return Object.prototype.hasOwnProperty.call(o,field);
+};
 Reflect.field = function(o,field) {
 	try {
 		return o[field];
@@ -285,6 +250,10 @@ StringBuf.prototype = {
 };
 var StringTools = function() { };
 StringTools.__name__ = ["StringTools"];
+StringTools.htmlEscape = function(s,quotes) {
+	s = s.split("&").join("&amp;").split("<").join("&lt;").split(">").join("&gt;");
+	if(quotes) return s.split("\"").join("&quot;").split("'").join("&#039;"); else return s;
+};
 StringTools.startsWith = function(s,start) {
 	return s.length >= start.length && HxOverrides.substr(s,0,start.length) == start;
 };
@@ -1050,23 +1019,129 @@ boidz_util_Steer.facingDown = function(d) {
 	d = thx_unit_angle__$Degree_Degree_$Impl_$.normalize(d);
 	return d < 180;
 };
-var crowded_Crowd = function() {
-	var service = new crowded_CrowdService();
-	service.getSimpleList();
+var dots_Detect = function() { };
+dots_Detect.__name__ = ["dots","Detect"];
+dots_Detect.supportsInput = function(type) {
+	var i;
+	var _this = window.document;
+	i = _this.createElement("input");
+	i.setAttribute("type",type);
+	return i.type == type;
 };
-crowded_Crowd.__name__ = ["crowded","Crowd"];
-crowded_Crowd.prototype = {
-	__class__: crowded_Crowd
+dots_Detect.supportsInputPlaceholder = function() {
+	var i;
+	var _this = window.document;
+	i = _this.createElement("input");
+	return Object.prototype.hasOwnProperty.call(i,"placeholder");
 };
-var crowded_CrowdService = function() {
+dots_Detect.supportsInputAutofocus = function() {
+	var i;
+	var _this = window.document;
+	i = _this.createElement("input");
+	return Object.prototype.hasOwnProperty.call(i,"autofocus");
 };
-crowded_CrowdService.__name__ = ["crowded","CrowdService"];
-crowded_CrowdService.prototype = {
-	getSimpleList: function() {
-		var req = haxe_Http.requestUrl(crowded_CrowdService.server + "/dynamicQuery");
-		return JSON.parse(req);
+dots_Detect.supportsCanvas = function() {
+	return null != ($_=((function($this) {
+		var $r;
+		var _this = window.document;
+		$r = _this.createElement("canvas");
+		return $r;
+	}(this))),$bind($_,$_.getContext));
+};
+dots_Detect.supportsVideo = function() {
+	return null != ($_=((function($this) {
+		var $r;
+		var _this = window.document;
+		$r = _this.createElement("video");
+		return $r;
+	}(this))),$bind($_,$_.canPlayType));
+};
+dots_Detect.supportsLocalStorage = function() {
+	try {
+		return 'localStorage' in window && window['localStorage'] !== null;
+	} catch( e ) {
+		haxe_CallStack.lastException = e;
+		if (e instanceof js__$Boot_HaxeError) e = e.val;
+		return false;
 	}
-	,__class__: crowded_CrowdService
+};
+dots_Detect.supportsWebWorkers = function() {
+	return !(!window.Worker);
+};
+dots_Detect.supportsOffline = function() {
+	return null != window.applicationCache;
+};
+dots_Detect.supportsGeolocation = function() {
+	return Reflect.hasField(window.navigator,"geolocation");
+};
+dots_Detect.supportsMicrodata = function() {
+	return Reflect.hasField(window.document,"getItems");
+};
+dots_Detect.supportsHistory = function() {
+	return !!(window.history && history.pushState);
+};
+var dots_Dom = function() { };
+dots_Dom.__name__ = ["dots","Dom"];
+dots_Dom.addCss = function(css,container) {
+	if(null == container) container = window.document.head;
+	var style;
+	var _this = window.document;
+	style = _this.createElement("style");
+	style.type = "text/css";
+	style.appendChild(window.document.createTextNode(css));
+	container.appendChild(style);
+};
+var dots_Html = function() { };
+dots_Html.__name__ = ["dots","Html"];
+dots_Html.parseNodes = function(html) {
+	if(!dots_Html.pattern.match(html)) throw new js__$Boot_HaxeError("Invalid pattern \"" + html + "\"");
+	var el;
+	var _g = dots_Html.pattern.matched(1).toLowerCase();
+	switch(_g) {
+	case "tbody":case "thead":
+		el = window.document.createElement("table");
+		break;
+	case "td":case "th":
+		el = window.document.createElement("tr");
+		break;
+	case "tr":
+		el = window.document.createElement("tbody");
+		break;
+	default:
+		el = window.document.createElement("div");
+	}
+	el.innerHTML = html;
+	return el.childNodes;
+};
+dots_Html.parseArray = function(html) {
+	return dots_Html.nodeListToArray(dots_Html.parseNodes(html));
+};
+dots_Html.parse = function(html) {
+	return dots_Html.parseNodes(html)[0];
+};
+dots_Html.nodeListToArray = function(list) {
+	return Array.prototype.slice.call(list,0);
+};
+var dots_Query = function() { };
+dots_Query.__name__ = ["dots","Query"];
+dots_Query.first = function(selector,ctx) {
+	return (ctx != null?ctx:dots_Query.doc).querySelector(selector);
+};
+dots_Query.list = function(selector,ctx) {
+	return (ctx != null?ctx:dots_Query.doc).querySelectorAll(selector);
+};
+dots_Query.all = function(selector,ctx) {
+	return dots_Html.nodeListToArray(dots_Query.list(selector,ctx));
+};
+dots_Query.getElementIndex = function(el) {
+	var index = 0;
+	while(null != (el = el.previousElementSibling)) index++;
+	return index;
+};
+dots_Query.childrenOf = function(children,parent) {
+	return children.filter(function(child) {
+		return child.parentElement == parent;
+	});
 };
 var haxe_StackItem = { __ename__ : ["haxe","StackItem"], __constructs__ : ["CFunction","Module","FilePos","Method","LocalFunction"] };
 haxe_StackItem.CFunction = ["CFunction",0];
@@ -1200,135 +1275,6 @@ haxe_IMap.prototype = {
 	,iterator: null
 	,__class__: haxe_IMap
 };
-var haxe_Http = function(url) {
-	this.url = url;
-	this.headers = new List();
-	this.params = new List();
-	this.async = true;
-};
-haxe_Http.__name__ = ["haxe","Http"];
-haxe_Http.requestUrl = function(url) {
-	var h = new haxe_Http(url);
-	h.async = false;
-	var r = null;
-	h.onData = function(d) {
-		r = d;
-	};
-	h.onError = function(e) {
-		throw new js__$Boot_HaxeError(e);
-	};
-	h.request(false);
-	return r;
-};
-haxe_Http.prototype = {
-	url: null
-	,responseData: null
-	,async: null
-	,postData: null
-	,headers: null
-	,params: null
-	,req: null
-	,request: function(post) {
-		var me = this;
-		me.responseData = null;
-		var r = this.req = js_Browser.createXMLHttpRequest();
-		var onreadystatechange = function(_) {
-			if(r.readyState != 4) return;
-			var s;
-			try {
-				s = r.status;
-			} catch( e ) {
-				haxe_CallStack.lastException = e;
-				if (e instanceof js__$Boot_HaxeError) e = e.val;
-				s = null;
-			}
-			if(s != null) {
-				var protocol = window.location.protocol.toLowerCase();
-				var rlocalProtocol = new EReg("^(?:about|app|app-storage|.+-extension|file|res|widget):$","");
-				var isLocal = rlocalProtocol.match(protocol);
-				if(isLocal) if(r.responseText != null) s = 200; else s = 404;
-			}
-			if(s == undefined) s = null;
-			if(s != null) me.onStatus(s);
-			if(s != null && s >= 200 && s < 400) {
-				me.req = null;
-				me.onData(me.responseData = r.responseText);
-			} else if(s == null) {
-				me.req = null;
-				me.onError("Failed to connect or resolve host");
-			} else switch(s) {
-			case 12029:
-				me.req = null;
-				me.onError("Failed to connect to host");
-				break;
-			case 12007:
-				me.req = null;
-				me.onError("Unknown host");
-				break;
-			default:
-				me.req = null;
-				me.responseData = r.responseText;
-				me.onError("Http Error #" + r.status);
-			}
-		};
-		if(this.async) r.onreadystatechange = onreadystatechange;
-		var uri = this.postData;
-		if(uri != null) post = true; else {
-			var _g_head = this.params.h;
-			var _g_val = null;
-			while(_g_head != null) {
-				var p;
-				p = (function($this) {
-					var $r;
-					_g_val = _g_head[0];
-					_g_head = _g_head[1];
-					$r = _g_val;
-					return $r;
-				}(this));
-				if(uri == null) uri = ""; else uri += "&";
-				uri += encodeURIComponent(p.param) + "=" + encodeURIComponent(p.value);
-			}
-		}
-		try {
-			if(post) r.open("POST",this.url,this.async); else if(uri != null) {
-				var question = this.url.split("?").length <= 1;
-				r.open("GET",this.url + (question?"?":"&") + uri,this.async);
-				uri = null;
-			} else r.open("GET",this.url,this.async);
-		} catch( e1 ) {
-			haxe_CallStack.lastException = e1;
-			if (e1 instanceof js__$Boot_HaxeError) e1 = e1.val;
-			me.req = null;
-			this.onError(e1.toString());
-			return;
-		}
-		if(!Lambda.exists(this.headers,function(h) {
-			return h.header == "Content-Type";
-		}) && post && this.postData == null) r.setRequestHeader("Content-Type","application/x-www-form-urlencoded");
-		var _g_head1 = this.headers.h;
-		var _g_val1 = null;
-		while(_g_head1 != null) {
-			var h1;
-			h1 = (function($this) {
-				var $r;
-				_g_val1 = _g_head1[0];
-				_g_head1 = _g_head1[1];
-				$r = _g_val1;
-				return $r;
-			}(this));
-			r.setRequestHeader(h1.header,h1.value);
-		}
-		r.send(uri);
-		if(!this.async) onreadystatechange(null);
-	}
-	,onData: function(data) {
-	}
-	,onError: function(msg) {
-	}
-	,onStatus: function(status) {
-	}
-	,__class__: haxe_Http
-};
 var haxe__$Int32_Int32_$Impl_$ = {};
 haxe__$Int32_Int32_$Impl_$.__name__ = ["haxe","_Int32","Int32_Impl_"];
 haxe__$Int32_Int32_$Impl_$.mul = function(a,b) {
@@ -1343,6 +1289,11 @@ haxe__$Int64__$_$_$Int64.prototype = {
 	high: null
 	,low: null
 	,__class__: haxe__$Int64__$_$_$Int64
+};
+var haxe_Log = function() { };
+haxe_Log.__name__ = ["haxe","Log"];
+haxe_Log.trace = function(v,infos) {
+	js_Boot.__trace(v,infos);
 };
 var haxe_Timer = function(time_ms) {
 	var me = this;
@@ -1377,6 +1328,26 @@ haxe_Utf8.compare = function(a,b) {
 };
 haxe_Utf8.sub = function(s,pos,len) {
 	return HxOverrides.substr(s,pos,len);
+};
+var haxe_io_Bytes = function(data) {
+	this.length = data.byteLength;
+	this.b = new Uint8Array(data);
+	this.b.bufferValue = data;
+	data.hxBytes = this;
+	data.bytes = this.b;
+};
+haxe_io_Bytes.__name__ = ["haxe","io","Bytes"];
+haxe_io_Bytes.alloc = function(length) {
+	return new haxe_io_Bytes(new ArrayBuffer(length));
+};
+haxe_io_Bytes.prototype = {
+	length: null
+	,b: null
+	,blit: function(pos,src,srcpos,len) {
+		if(pos < 0 || srcpos < 0 || len < 0 || pos + len > this.length || srcpos + len > src.length) throw new js__$Boot_HaxeError(haxe_io_Error.OutsideBounds);
+		if(srcpos == 0 && len == src.length) this.b.set(src.b,pos); else this.b.set(src.b.subarray(srcpos,srcpos + len),pos);
+	}
+	,__class__: haxe_io_Bytes
 };
 var haxe_crypto_Base64 = function() { };
 haxe_crypto_Base64.__name__ = ["haxe","crypto","Base64"];
@@ -1812,6 +1783,25 @@ js__$Boot_HaxeError.prototype = $extend(Error.prototype,{
 });
 var js_Boot = function() { };
 js_Boot.__name__ = ["js","Boot"];
+js_Boot.__unhtml = function(s) {
+	return s.split("&").join("&amp;").split("<").join("&lt;").split(">").join("&gt;");
+};
+js_Boot.__trace = function(v,i) {
+	var msg;
+	if(i != null) msg = i.fileName + ":" + i.lineNumber + ": "; else msg = "";
+	msg += js_Boot.__string_rec(v,"");
+	if(i != null && i.customParams != null) {
+		var _g = 0;
+		var _g1 = i.customParams;
+		while(_g < _g1.length) {
+			var v1 = _g1[_g];
+			++_g;
+			msg += "," + js_Boot.__string_rec(v1,"");
+		}
+	}
+	var d;
+	if(typeof(document) != "undefined" && (d = document.getElementById("haxe:trace")) != null) d.innerHTML += js_Boot.__unhtml(msg) + "<br/>"; else if(typeof console != "undefined" && console.log != null) console.log(msg);
+};
 js_Boot.getClass = function(o) {
 	if((o instanceof Array) && o.__enum__ == null) return Array; else {
 		var cl = o.__class__;
@@ -1944,13 +1934,6 @@ js_Boot.__isNativeObj = function(o) {
 };
 js_Boot.__resolveNativeClass = function(name) {
 	return $global[name];
-};
-var js_Browser = function() { };
-js_Browser.__name__ = ["js","Browser"];
-js_Browser.createXMLHttpRequest = function() {
-	if(typeof XMLHttpRequest != "undefined") return new XMLHttpRequest();
-	if(typeof ActiveXObject != "undefined") return new ActiveXObject("Microsoft.XMLHTTP");
-	throw new js__$Boot_HaxeError("Unable to create XMLHttpRequest object.");
 };
 var js_html_compat_ArrayBuffer = function(a) {
 	if((a instanceof Array) && a.__enum__ == null) {
@@ -2464,14 +2447,20 @@ murmur_Canvas.main = function() {
 	var respectBoundaries = new boidz_rules_RespectBoundaries(-300,murmur_Canvas.width + 300,-300,murmur_Canvas.height + 300,50,25);
 	var waypoints = new boidz_rules_IndividualWaypoints(flock,10);
 	var velocity = murmur_Canvas._velocity;
+	flock.addRule(waypoints);
+	flock.addRule(avoidCollisions);
+	flock.addRule(respectBoundaries);
 	murmur_Canvas.addBoids(flock,murmur_Canvas._numPeople,velocity,respectBoundaries.offset);
 	var canvasBoundaries = new boidz_render_canvas_CanvasBoundaries(respectBoundaries);
 	var canvasWaypoints = new boidz_render_canvas_CanvasIndividualWaypoints(waypoints);
 	var canvasFlock = new murmur_People(flock);
 	var zoneBounds = new boidz_render_canvas_ZoneBounds(new boidz_rules_RespectBoundaries(20 + Math.random() * 800,30 + Math.random() * 600,30 + Math.random() * 300,40 + Math.random() * 600,50,25));
 	var zone = new boidz_rules_SteerTowardZone(flock,zoneBounds);
-	flock.addRule(zone);
+	display.addRenderable(canvasWaypoints);
 	display.addRenderable(canvasFlock);
+	canvas.addEventListener("click",function(e) {
+		waypoints.addGoal(e.clientX,e.clientY);
+	},false);
 	var benchmarks = [];
 	var frames = [];
 	var renderings = [];
@@ -2513,10 +2502,8 @@ murmur_Canvas.main = function() {
 		max = thx_Floats.roundTo(1000 / thx_ArrayFloats.max(frames),1);
 		frameRate.set("" + average + "/s (" + min + " -> " + max + ")");
 	},2000);
-	canvas.addEventListener("click",function(e) {
-		waypoints.addGoal(e.clientX,e.clientY);
-	},false);
-	new crowded_Crowd();
+	var ui = new murmur_UI(display,flock,murmur_Canvas.addBoids,velocity,respectBoundaries,avoidCollisions,canvasBoundaries,murmur_Canvas.width,murmur_Canvas.height,waypoints,canvasWaypoints,execution,rendering,frameRate);
+	var scenario = new murmur_Scenario(display,flock,murmur_Canvas.addBoids,velocity,respectBoundaries,avoidCollisions,canvasBoundaries,murmur_Canvas.width,murmur_Canvas.height,waypoints,canvasWaypoints);
 };
 murmur_Canvas.getCanvas = function() {
 	var canvas;
@@ -2705,6 +2692,1661 @@ murmur_PeopleImage.prototype = {
 	}
 	,__class__: murmur_PeopleImage
 };
+var murmur_Scenario = function(display,flock,addBoids,velocity,respectBoundaries,avoidCollisions,canvasBoundaries,width,height,waypoints,canvasWaypoints) {
+	haxe_Timer.delay($bind(this,this.doScene),2000);
+};
+murmur_Scenario.__name__ = ["murmur","Scenario"];
+murmur_Scenario.prototype = {
+	doScene: function() {
+	}
+	,__class__: murmur_Scenario
+};
+var murmur_UI = function(display,flock,addBoids,velocity,respectBoundaries,avoidCollisions,canvasBoundaries,width,height,waypoints,canvasWaypoints,execution,rendering,frameRate) {
+	var sui1 = new sui_Sui();
+	var ui = sui1.folder("flock");
+	ui["int"]("boids",flock.boids.length,{ min : 1, max : 3000},function(v) {
+		if(v > flock.boids.length) addBoids(flock,v - flock.boids.length,velocity,respectBoundaries.offset); else flock.boids.splice(v,flock.boids.length - v);
+	});
+	var randomVelocity = false;
+	var updateVelocity = function() {
+		var _g = 0;
+		var _g1 = flock.boids;
+		while(_g < _g1.length) {
+			var boid = _g1[_g];
+			++_g;
+			boid.v = velocity * (randomVelocity?Math.random():velocity);
+		}
+	};
+	ui["float"]("velocity",velocity,{ min : 0, max : 20},function(v1) {
+		velocity = v1;
+		updateVelocity();
+	});
+	ui.bool("random velocity",randomVelocity,null,function(v2) {
+		randomVelocity = v2;
+		updateVelocity();
+	});
+	ui = sui1.folder("collisions");
+	ui.bool("enabled",avoidCollisions.enabled,null,function(v3) {
+		avoidCollisions.enabled = v3;
+	});
+	ui.bool("proportional",avoidCollisions.proportional,null,function(v4) {
+		avoidCollisions.proportional = v4;
+	});
+	ui["float"]("radius",avoidCollisions.get_radius(),{ min : 0, max : 100},function(v5) {
+		avoidCollisions.set_radius(v5);
+	});
+	ui["float"]("max steer",avoidCollisions.maxSteer,{ min : 1, max : 90},function(v6) {
+		avoidCollisions.maxSteer = v6;
+	});
+	ui = sui1.folder("boundaries");
+	ui.bool("enabled",respectBoundaries.enabled,null,function(v7) {
+		respectBoundaries.enabled = v7;
+	});
+	ui["float"]("offset",respectBoundaries.offset,{ min : 0, max : Math.min(width,height) / 2.1},function(v8) {
+		respectBoundaries.offset = v8;
+	});
+	ui["float"]("max steer",respectBoundaries.maxSteer,{ min : 1, max : 90},function(v9) {
+		respectBoundaries.maxSteer = v9;
+	});
+	ui = ui.folder("render",{ collapsible : false});
+	ui.bool("enabled",canvasBoundaries.enabled,null,function(v10) {
+		canvasBoundaries.enabled = v10;
+	});
+	ui = sui1.folder("waypoints");
+	ui.bool("enabled",waypoints.enabled,null,function(v11) {
+		waypoints.enabled = v11;
+	});
+	ui["float"]("radius",waypoints.radius,{ min : 1, max : 100},function(v12) {
+		waypoints.radius = v12;
+	});
+	ui["float"]("max steer",waypoints.get_maxSteer(),{ min : 1, max : 90},function(v13) {
+		waypoints.set_maxSteer(v13);
+	});
+	ui = ui.folder("render",{ collapsible : false});
+	ui.bool("enabled",canvasWaypoints.enabled,null,function(v14) {
+		canvasWaypoints.enabled = v14;
+	});
+	execution = sui1.label("...","execution time");
+	rendering = sui1.label("...","rendering time");
+	frameRate = sui1.label("...","frame rate");
+	sui1.attach();
+};
+murmur_UI.__name__ = ["murmur","UI"];
+murmur_UI.prototype = {
+	flock: null
+	,addBoids: null
+	,randomVelocity: null
+	,velocityfunc: null
+	,respectBoundaries: null
+	,__class__: murmur_UI
+};
+var sui_Sui = function() {
+	this.grid = new sui_components_Grid();
+	this.el = this.grid.el;
+};
+sui_Sui.__name__ = ["sui","Sui"];
+sui_Sui.createArray = function(defaultValue,defaultElementValue,createControl,options) {
+	return new sui_controls_ArrayControl((function($this) {
+		var $r;
+		var t = (function() {
+			var _0 = defaultValue;
+			if(null == _0) return null;
+			return _0;
+		})();
+		$r = t != null?t:[];
+		return $r;
+	}(this)),defaultElementValue,createControl,options);
+};
+sui_Sui.createBool = function(defaultValue,options) {
+	if(defaultValue == null) defaultValue = false;
+	return new sui_controls_BoolControl(defaultValue,options);
+};
+sui_Sui.createColor = function(defaultValue,options) {
+	if(defaultValue == null) defaultValue = "#AA0000";
+	return new sui_controls_ColorControl(defaultValue,options);
+};
+sui_Sui.createDate = function(defaultValue,options) {
+	if(null == defaultValue) defaultValue = new Date();
+	{
+		var _g;
+		var t = (function() {
+			var _0 = options;
+			if(null == _0) return null;
+			var _1 = _0.listonly;
+			if(null == _1) return null;
+			return _1;
+		})();
+		if(t != null) _g = t; else _g = false;
+		var _g1;
+		var t1 = (function() {
+			var _01 = options;
+			if(null == _01) return null;
+			var _11 = _01.kind;
+			if(null == _11) return null;
+			return _11;
+		})();
+		if(t1 != null) _g1 = t1; else _g1 = sui_controls_DateKind.DateOnly;
+		if(_g != null) switch(_g) {
+		case true:
+			return new sui_controls_DateSelectControl(defaultValue,options);
+		default:
+			switch(_g1[1]) {
+			case 1:
+				return new sui_controls_DateTimeControl(defaultValue,options);
+			default:
+				return new sui_controls_DateControl(defaultValue,options);
+			}
+		} else switch(_g1[1]) {
+		case 1:
+			return new sui_controls_DateTimeControl(defaultValue,options);
+		default:
+			return new sui_controls_DateControl(defaultValue,options);
+		}
+	}
+};
+sui_Sui.collapsible = function(label,collapsed,attachTo,position) {
+	if(collapsed == null) collapsed = false;
+	var sui1 = new sui_Sui();
+	var folder = sui1.folder((function($this) {
+		var $r;
+		var t = (function() {
+			var _0 = label;
+			if(null == _0) return null;
+			return _0;
+		})();
+		$r = t != null?t:"";
+		return $r;
+	}(this)),{ collapsible : true, collapsed : collapsed});
+	sui1.attach(attachTo,position);
+	return folder;
+};
+sui_Sui.createFloat = function(defaultValue,options) {
+	if(defaultValue == null) defaultValue = 0.0;
+	{
+		var _g;
+		var t = (function() {
+			var _0 = options;
+			if(null == _0) return null;
+			var _1 = _0.listonly;
+			if(null == _1) return null;
+			return _1;
+		})();
+		if(t != null) _g = t; else _g = false;
+		var _g1;
+		var t1 = (function() {
+			var _01 = options;
+			if(null == _01) return null;
+			var _11 = _01.kind;
+			if(null == _11) return null;
+			return _11;
+		})();
+		if(t1 != null) _g1 = t1; else _g1 = sui_controls_FloatKind.FloatNumber;
+		if(_g != null) switch(_g) {
+		case true:
+			return new sui_controls_NumberSelectControl(defaultValue,options);
+		default:
+			switch(_g1[1]) {
+			case 1:
+				return new sui_controls_TimeControl(defaultValue,options);
+			default:
+				if(null != options && options.min != null && options.max != null) return new sui_controls_FloatRangeControl(defaultValue,options); else return new sui_controls_FloatControl(defaultValue,options);
+			}
+		} else switch(_g1[1]) {
+		case 1:
+			return new sui_controls_TimeControl(defaultValue,options);
+		default:
+			if(null != options && options.min != null && options.max != null) return new sui_controls_FloatRangeControl(defaultValue,options); else return new sui_controls_FloatControl(defaultValue,options);
+		}
+	}
+};
+sui_Sui.createInt = function(defaultValue,options) {
+	if(defaultValue == null) defaultValue = 0;
+	if((function($this) {
+		var $r;
+		var t = (function() {
+			var _0 = options;
+			if(null == _0) return null;
+			var _1 = _0.listonly;
+			if(null == _1) return null;
+			return _1;
+		})();
+		$r = t != null?t:false;
+		return $r;
+	}(this))) return new sui_controls_NumberSelectControl(defaultValue,options); else if(null != options && options.min != null && options.max != null) return new sui_controls_IntRangeControl(defaultValue,options); else return new sui_controls_IntControl(defaultValue,options);
+};
+sui_Sui.createIntMap = function(defaultValue,createKeyControl,createValueControl,options) {
+	return new sui_controls_MapControl(defaultValue,function() {
+		return new haxe_ds_IntMap();
+	},createKeyControl,createValueControl,options);
+};
+sui_Sui.createLabel = function(defaultValue,label,callback) {
+	if(defaultValue == null) defaultValue = "";
+	return new sui_controls_LabelControl(defaultValue);
+};
+sui_Sui.createObjectMap = function(defaultValue,createKeyControl,createValueControl,options) {
+	return new sui_controls_MapControl(defaultValue,function() {
+		return new haxe_ds_ObjectMap();
+	},createKeyControl,createValueControl,options);
+};
+sui_Sui.createStringMap = function(defaultValue,createKeyControl,createValueControl,options) {
+	return new sui_controls_MapControl(defaultValue,function() {
+		return new haxe_ds_StringMap();
+	},createKeyControl,createValueControl,options);
+};
+sui_Sui.createText = function(defaultValue,options) {
+	if(defaultValue == null) defaultValue = "";
+	{
+		var _g;
+		var t = (function() {
+			var _0 = options;
+			if(null == _0) return null;
+			var _1 = _0.listonly;
+			if(null == _1) return null;
+			return _1;
+		})();
+		if(t != null) _g = t; else _g = false;
+		var _g1;
+		var t1 = (function() {
+			var _01 = options;
+			if(null == _01) return null;
+			var _11 = _01.kind;
+			if(null == _11) return null;
+			return _11;
+		})();
+		if(t1 != null) _g1 = t1; else _g1 = sui_controls_TextKind.PlainText;
+		if(_g != null) switch(_g) {
+		case true:
+			return new sui_controls_TextSelectControl(defaultValue,options);
+		default:
+			switch(_g1[1]) {
+			case 0:
+				return new sui_controls_EmailControl(defaultValue,options);
+			case 1:
+				return new sui_controls_PasswordControl(defaultValue,options);
+			case 3:
+				return new sui_controls_TelControl(defaultValue,options);
+			case 2:
+				return new sui_controls_SearchControl(defaultValue,options);
+			case 5:
+				return new sui_controls_UrlControl(defaultValue,options);
+			default:
+				return new sui_controls_TextControl(defaultValue,options);
+			}
+		} else switch(_g1[1]) {
+		case 0:
+			return new sui_controls_EmailControl(defaultValue,options);
+		case 1:
+			return new sui_controls_PasswordControl(defaultValue,options);
+		case 3:
+			return new sui_controls_TelControl(defaultValue,options);
+		case 2:
+			return new sui_controls_SearchControl(defaultValue,options);
+		case 5:
+			return new sui_controls_UrlControl(defaultValue,options);
+		default:
+			return new sui_controls_TextControl(defaultValue,options);
+		}
+	}
+};
+sui_Sui.createTrigger = function(actionLabel,options) {
+	return new sui_controls_TriggerControl(actionLabel,options);
+};
+sui_Sui.prototype = {
+	el: null
+	,grid: null
+	,array: function(label,defaultValue,defaultElementValue,createControl,options,callback) {
+		return this.control(label,sui_Sui.createArray(defaultValue,defaultElementValue,createControl,options),callback);
+	}
+	,bool: function(label,defaultValue,options,callback) {
+		if(defaultValue == null) defaultValue = false;
+		return this.control(label,sui_Sui.createBool(defaultValue,options),callback);
+	}
+	,color: function(label,defaultValue,options,callback) {
+		if(defaultValue == null) defaultValue = "#AA0000";
+		return this.control(label,sui_Sui.createColor(defaultValue,options),callback);
+	}
+	,date: function(label,defaultValue,options,callback) {
+		return this.control(label,sui_Sui.createDate(defaultValue,options),callback);
+	}
+	,'float': function(label,defaultValue,options,callback) {
+		if(defaultValue == null) defaultValue = 0.0;
+		return this.control(label,sui_Sui.createFloat(defaultValue,options),callback);
+	}
+	,folder: function(label,options) {
+		var collapsible;
+		var t = (function() {
+			var _0 = options;
+			if(null == _0) return null;
+			var _1 = _0.collapsible;
+			if(null == _1) return null;
+			return _1;
+		})();
+		if(t != null) collapsible = t; else collapsible = true;
+		var collapsed;
+		var t1 = (function() {
+			var _01 = options;
+			if(null == _01) return null;
+			var _11 = _01.collapsed;
+			if(null == _11) return null;
+			return _11;
+		})();
+		if(t1 != null) collapsed = t1; else collapsed = false;
+		var sui1 = new sui_Sui();
+		var header = { el : dots_Html.parseNodes("<header class=\"sui-folder\">\n<i class=\"sui-trigger-toggle sui-icon sui-icon-collapse\"></i>\n" + label + "</header>")[0]};
+		var trigger = dots_Query.first(".sui-trigger-toggle",header.el);
+		if(collapsible) {
+			header.el.classList.add("sui-collapsible");
+			if(collapsed) sui1.grid.el.style.display = "none";
+			var collapse = thx_stream_EmitterBools.negate(thx_stream_dom_Dom.streamEvent(header.el,"click",false).map(function(_) {
+				return collapsed = !collapsed;
+			}));
+			collapse.subscribe(thx_Functions1.join(thx_stream_dom_Dom.subscribeToggleVisibility(sui1.grid.el),thx_stream_dom_Dom.subscribeSwapClass(trigger,"sui-icon-collapse","sui-icon-expand")));
+		} else trigger.style.display = "none";
+		sui1.grid.el.classList.add("sui-grid-inner");
+		this.grid.add(sui_components_CellContent.VerticalPair(header,sui1.grid));
+		return sui1;
+	}
+	,'int': function(label,defaultValue,options,callback) {
+		if(defaultValue == null) defaultValue = 0;
+		return this.control(label,sui_Sui.createInt(defaultValue,options),callback);
+	}
+	,intMap: function(label,defaultValue,createValueControl,options,callback) {
+		return this.control(label,sui_Sui.createIntMap(defaultValue,function(v) {
+			return sui_Sui.createInt(v);
+		},createValueControl,options),callback);
+	}
+	,label: function(defaultValue,label,callback) {
+		if(defaultValue == null) defaultValue = "";
+		return this.control(label,sui_Sui.createLabel(defaultValue),callback);
+	}
+	,objectMap: function(label,defaultValue,createKeyControl,createValueControl,options,callback) {
+		return this.control(label,sui_Sui.createObjectMap(defaultValue,createKeyControl,createValueControl,options),callback);
+	}
+	,stringMap: function(label,defaultValue,createValueControl,options,callback) {
+		return this.control(label,sui_Sui.createStringMap(defaultValue,function(v) {
+			return sui_Sui.createText(v);
+		},createValueControl,options),callback);
+	}
+	,text: function(label,defaultValue,options,callback) {
+		if(defaultValue == null) defaultValue = "";
+		return this.control(label,sui_Sui.createText(defaultValue,options),callback);
+	}
+	,trigger: function(actionLabel,label,options,callback) {
+		return this.control(label,new sui_controls_TriggerControl(actionLabel,options),function(_) {
+			callback();
+		});
+	}
+	,control: function(label,control,callback) {
+		this.grid.add(null == label?sui_components_CellContent.Single(control):sui_components_CellContent.HorizontalPair(new sui_controls_LabelControl(label),control));
+		control.streams.value.subscribe(callback);
+		return control;
+	}
+	,attach: function(el,anchor) {
+		if(null == el) el = window.document.body;
+		this.el.classList.add((function($this) {
+			var $r;
+			var t = (function() {
+				var _0 = anchor;
+				if(null == _0) return null;
+				return _0;
+			})();
+			$r = t != null?t:el == window.document.body?"sui-top-right":"sui-append";
+			return $r;
+		}(this)));
+		el.appendChild(this.el);
+	}
+	,__class__: sui_Sui
+};
+var sui_components_Grid = function() {
+	this.el = dots_Html.parseNodes("<table class=\"sui-grid\"></table>")[0];
+};
+sui_components_Grid.__name__ = ["sui","components","Grid"];
+sui_components_Grid.prototype = {
+	el: null
+	,add: function(cell) {
+		var _g = this;
+		switch(cell[1]) {
+		case 0:
+			var control = cell[2];
+			var container = dots_Html.parseNodes("<tr class=\"sui-single\"><td colspan=\"2\"></td></tr>")[0];
+			dots_Query.first("td",container).appendChild(control.el);
+			this.el.appendChild(container);
+			break;
+		case 2:
+			var right = cell[3];
+			var left = cell[2];
+			var container1 = dots_Html.parseNodes("<tr class=\"sui-horizontal\"><td class=\"sui-left\"></td><td class=\"sui-right\"></td></tr>")[0];
+			dots_Query.first(".sui-left",container1).appendChild(left.el);
+			dots_Query.first(".sui-right",container1).appendChild(right.el);
+			this.el.appendChild(container1);
+			break;
+		case 1:
+			var bottom = cell[3];
+			var top = cell[2];
+			var containers = dots_Html.nodeListToArray(dots_Html.parseNodes("<tr class=\"sui-vertical sui-top\"><td colspan=\"2\"></td></tr><tr class=\"sui-vertical sui-bottom\"><td colspan=\"2\"></td></tr>"));
+			dots_Query.first("td",containers[0]).appendChild(top.el);
+			dots_Query.first("td",containers[1]).appendChild(bottom.el);
+			containers.map(function(_) {
+				return _g.el.appendChild(_);
+			});
+			break;
+		}
+	}
+	,__class__: sui_components_Grid
+};
+var sui_components_CellContent = { __ename__ : ["sui","components","CellContent"], __constructs__ : ["Single","VerticalPair","HorizontalPair"] };
+sui_components_CellContent.Single = function(control) { var $x = ["Single",0,control]; $x.__enum__ = sui_components_CellContent; $x.toString = $estr; return $x; };
+sui_components_CellContent.VerticalPair = function(top,bottom) { var $x = ["VerticalPair",1,top,bottom]; $x.__enum__ = sui_components_CellContent; $x.toString = $estr; return $x; };
+sui_components_CellContent.HorizontalPair = function(left,right) { var $x = ["HorizontalPair",2,left,right]; $x.__enum__ = sui_components_CellContent; $x.toString = $estr; return $x; };
+var sui_controls_IControl = function() { };
+sui_controls_IControl.__name__ = ["sui","controls","IControl"];
+sui_controls_IControl.prototype = {
+	el: null
+	,defaultValue: null
+	,streams: null
+	,set: null
+	,get: null
+	,isEnabled: null
+	,isFocused: null
+	,disable: null
+	,enable: null
+	,focus: null
+	,blur: null
+	,reset: null
+	,__class__: sui_controls_IControl
+};
+var sui_controls_ArrayControl = function(defaultValue,defaultElementValue,createElementControl,options) {
+	var _g = this;
+	var template = "<div class=\"sui-control sui-control-single sui-type-array\">\n<ul class=\"sui-array\"></ul>\n<div class=\"sui-array-add\"><i class=\"sui-icon sui-icon-add\"></i></div>\n</div>";
+	var t = (function() {
+		var _0 = options;
+		if(null == _0) return null;
+		return _0;
+	})();
+	if(t != null) options = t; else options = { };
+	this.defaultValue = defaultValue;
+	this.defaultElementValue = defaultElementValue;
+	this.createElementControl = createElementControl;
+	this.elements = [];
+	this.length = 0;
+	this.values = new sui_controls_ControlValues(defaultValue);
+	this.streams = new sui_controls_ControlStreams(this.values.value,this.values.focused.debounce(0),this.values.enabled);
+	this.el = dots_Html.parseNodes(template)[0];
+	this.ul = dots_Query.first("ul",this.el);
+	this.addButton = dots_Query.first(".sui-icon-add",this.el);
+	thx_stream_dom_Dom.streamEvent(this.addButton,"click",false).subscribe(function(_) {
+		_g.addControl(defaultElementValue);
+	});
+	this.values.enabled.subscribe(function(v) {
+		if(v) _g.el.classList.add("sui-disabled"); else _g.el.classList.remove("sui-disabled");
+	});
+	this.values.focused.subscribe(function(v1) {
+		if(v1) _g.el.classList.add("sui-focused"); else _g.el.classList.remove("sui-focused");
+	});
+	thx_stream_EmitterBools.negate(this.values.enabled).subscribe(thx_stream_dom_Dom.subscribeToggleClass(this.el,"sui-disabled"));
+	this.values.enabled.subscribe(function(v2) {
+		_g.elements.map(function(_1) {
+			if(v2) _1.control.enable(); else _1.control.disable();
+			return;
+		});
+	});
+	this.setValue(defaultValue);
+	this.reset();
+	if(options.autofocus) this.focus();
+	if(options.disabled) this.disable();
+};
+sui_controls_ArrayControl.__name__ = ["sui","controls","ArrayControl"];
+sui_controls_ArrayControl.__interfaces__ = [sui_controls_IControl];
+sui_controls_ArrayControl.prototype = {
+	el: null
+	,ul: null
+	,addButton: null
+	,defaultValue: null
+	,defaultElementValue: null
+	,streams: null
+	,createElementControl: null
+	,length: null
+	,values: null
+	,elements: null
+	,addControl: function(value) {
+		var _g = this;
+		var o = { control : this.createElementControl(value), el : dots_Html.parseNodes("<li class=\"sui-array-item\">\n    <div class=\"sui-move\"><i class=\"sui-icon-mini sui-icon-up\"></i><i class=\"sui-icon-mini sui-icon-down\"></i></div>\n    <div class=\"sui-control-container\"></div>\n    <div class=\"sui-remove\"><i class=\"sui-icon sui-icon-remove\"></i></div>\n</li>")[0], index : this.length++};
+		this.ul.appendChild(o.el);
+		var removeElement = dots_Query.first(".sui-icon-remove",o.el);
+		var upElement = dots_Query.first(".sui-icon-up",o.el);
+		var downElement = dots_Query.first(".sui-icon-down",o.el);
+		var controlContainer = dots_Query.first(".sui-control-container",o.el);
+		controlContainer.appendChild(o.control.el);
+		thx_stream_dom_Dom.streamEvent(removeElement,"click",false).subscribe(function(_) {
+			_g.ul.removeChild(o.el);
+			_g.elements.splice(o.index,1);
+			var _g2 = o.index;
+			var _g1 = _g.elements.length;
+			while(_g2 < _g1) {
+				var i = _g2++;
+				_g.elements[i].index--;
+			}
+			_g.length--;
+			_g.updateValue();
+		});
+		this.elements.push(o);
+		o.control.streams.value.subscribe(function(_1) {
+			_g.updateValue();
+		});
+		o.control.streams.focused.subscribe(thx_stream_dom_Dom.subscribeToggleClass(o.el,"sui-focus"));
+		o.control.streams.focused.feed(this.values.focused);
+		thx_stream_dom_Dom.streamEvent(upElement,"click",false).subscribe(function(_2) {
+			var pos = o.index;
+			var prev = _g.elements[pos - 1];
+			_g.elements[pos] = prev;
+			_g.elements[pos - 1] = o;
+			prev.index = pos;
+			o.index = pos - 1;
+			_g.ul.insertBefore(o.el,prev.el);
+			_g.updateValue();
+		});
+		thx_stream_dom_Dom.streamEvent(downElement,"click",false).subscribe(function(_3) {
+			var pos1 = o.index;
+			var next = _g.elements[pos1 + 1];
+			_g.elements[pos1] = next;
+			_g.elements[pos1 + 1] = o;
+			next.index = pos1;
+			o.index = pos1 + 1;
+			_g.ul.insertBefore(next.el,o.el);
+			_g.updateValue();
+		});
+	}
+	,setValue: function(v) {
+		var _g = this;
+		v.map(function(_) {
+			_g.addControl(_);
+			return;
+		});
+	}
+	,getValue: function() {
+		return this.elements.map(function(_) {
+			return _.control.get();
+		});
+	}
+	,updateValue: function() {
+		this.values.value.set(this.getValue());
+	}
+	,set: function(v) {
+		this.clear();
+		this.setValue(v);
+		this.values.value.set(v);
+	}
+	,get: function() {
+		return this.values.value.get();
+	}
+	,isEnabled: function() {
+		return this.values.enabled.get();
+	}
+	,isFocused: function() {
+		return this.values.focused.get();
+	}
+	,disable: function() {
+		this.values.enabled.set(false);
+	}
+	,enable: function() {
+		this.values.enabled.set(true);
+	}
+	,focus: function() {
+		if(this.elements.length > 0) thx_Arrays.last(this.elements).control.focus();
+	}
+	,blur: function() {
+		var el = window.document.activeElement;
+		(function(_) {
+			if(null == _) null; else el.blur();
+			return;
+		})(thx_Arrays.first(this.elements.filter(function(_1) {
+			return _1.control.el == el;
+		})));
+	}
+	,reset: function() {
+		this.set(this.defaultValue);
+	}
+	,clear: function() {
+		var _g = this;
+		this.length = 0;
+		this.elements.map(function(item) {
+			_g.ul.removeChild(item.el);
+		});
+		this.elements = [];
+	}
+	,__class__: sui_controls_ArrayControl
+};
+var sui_controls_SingleInputControl = function(defaultValue,event,name,type,options) {
+	var _g = this;
+	var template = "<div class=\"sui-control sui-control-single sui-type-" + name + "\"><input type=\"" + type + "\"/></div>";
+	if(null == options) options = { };
+	if(null == options.allownull) options.allownull = true;
+	this.defaultValue = defaultValue;
+	this.values = new sui_controls_ControlValues(defaultValue);
+	this.streams = new sui_controls_ControlStreams(this.values.value,this.values.focused,this.values.enabled);
+	this.el = dots_Html.parseNodes(template)[0];
+	this.input = dots_Query.first("input",this.el);
+	this.values.enabled.subscribe(function(v) {
+		if(v) {
+			_g.el.classList.add("sui-disabled");
+			_g.input.removeAttribute("disabled");
+		} else {
+			_g.el.classList.remove("sui-disabled");
+			_g.input.setAttribute("disabled","disabled");
+		}
+	});
+	this.values.focused.subscribe(function(v1) {
+		if(v1) _g.el.classList.add("sui-focused"); else _g.el.classList.remove("sui-focused");
+	});
+	this.setInput(defaultValue);
+	thx_stream_dom_Dom.streamFocus(this.input).feed(this.values.focused);
+	thx_stream_dom_Dom.streamEvent(this.input,event).map(function(_) {
+		return _g.getInput();
+	}).feed(this.values.value);
+	if(!options.allownull) this.input.setAttribute("required","required");
+	if(options.autofocus) this.focus();
+	if(options.disabled) this.disable();
+};
+sui_controls_SingleInputControl.__name__ = ["sui","controls","SingleInputControl"];
+sui_controls_SingleInputControl.__interfaces__ = [sui_controls_IControl];
+sui_controls_SingleInputControl.prototype = {
+	el: null
+	,input: null
+	,defaultValue: null
+	,streams: null
+	,values: null
+	,setInput: function(v) {
+		throw new thx_error_AbstractMethod({ fileName : "SingleInputControl.hx", lineNumber : 64, className : "sui.controls.SingleInputControl", methodName : "setInput"});
+	}
+	,getInput: function() {
+		throw new thx_error_AbstractMethod({ fileName : "SingleInputControl.hx", lineNumber : 67, className : "sui.controls.SingleInputControl", methodName : "getInput"});
+	}
+	,set: function(v) {
+		this.setInput(v);
+		this.values.value.set(v);
+	}
+	,get: function() {
+		return this.values.value.get();
+	}
+	,isEnabled: function() {
+		return this.values.enabled.get();
+	}
+	,isFocused: function() {
+		return this.values.focused.get();
+	}
+	,disable: function() {
+		this.values.enabled.set(false);
+	}
+	,enable: function() {
+		this.values.enabled.set(true);
+	}
+	,focus: function() {
+		this.input.focus();
+	}
+	,blur: function() {
+		this.input.blur();
+	}
+	,reset: function() {
+		this.set(this.defaultValue);
+	}
+	,__class__: sui_controls_SingleInputControl
+};
+var sui_controls_BaseDateControl = function(value,name,type,dateToString,options) {
+	if(null == options) options = { };
+	this.dateToString = dateToString;
+	sui_controls_SingleInputControl.call(this,value,"input",name,type,options);
+	if(null != options.autocomplete) this.input.setAttribute("autocomplete",options.autocomplete?"on":"off");
+	if(null != options.min) this.input.setAttribute("min",dateToString(options.min));
+	if(null != options.max) this.input.setAttribute("max",dateToString(options.max));
+	if(null != options.list) new sui_controls_DataList(this.el,options.list.map(function(o) {
+		return { label : o.label, value : dateToString(o.value)};
+	})).applyTo(this.input); else if(null != options.values) new sui_controls_DataList(this.el,options.values.map(function(o1) {
+		return { label : HxOverrides.dateStr(o1), value : dateToString(o1)};
+	})).applyTo(this.input);
+};
+sui_controls_BaseDateControl.__name__ = ["sui","controls","BaseDateControl"];
+sui_controls_BaseDateControl.toRFCDate = function(date) {
+	var y = date.getFullYear();
+	var m = thx_Strings.lpad("" + (date.getMonth() + 1),"0",2);
+	var d = thx_Strings.lpad("" + date.getDate(),"0",2);
+	return "" + y + "-" + m + "-" + d;
+};
+sui_controls_BaseDateControl.toRFCDateTime = function(date) {
+	var d = sui_controls_BaseDateControl.toRFCDate(date);
+	var hh = thx_Strings.lpad("" + date.getHours(),"0",2);
+	var mm = thx_Strings.lpad("" + date.getMinutes(),"0",2);
+	var ss = thx_Strings.lpad("" + date.getSeconds(),"0",2);
+	return "" + d + "T" + hh + ":" + mm + ":" + ss;
+};
+sui_controls_BaseDateControl.toRFCDateTimeNoSeconds = function(date) {
+	var d = sui_controls_BaseDateControl.toRFCDate(date);
+	var hh = thx_Strings.lpad("" + date.getHours(),"0",2);
+	var mm = thx_Strings.lpad("" + date.getMinutes(),"0",2);
+	return "" + d + "T" + hh + ":" + mm + ":00";
+};
+sui_controls_BaseDateControl.fromRFC = function(date) {
+	var dp = date.split("T")[0];
+	var dt;
+	var t1 = (function() {
+		var _0 = date;
+		if(null == _0) return null;
+		var _1 = _0.split("T");
+		if(null == _1) return null;
+		var _2 = _1[1];
+		if(null == _2) return null;
+		return _2;
+	})();
+	if(t1 != null) dt = t1; else dt = "00:00:00";
+	var p = dp.split("-");
+	var y = Std.parseInt(p[0]);
+	var m = Std.parseInt(p[1]) - 1;
+	var d = Std.parseInt(p[2]);
+	var t = dt.split(":");
+	var hh = Std.parseInt(t[0]);
+	var mm = Std.parseInt(t[1]);
+	var ss = Std.parseInt(t[2]);
+	return new Date(y,m,d,hh,mm,ss);
+};
+sui_controls_BaseDateControl.__super__ = sui_controls_SingleInputControl;
+sui_controls_BaseDateControl.prototype = $extend(sui_controls_SingleInputControl.prototype,{
+	dateToString: null
+	,setInput: function(v) {
+		this.input.value = this.dateToString(v);
+	}
+	,getInput: function() {
+		if(thx_Strings.isEmpty(this.input.value)) return null; else return sui_controls_BaseDateControl.fromRFC(this.input.value);
+	}
+	,__class__: sui_controls_BaseDateControl
+});
+var sui_controls_BaseTextControl = function(value,name,type,options) {
+	if(null == options) options = { };
+	sui_controls_SingleInputControl.call(this,value,"input",name,type,options);
+	if(null != options.maxlength) this.input.setAttribute("maxlength","" + options.maxlength);
+	if(null != options.autocomplete) this.input.setAttribute("autocomplete",options.autocomplete?"on":"off");
+	if(null != options.pattern) this.input.setAttribute("pattern","" + options.pattern);
+	if(null != options.placeholder) this.input.setAttribute("placeholder","" + options.placeholder);
+	if(null != options.list) new sui_controls_DataList(this.el,options.list).applyTo(this.input); else if(null != options.values) sui_controls_DataList.fromArray(this.el,options.values).applyTo(this.input);
+};
+sui_controls_BaseTextControl.__name__ = ["sui","controls","BaseTextControl"];
+sui_controls_BaseTextControl.__super__ = sui_controls_SingleInputControl;
+sui_controls_BaseTextControl.prototype = $extend(sui_controls_SingleInputControl.prototype,{
+	setInput: function(v) {
+		this.input.value = v;
+	}
+	,getInput: function() {
+		return this.input.value;
+	}
+	,__class__: sui_controls_BaseTextControl
+});
+var sui_controls_BoolControl = function(value,options) {
+	sui_controls_SingleInputControl.call(this,value,"change","bool","checkbox",options);
+};
+sui_controls_BoolControl.__name__ = ["sui","controls","BoolControl"];
+sui_controls_BoolControl.__super__ = sui_controls_SingleInputControl;
+sui_controls_BoolControl.prototype = $extend(sui_controls_SingleInputControl.prototype,{
+	setInput: function(v) {
+		this.input.checked = v;
+	}
+	,getInput: function() {
+		return this.input.checked;
+	}
+	,__class__: sui_controls_BoolControl
+});
+var sui_controls_DoubleInputControl = function(defaultValue,name,event1,type1,event2,type2,filter,options) {
+	var _g = this;
+	var template = "<div class=\"sui-control sui-control-double sui-type-" + name + "\"><input class=\"input1\" type=\"" + type1 + "\"/><input class=\"input2\" type=\"" + type2 + "\"/></div>";
+	if(null == options) options = { };
+	if(null == options.allownull) options.allownull = true;
+	this.defaultValue = defaultValue;
+	this.values = new sui_controls_ControlValues(defaultValue);
+	this.streams = new sui_controls_ControlStreams(this.values.value,this.values.focused,this.values.enabled);
+	this.el = dots_Html.parseNodes(template)[0];
+	this.input1 = dots_Query.first(".input1",this.el);
+	this.input2 = dots_Query.first(".input2",this.el);
+	this.values.enabled.subscribe(function(v) {
+		if(v) {
+			_g.el.classList.add("sui-disabled");
+			_g.input1.removeAttribute("disabled");
+			_g.input2.removeAttribute("disabled");
+		} else {
+			_g.el.classList.remove("sui-disabled");
+			_g.input1.setAttribute("disabled","disabled");
+			_g.input2.setAttribute("disabled","disabled");
+		}
+	});
+	this.values.focused.subscribe(function(v1) {
+		if(v1) _g.el.classList.add("sui-focused"); else _g.el.classList.remove("sui-focused");
+	});
+	thx_stream_dom_Dom.streamFocus(this.input1).merge(thx_stream_dom_Dom.streamFocus(this.input2)).feed(this.values.focused);
+	thx_stream_dom_Dom.streamEvent(this.input1,event1).map(function(_) {
+		return _g.getInput1();
+	}).subscribe(function(v2) {
+		_g.setInput2(v2);
+		_g.values.value.set(v2);
+	});
+	thx_stream_dom_Dom.streamEvent(this.input2,event2).map(function(_1) {
+		return _g.getInput2();
+	}).filter(filter).subscribe(function(v3) {
+		_g.setInput1(v3);
+		_g.values.value.set(v3);
+	});
+	if(!options.allownull) {
+		this.input1.setAttribute("required","required");
+		this.input2.setAttribute("required","required");
+	}
+	if(options.autofocus) this.focus();
+	if(options.disabled) this.disable();
+	if(!dots_Detect.supportsInput(type1)) this.input1.style.display = "none";
+};
+sui_controls_DoubleInputControl.__name__ = ["sui","controls","DoubleInputControl"];
+sui_controls_DoubleInputControl.__interfaces__ = [sui_controls_IControl];
+sui_controls_DoubleInputControl.prototype = {
+	el: null
+	,input1: null
+	,input2: null
+	,defaultValue: null
+	,streams: null
+	,values: null
+	,setInputs: function(v) {
+		this.setInput1(v);
+		this.setInput2(v);
+	}
+	,setInput1: function(v) {
+		throw new thx_error_AbstractMethod({ fileName : "DoubleInputControl.hx", lineNumber : 89, className : "sui.controls.DoubleInputControl", methodName : "setInput1"});
+	}
+	,setInput2: function(v) {
+		throw new thx_error_AbstractMethod({ fileName : "DoubleInputControl.hx", lineNumber : 92, className : "sui.controls.DoubleInputControl", methodName : "setInput2"});
+	}
+	,getInput1: function() {
+		throw new thx_error_AbstractMethod({ fileName : "DoubleInputControl.hx", lineNumber : 95, className : "sui.controls.DoubleInputControl", methodName : "getInput1"});
+	}
+	,getInput2: function() {
+		throw new thx_error_AbstractMethod({ fileName : "DoubleInputControl.hx", lineNumber : 98, className : "sui.controls.DoubleInputControl", methodName : "getInput2"});
+	}
+	,set: function(v) {
+		this.setInputs(v);
+		this.values.value.set(v);
+	}
+	,get: function() {
+		return this.values.value.get();
+	}
+	,isEnabled: function() {
+		return this.values.enabled.get();
+	}
+	,isFocused: function() {
+		return this.values.focused.get();
+	}
+	,disable: function() {
+		this.values.enabled.set(false);
+	}
+	,enable: function() {
+		this.values.enabled.set(true);
+	}
+	,focus: function() {
+		this.input2.focus();
+	}
+	,blur: function() {
+		var el = window.document.activeElement;
+		if(el == this.input1 || el == this.input2) el.blur();
+	}
+	,reset: function() {
+		this.set(this.defaultValue);
+	}
+	,__class__: sui_controls_DoubleInputControl
+};
+var sui_controls_ColorControl = function(value,options) {
+	if(null == options) options = { };
+	sui_controls_DoubleInputControl.call(this,value,"color","input","color","input","text",($_=sui_controls_ColorControl.PATTERN,$bind($_,$_.match)),options);
+	if(null != options.autocomplete) this.input2.setAttribute("autocomplete",options.autocomplete?"on":"off");
+	if(null != options.list) new sui_controls_DataList(this.el,options.list).applyTo(this.input1).applyTo(this.input2); else if(null != options.values) sui_controls_DataList.fromArray(this.el,options.values).applyTo(this.input1).applyTo(this.input2);
+	this.setInputs(value);
+};
+sui_controls_ColorControl.__name__ = ["sui","controls","ColorControl"];
+sui_controls_ColorControl.__super__ = sui_controls_DoubleInputControl;
+sui_controls_ColorControl.prototype = $extend(sui_controls_DoubleInputControl.prototype,{
+	setInput1: function(v) {
+		this.input1.value = v;
+	}
+	,setInput2: function(v) {
+		this.input2.value = v;
+	}
+	,getInput1: function() {
+		return this.input1.value;
+	}
+	,getInput2: function() {
+		return this.input2.value;
+	}
+	,__class__: sui_controls_ColorControl
+});
+var sui_controls_ControlStreams = function(value,focused,enabled) {
+	this.value = value;
+	this.focused = focused;
+	this.enabled = enabled;
+};
+sui_controls_ControlStreams.__name__ = ["sui","controls","ControlStreams"];
+sui_controls_ControlStreams.prototype = {
+	value: null
+	,focused: null
+	,enabled: null
+	,__class__: sui_controls_ControlStreams
+};
+var sui_controls_ControlValues = function(defaultValue) {
+	this.value = new thx_stream_Value(defaultValue);
+	this.focused = new thx_stream_Value(false);
+	this.enabled = new thx_stream_Value(true);
+};
+sui_controls_ControlValues.__name__ = ["sui","controls","ControlValues"];
+sui_controls_ControlValues.prototype = {
+	value: null
+	,focused: null
+	,enabled: null
+	,__class__: sui_controls_ControlValues
+};
+var sui_controls_DataList = function(container,values) {
+	this.id = "sui-dl-" + ++sui_controls_DataList.nid;
+	var datalist = dots_Html.parse("<datalist id=\"" + this.id + "\" style=\"display:none\">" + values.map(sui_controls_DataList.toOption).join("") + "</datalist>");
+	container.appendChild(datalist);
+};
+sui_controls_DataList.__name__ = ["sui","controls","DataList"];
+sui_controls_DataList.fromArray = function(container,values) {
+	return new sui_controls_DataList(container,values.map(function(v) {
+		return { value : v, label : v};
+	}));
+};
+sui_controls_DataList.toOption = function(o) {
+	return "<option value=\"" + StringTools.htmlEscape(o.value) + "\">" + o.label + "</option>";
+};
+sui_controls_DataList.prototype = {
+	id: null
+	,applyTo: function(el) {
+		el.setAttribute("list",this.id);
+		return this;
+	}
+	,__class__: sui_controls_DataList
+};
+var sui_controls_DateControl = function(value,options) {
+	sui_controls_BaseDateControl.call(this,value,"date","date",sui_controls_BaseDateControl.toRFCDate,options);
+};
+sui_controls_DateControl.__name__ = ["sui","controls","DateControl"];
+sui_controls_DateControl.__super__ = sui_controls_BaseDateControl;
+sui_controls_DateControl.prototype = $extend(sui_controls_BaseDateControl.prototype,{
+	__class__: sui_controls_DateControl
+});
+var sui_controls_SelectControl = function(defaultValue,name,options) {
+	this.count = 0;
+	var _g = this;
+	var template = "<div class=\"sui-control sui-control-single sui-type-" + name + "\"><select></select></div>";
+	if(null == options) throw new js__$Boot_HaxeError(" A select control requires an option object with values or list set");
+	if(null == options.values && null == options.list) throw new js__$Boot_HaxeError(" A select control requires either the values or list option");
+	if(null == options.allownull) options.allownull = false;
+	this.defaultValue = defaultValue;
+	this.values = new sui_controls_ControlValues(defaultValue);
+	this.streams = new sui_controls_ControlStreams(this.values.value,this.values.focused,this.values.enabled);
+	this.el = dots_Html.parseNodes(template)[0];
+	this.select = dots_Query.first("select",this.el);
+	this.values.enabled.subscribe(function(v) {
+		if(v) {
+			_g.el.classList.add("sui-disabled");
+			_g.select.removeAttribute("disabled");
+		} else {
+			_g.el.classList.remove("sui-disabled");
+			_g.select.setAttribute("disabled","disabled");
+		}
+	});
+	this.values.focused.subscribe(function(v1) {
+		if(v1) _g.el.classList.add("sui-focused"); else _g.el.classList.remove("sui-focused");
+	});
+	this.options = [];
+	(options.allownull?[{ label : (function($this) {
+		var $r;
+		var t = (function() {
+			var _0 = options;
+			if(null == _0) return null;
+			var _1 = _0.labelfornull;
+			if(null == _1) return null;
+			return _1;
+		})();
+		$r = t != null?t:"- none -";
+		return $r;
+	}(this)), value : null}]:[]).concat((function($this) {
+		var $r;
+		var t1 = (function() {
+			var _01 = options;
+			if(null == _01) return null;
+			var _11 = _01.list;
+			if(null == _11) return null;
+			return _11;
+		})();
+		$r = t1 != null?t1:options.values.map(function(_) {
+			return { value : _, label : Std.string(_)};
+		});
+		return $r;
+	}(this))).map(function(_2) {
+		return _g.addOption(_2.label,_2.value);
+	});
+	this.setInput(defaultValue);
+	thx_stream_dom_Dom.streamFocus(this.select).feed(this.values.focused);
+	thx_stream_dom_Dom.streamEvent(this.select,"change").map(function(_3) {
+		return _g.getInput();
+	}).feed(this.values.value);
+	if(options.autofocus) this.focus();
+	if(options.disabled) this.disable();
+};
+sui_controls_SelectControl.__name__ = ["sui","controls","SelectControl"];
+sui_controls_SelectControl.__interfaces__ = [sui_controls_IControl];
+sui_controls_SelectControl.prototype = {
+	el: null
+	,select: null
+	,defaultValue: null
+	,streams: null
+	,options: null
+	,values: null
+	,count: null
+	,addOption: function(label,value) {
+		var index = this.count++;
+		var option = dots_Html.parseNodes("<option>" + label + "</option>")[0];
+		this.options[index] = value;
+		this.select.appendChild(option);
+		return option;
+	}
+	,setInput: function(v) {
+		var index = HxOverrides.indexOf(this.options,v,0);
+		if(index < 0) throw new js__$Boot_HaxeError("value \"" + Std.string(v) + "\" is not included in this select control");
+		this.select.selectedIndex = index;
+	}
+	,getInput: function() {
+		return this.options[this.select.selectedIndex];
+	}
+	,set: function(v) {
+		this.setInput(v);
+		this.values.value.set(v);
+	}
+	,get: function() {
+		return this.values.value.get();
+	}
+	,isEnabled: function() {
+		return this.values.enabled.get();
+	}
+	,isFocused: function() {
+		return this.values.focused.get();
+	}
+	,disable: function() {
+		this.values.enabled.set(false);
+	}
+	,enable: function() {
+		this.values.enabled.set(true);
+	}
+	,focus: function() {
+		this.select.focus();
+	}
+	,blur: function() {
+		this.select.blur();
+	}
+	,reset: function() {
+		this.set(this.defaultValue);
+	}
+	,__class__: sui_controls_SelectControl
+};
+var sui_controls_DateSelectControl = function(defaultValue,options) {
+	sui_controls_SelectControl.call(this,defaultValue,"select-date",options);
+};
+sui_controls_DateSelectControl.__name__ = ["sui","controls","DateSelectControl"];
+sui_controls_DateSelectControl.__super__ = sui_controls_SelectControl;
+sui_controls_DateSelectControl.prototype = $extend(sui_controls_SelectControl.prototype,{
+	__class__: sui_controls_DateSelectControl
+});
+var sui_controls_DateTimeControl = function(value,options) {
+	sui_controls_BaseDateControl.call(this,value,"date-time","datetime-local",sui_controls_BaseDateControl.toRFCDateTimeNoSeconds,options);
+};
+sui_controls_DateTimeControl.__name__ = ["sui","controls","DateTimeControl"];
+sui_controls_DateTimeControl.__super__ = sui_controls_BaseDateControl;
+sui_controls_DateTimeControl.prototype = $extend(sui_controls_BaseDateControl.prototype,{
+	__class__: sui_controls_DateTimeControl
+});
+var sui_controls_EmailControl = function(value,options) {
+	if(null == options) options = { };
+	if(null == options.placeholder) options.placeholder = "name@example.com";
+	sui_controls_BaseTextControl.call(this,value,"email","email",options);
+};
+sui_controls_EmailControl.__name__ = ["sui","controls","EmailControl"];
+sui_controls_EmailControl.__super__ = sui_controls_BaseTextControl;
+sui_controls_EmailControl.prototype = $extend(sui_controls_BaseTextControl.prototype,{
+	__class__: sui_controls_EmailControl
+});
+var sui_controls_NumberControl = function(value,name,options) {
+	if(null == options) options = { };
+	sui_controls_SingleInputControl.call(this,value,"input",name,"number",options);
+	if(null != options.autocomplete) this.input.setAttribute("autocomplete",options.autocomplete?"on":"off");
+	if(null != options.min) this.input.setAttribute("min","" + Std.string(options.min));
+	if(null != options.max) this.input.setAttribute("max","" + Std.string(options.max));
+	if(null != options.step) this.input.setAttribute("step","" + Std.string(options.step));
+	if(null != options.placeholder) this.input.setAttribute("placeholder","" + options.placeholder);
+	if(null != options.list) new sui_controls_DataList(this.el,options.list.map(function(o) {
+		return { label : o.label, value : "" + Std.string(o.value)};
+	})).applyTo(this.input); else if(null != options.values) new sui_controls_DataList(this.el,options.values.map(function(o1) {
+		return { label : "" + Std.string(o1), value : "" + Std.string(o1)};
+	})).applyTo(this.input);
+};
+sui_controls_NumberControl.__name__ = ["sui","controls","NumberControl"];
+sui_controls_NumberControl.__super__ = sui_controls_SingleInputControl;
+sui_controls_NumberControl.prototype = $extend(sui_controls_SingleInputControl.prototype,{
+	__class__: sui_controls_NumberControl
+});
+var sui_controls_FloatControl = function(value,options) {
+	sui_controls_NumberControl.call(this,value,"float",options);
+};
+sui_controls_FloatControl.__name__ = ["sui","controls","FloatControl"];
+sui_controls_FloatControl.__super__ = sui_controls_NumberControl;
+sui_controls_FloatControl.prototype = $extend(sui_controls_NumberControl.prototype,{
+	setInput: function(v) {
+		this.input.value = "" + v;
+	}
+	,getInput: function() {
+		return parseFloat(this.input.value);
+	}
+	,__class__: sui_controls_FloatControl
+});
+var sui_controls_NumberRangeControl = function(value,options) {
+	sui_controls_DoubleInputControl.call(this,value,"float-range","input","range","input","number",function(v) {
+		return v != null;
+	},options);
+	if(null != options.autocomplete) {
+		this.input1.setAttribute("autocomplete",options.autocomplete?"on":"off");
+		this.input2.setAttribute("autocomplete",options.autocomplete?"on":"off");
+	}
+	if(null != options.min) {
+		this.input1.setAttribute("min","" + Std.string(options.min));
+		this.input2.setAttribute("min","" + Std.string(options.min));
+	}
+	if(null != options.max) {
+		this.input1.setAttribute("max","" + Std.string(options.max));
+		this.input2.setAttribute("max","" + Std.string(options.max));
+	}
+	if(null != options.step) {
+		this.input1.setAttribute("step","" + Std.string(options.step));
+		this.input2.setAttribute("step","" + Std.string(options.step));
+	}
+	if(null != options.placeholder) this.input2.setAttribute("placeholder","" + options.placeholder);
+	if(null != options.list) new sui_controls_DataList(this.el,options.list.map(function(o) {
+		return { label : o.label, value : "" + Std.string(o.value)};
+	})).applyTo(this.input1).applyTo(this.input2); else if(null != options.values) new sui_controls_DataList(this.el,options.values.map(function(o1) {
+		return { label : "" + Std.string(o1), value : "" + Std.string(o1)};
+	})).applyTo(this.input1).applyTo(this.input2);
+	this.setInputs(value);
+};
+sui_controls_NumberRangeControl.__name__ = ["sui","controls","NumberRangeControl"];
+sui_controls_NumberRangeControl.__super__ = sui_controls_DoubleInputControl;
+sui_controls_NumberRangeControl.prototype = $extend(sui_controls_DoubleInputControl.prototype,{
+	setInput1: function(v) {
+		this.input1.value = "" + Std.string(v);
+	}
+	,setInput2: function(v) {
+		this.input2.value = "" + Std.string(v);
+	}
+	,__class__: sui_controls_NumberRangeControl
+});
+var sui_controls_FloatRangeControl = function(value,options) {
+	if(null == options) options = { };
+	if(null == options.min) options.min = Math.min(value,0);
+	if(null == options.min) {
+		var s;
+		if(null != options.step) s = options.step; else s = 1;
+		options.max = Math.max(value,s);
+	}
+	sui_controls_NumberRangeControl.call(this,value,options);
+};
+sui_controls_FloatRangeControl.__name__ = ["sui","controls","FloatRangeControl"];
+sui_controls_FloatRangeControl.__super__ = sui_controls_NumberRangeControl;
+sui_controls_FloatRangeControl.prototype = $extend(sui_controls_NumberRangeControl.prototype,{
+	getInput1: function() {
+		if(thx_Floats.canParse(this.input1.value)) return thx_Floats.parse(this.input1.value); else return null;
+	}
+	,getInput2: function() {
+		if(thx_Floats.canParse(this.input2.value)) return thx_Floats.parse(this.input2.value); else return null;
+	}
+	,__class__: sui_controls_FloatRangeControl
+});
+var sui_controls_IntControl = function(value,options) {
+	sui_controls_NumberControl.call(this,value,"int",options);
+};
+sui_controls_IntControl.__name__ = ["sui","controls","IntControl"];
+sui_controls_IntControl.__super__ = sui_controls_NumberControl;
+sui_controls_IntControl.prototype = $extend(sui_controls_NumberControl.prototype,{
+	setInput: function(v) {
+		this.input.value = "" + v;
+	}
+	,getInput: function() {
+		return Std.parseInt(this.input.value);
+	}
+	,__class__: sui_controls_IntControl
+});
+var sui_controls_IntRangeControl = function(value,options) {
+	if(null == options) options = { };
+	if(null == options.min) if(value < 0) options.min = value; else options.min = 0;
+	if(null == options.min) {
+		var s;
+		if(null != options.step) s = options.step; else s = 100;
+		if(value > s) options.max = value; else options.max = s;
+	}
+	sui_controls_NumberRangeControl.call(this,value,options);
+};
+sui_controls_IntRangeControl.__name__ = ["sui","controls","IntRangeControl"];
+sui_controls_IntRangeControl.__super__ = sui_controls_NumberRangeControl;
+sui_controls_IntRangeControl.prototype = $extend(sui_controls_NumberRangeControl.prototype,{
+	getInput1: function() {
+		if(thx_Ints.canParse(this.input1.value)) return thx_Ints.parse(this.input1.value); else return null;
+	}
+	,getInput2: function() {
+		if(thx_Ints.canParse(this.input2.value)) return thx_Ints.parse(this.input2.value); else return null;
+	}
+	,__class__: sui_controls_IntRangeControl
+});
+var sui_controls_LabelControl = function(defaultValue) {
+	var _g = this;
+	var template = "<div class=\"sui-control sui-control-single sui-type-label\"><output>" + defaultValue + "</output></div>";
+	this.defaultValue = defaultValue;
+	this.values = new sui_controls_ControlValues(defaultValue);
+	this.streams = new sui_controls_ControlStreams(this.values.value,this.values.focused,this.values.enabled);
+	this.el = dots_Html.parseNodes(template)[0];
+	this.output = dots_Query.first("output",this.el);
+	this.values.enabled.subscribe(function(v) {
+		if(v) _g.el.classList.add("sui-disabled"); else _g.el.classList.remove("sui-disabled");
+	});
+};
+sui_controls_LabelControl.__name__ = ["sui","controls","LabelControl"];
+sui_controls_LabelControl.__interfaces__ = [sui_controls_IControl];
+sui_controls_LabelControl.prototype = {
+	el: null
+	,output: null
+	,defaultValue: null
+	,streams: null
+	,values: null
+	,set: function(v) {
+		this.output.innerHTML = v;
+		this.values.value.set(v);
+	}
+	,get: function() {
+		return this.values.value.get();
+	}
+	,isEnabled: function() {
+		return this.values.enabled.get();
+	}
+	,isFocused: function() {
+		return this.values.focused.get();
+	}
+	,disable: function() {
+		this.values.enabled.set(false);
+	}
+	,enable: function() {
+		this.values.enabled.set(true);
+	}
+	,focus: function() {
+	}
+	,blur: function() {
+	}
+	,reset: function() {
+		this.set(this.defaultValue);
+	}
+	,__class__: sui_controls_LabelControl
+};
+var sui_controls_MapControl = function(defaultValue,createMap,createKeyControl,createValueControl,options) {
+	var _g = this;
+	var template = "<div class=\"sui-control sui-control-single sui-type-array\">\n<table class=\"sui-map\"><tbody></tbody></table>\n<div class=\"sui-array-add\"><i class=\"sui-icon sui-icon-add\"></i></div>\n</div>";
+	var t = (function() {
+		var _0 = options;
+		if(null == _0) return null;
+		return _0;
+	})();
+	if(t != null) options = t; else options = { };
+	if(null == defaultValue) defaultValue = createMap();
+	this.defaultValue = defaultValue;
+	this.createMap = createMap;
+	this.createKeyControl = createKeyControl;
+	this.createValueControl = createValueControl;
+	this.elements = [];
+	this.length = 0;
+	this.values = new sui_controls_ControlValues(defaultValue);
+	this.streams = new sui_controls_ControlStreams(this.values.value,this.values.focused.debounce(0),this.values.enabled);
+	this.el = dots_Html.parseNodes(template)[0];
+	this.tbody = dots_Query.first("tbody",this.el);
+	this.addButton = dots_Query.first(".sui-icon-add",this.el);
+	thx_stream_dom_Dom.streamEvent(this.addButton,"click",false).subscribe(function(_) {
+		_g.addControl(null,null);
+	});
+	this.values.enabled.subscribe(function(v) {
+		if(v) _g.el.classList.add("sui-disabled"); else _g.el.classList.remove("sui-disabled");
+	});
+	this.values.focused.subscribe(function(v1) {
+		if(v1) _g.el.classList.add("sui-focused"); else _g.el.classList.remove("sui-focused");
+	});
+	thx_stream_EmitterBools.negate(this.values.enabled).subscribe(thx_stream_dom_Dom.subscribeToggleClass(this.el,"sui-disabled"));
+	this.values.enabled.subscribe(function(v2) {
+		_g.elements.map(function(_1) {
+			if(v2) {
+				_1.controlKey.enable();
+				_1.controlValue.enable();
+			} else {
+				_1.controlKey.disable();
+				_1.controlValue.disable();
+			}
+			return;
+		});
+	});
+	this.setValue(defaultValue);
+	this.reset();
+	if(options.autofocus) this.focus();
+	if(options.disabled) this.disable();
+};
+sui_controls_MapControl.__name__ = ["sui","controls","MapControl"];
+sui_controls_MapControl.__interfaces__ = [sui_controls_IControl];
+sui_controls_MapControl.prototype = {
+	el: null
+	,tbody: null
+	,addButton: null
+	,defaultValue: null
+	,streams: null
+	,createMap: null
+	,createKeyControl: null
+	,createValueControl: null
+	,length: null
+	,values: null
+	,elements: null
+	,addControl: function(key,value) {
+		var _g = this;
+		var o = { controlKey : this.createKeyControl(key), controlValue : this.createValueControl(value), el : dots_Html.parseNodes("<tr class=\"sui-map-item\">\n<td class=\"sui-map-key\"></td>\n<td class=\"sui-map-value\"></td>\n<td class=\"sui-remove\"><i class=\"sui-icon sui-icon-remove\"></i></td>\n</tr>")[0], index : this.length++};
+		this.tbody.appendChild(o.el);
+		var removeElement = dots_Query.first(".sui-icon-remove",o.el);
+		var controlKeyContainer = dots_Query.first(".sui-map-key",o.el);
+		var controlValueContainer = dots_Query.first(".sui-map-value",o.el);
+		controlKeyContainer.appendChild(o.controlKey.el);
+		controlValueContainer.appendChild(o.controlValue.el);
+		thx_stream_dom_Dom.streamEvent(removeElement,"click",false).subscribe(function(_) {
+			_g.tbody.removeChild(o.el);
+			_g.elements.splice(o.index,1);
+			var _g2 = o.index;
+			var _g1 = _g.elements.length;
+			while(_g2 < _g1) {
+				var i = _g2++;
+				_g.elements[i].index--;
+			}
+			_g.length--;
+			_g.updateValue();
+		});
+		this.elements.push(o);
+		o.controlKey.streams.value.toNil().merge(o.controlValue.streams.value.toNil()).subscribe(function(_1) {
+			_g.updateValue();
+		});
+		o.controlKey.streams.focused.merge(o.controlValue.streams.focused).subscribe(thx_stream_dom_Dom.subscribeToggleClass(o.el,"sui-focus"));
+		o.controlKey.streams.focused.merge(o.controlValue.streams.focused).feed(this.values.focused);
+	}
+	,setValue: function(v) {
+		var _g = this;
+		((function(_e) {
+			return function(f) {
+				return thx_Iterators.map(_e,f);
+			};
+		})(v.keys()))(function(_) {
+			_g.addControl(_,v.get(_));
+			return;
+		});
+	}
+	,getValue: function() {
+		var map = this.createMap();
+		this.elements.map(function(o) {
+			var k = o.controlKey.get();
+			var v = o.controlValue.get();
+			if(k == null || map.exists(k)) {
+				o.controlKey.el.classList.add("sui-invalid");
+				return;
+			}
+			o.controlKey.el.classList.remove("sui-invalid");
+			map.set(k,v);
+		});
+		return map;
+	}
+	,updateValue: function() {
+		this.values.value.set(this.getValue());
+	}
+	,set: function(v) {
+		this.clear();
+		this.setValue(v);
+		this.values.value.set(v);
+	}
+	,get: function() {
+		return this.values.value.get();
+	}
+	,isEnabled: function() {
+		return this.values.enabled.get();
+	}
+	,isFocused: function() {
+		return this.values.focused.get();
+	}
+	,disable: function() {
+		this.values.enabled.set(false);
+	}
+	,enable: function() {
+		this.values.enabled.set(true);
+	}
+	,focus: function() {
+		if(this.elements.length > 0) thx_Arrays.last(this.elements).controlValue.focus();
+	}
+	,blur: function() {
+		var el = window.document.activeElement;
+		el.blur();
+	}
+	,reset: function() {
+		this.set(this.defaultValue);
+	}
+	,clear: function() {
+		var _g = this;
+		this.length = 0;
+		this.elements.map(function(item) {
+			_g.tbody.removeChild(item.el);
+		});
+		this.elements = [];
+	}
+	,__class__: sui_controls_MapControl
+};
+var sui_controls_NumberSelectControl = function(defaultValue,options) {
+	sui_controls_SelectControl.call(this,defaultValue,"select-number",options);
+};
+sui_controls_NumberSelectControl.__name__ = ["sui","controls","NumberSelectControl"];
+sui_controls_NumberSelectControl.__super__ = sui_controls_SelectControl;
+sui_controls_NumberSelectControl.prototype = $extend(sui_controls_SelectControl.prototype,{
+	__class__: sui_controls_NumberSelectControl
+});
+var sui_controls_DateKind = { __ename__ : ["sui","controls","DateKind"], __constructs__ : ["DateOnly","DateTime"] };
+sui_controls_DateKind.DateOnly = ["DateOnly",0];
+sui_controls_DateKind.DateOnly.toString = $estr;
+sui_controls_DateKind.DateOnly.__enum__ = sui_controls_DateKind;
+sui_controls_DateKind.DateTime = ["DateTime",1];
+sui_controls_DateKind.DateTime.toString = $estr;
+sui_controls_DateKind.DateTime.__enum__ = sui_controls_DateKind;
+var sui_controls_FloatKind = { __ename__ : ["sui","controls","FloatKind"], __constructs__ : ["FloatNumber","FloatTime"] };
+sui_controls_FloatKind.FloatNumber = ["FloatNumber",0];
+sui_controls_FloatKind.FloatNumber.toString = $estr;
+sui_controls_FloatKind.FloatNumber.__enum__ = sui_controls_FloatKind;
+sui_controls_FloatKind.FloatTime = ["FloatTime",1];
+sui_controls_FloatKind.FloatTime.toString = $estr;
+sui_controls_FloatKind.FloatTime.__enum__ = sui_controls_FloatKind;
+var sui_controls_TextKind = { __ename__ : ["sui","controls","TextKind"], __constructs__ : ["TextEmail","TextPassword","TextSearch","TextTel","PlainText","TextUrl"] };
+sui_controls_TextKind.TextEmail = ["TextEmail",0];
+sui_controls_TextKind.TextEmail.toString = $estr;
+sui_controls_TextKind.TextEmail.__enum__ = sui_controls_TextKind;
+sui_controls_TextKind.TextPassword = ["TextPassword",1];
+sui_controls_TextKind.TextPassword.toString = $estr;
+sui_controls_TextKind.TextPassword.__enum__ = sui_controls_TextKind;
+sui_controls_TextKind.TextSearch = ["TextSearch",2];
+sui_controls_TextKind.TextSearch.toString = $estr;
+sui_controls_TextKind.TextSearch.__enum__ = sui_controls_TextKind;
+sui_controls_TextKind.TextTel = ["TextTel",3];
+sui_controls_TextKind.TextTel.toString = $estr;
+sui_controls_TextKind.TextTel.__enum__ = sui_controls_TextKind;
+sui_controls_TextKind.PlainText = ["PlainText",4];
+sui_controls_TextKind.PlainText.toString = $estr;
+sui_controls_TextKind.PlainText.__enum__ = sui_controls_TextKind;
+sui_controls_TextKind.TextUrl = ["TextUrl",5];
+sui_controls_TextKind.TextUrl.toString = $estr;
+sui_controls_TextKind.TextUrl.__enum__ = sui_controls_TextKind;
+var sui_controls_PasswordControl = function(value,options) {
+	sui_controls_BaseTextControl.call(this,value,"text","password",options);
+};
+sui_controls_PasswordControl.__name__ = ["sui","controls","PasswordControl"];
+sui_controls_PasswordControl.__super__ = sui_controls_BaseTextControl;
+sui_controls_PasswordControl.prototype = $extend(sui_controls_BaseTextControl.prototype,{
+	__class__: sui_controls_PasswordControl
+});
+var sui_controls_SearchControl = function(value,options) {
+	if(null == options) options = { };
+	sui_controls_BaseTextControl.call(this,value,"search","search",options);
+};
+sui_controls_SearchControl.__name__ = ["sui","controls","SearchControl"];
+sui_controls_SearchControl.__super__ = sui_controls_BaseTextControl;
+sui_controls_SearchControl.prototype = $extend(sui_controls_BaseTextControl.prototype,{
+	__class__: sui_controls_SearchControl
+});
+var sui_controls_TelControl = function(value,options) {
+	if(null == options) options = { };
+	sui_controls_BaseTextControl.call(this,value,"tel","tel",options);
+};
+sui_controls_TelControl.__name__ = ["sui","controls","TelControl"];
+sui_controls_TelControl.__super__ = sui_controls_BaseTextControl;
+sui_controls_TelControl.prototype = $extend(sui_controls_BaseTextControl.prototype,{
+	__class__: sui_controls_TelControl
+});
+var sui_controls_TextControl = function(value,options) {
+	sui_controls_BaseTextControl.call(this,value,"text","text",options);
+};
+sui_controls_TextControl.__name__ = ["sui","controls","TextControl"];
+sui_controls_TextControl.__super__ = sui_controls_BaseTextControl;
+sui_controls_TextControl.prototype = $extend(sui_controls_BaseTextControl.prototype,{
+	__class__: sui_controls_TextControl
+});
+var sui_controls_TextSelectControl = function(defaultValue,options) {
+	sui_controls_SelectControl.call(this,defaultValue,"select-text",options);
+};
+sui_controls_TextSelectControl.__name__ = ["sui","controls","TextSelectControl"];
+sui_controls_TextSelectControl.__super__ = sui_controls_SelectControl;
+sui_controls_TextSelectControl.prototype = $extend(sui_controls_SelectControl.prototype,{
+	__class__: sui_controls_TextSelectControl
+});
+var sui_controls_TimeControl = function(value,options) {
+	if(null == options) options = { };
+	sui_controls_SingleInputControl.call(this,value,"input","time","time",options);
+	if(null != options.autocomplete) this.input.setAttribute("autocomplete",options.autocomplete?"on":"off");
+	if(null != options.min) this.input.setAttribute("min",sui_controls_TimeControl.timeToString(options.min));
+	if(null != options.max) this.input.setAttribute("max",sui_controls_TimeControl.timeToString(options.max));
+	if(null != options.list) new sui_controls_DataList(this.el,options.list.map(function(o) {
+		return { label : o.label, value : sui_controls_TimeControl.timeToString(o.value)};
+	})).applyTo(this.input); else if(null != options.values) new sui_controls_DataList(this.el,options.values.map(function(o1) {
+		return { label : sui_controls_TimeControl.timeToString(o1), value : sui_controls_TimeControl.timeToString(o1)};
+	})).applyTo(this.input);
+};
+sui_controls_TimeControl.__name__ = ["sui","controls","TimeControl"];
+sui_controls_TimeControl.timeToString = function(t) {
+	var h = Math.floor(t / 3600000);
+	t -= h * 3600000;
+	var m = Math.floor(t / 60000);
+	t -= m * 60000;
+	var s = t / 1000;
+	var hh = StringTools.lpad("" + h,"0",2);
+	var mm = StringTools.lpad("" + m,"0",2);
+	var ss;
+	ss = (s >= 10?"":"0") + s;
+	return "" + hh + ":" + mm + ":" + ss;
+};
+sui_controls_TimeControl.stringToTime = function(t) {
+	var p = t.split(":");
+	var h = Std.parseInt(p[0]);
+	var m = Std.parseInt(p[1]);
+	var s = parseFloat(p[2]);
+	return s * 1000 + m * 60000 + h * 3600000;
+};
+sui_controls_TimeControl.__super__ = sui_controls_SingleInputControl;
+sui_controls_TimeControl.prototype = $extend(sui_controls_SingleInputControl.prototype,{
+	setInput: function(v) {
+		this.input.value = sui_controls_TimeControl.timeToString(v);
+	}
+	,getInput: function() {
+		return sui_controls_TimeControl.stringToTime(this.input.value);
+	}
+	,__class__: sui_controls_TimeControl
+});
+var sui_controls_TriggerControl = function(label,options) {
+	var _g = this;
+	var template = "<div class=\"sui-control sui-control-single sui-type-trigger\"><button>" + label + "</button></div>";
+	if(null == options) options = { };
+	this.defaultValue = thx_Nil.nil;
+	this.el = dots_Html.parseNodes(template)[0];
+	this.button = dots_Query.first("button",this.el);
+	this.values = new sui_controls_ControlValues(thx_Nil.nil);
+	var emitter = thx_stream_dom_Dom.streamEvent(this.button,"click",false).toNil();
+	this.streams = new sui_controls_ControlStreams(emitter,this.values.focused,this.values.enabled);
+	this.values.enabled.subscribe(function(v) {
+		if(v) {
+			_g.el.classList.add("sui-disabled");
+			_g.button.removeAttribute("disabled");
+		} else {
+			_g.el.classList.remove("sui-disabled");
+			_g.button.setAttribute("disabled","disabled");
+		}
+	});
+	this.values.focused.subscribe(function(v1) {
+		if(v1) _g.el.classList.add("sui-focused"); else _g.el.classList.remove("sui-focused");
+	});
+	thx_stream_dom_Dom.streamFocus(this.button).feed(this.values.focused);
+	if(options.autofocus) this.focus();
+	if(options.disabled) this.disable();
+};
+sui_controls_TriggerControl.__name__ = ["sui","controls","TriggerControl"];
+sui_controls_TriggerControl.__interfaces__ = [sui_controls_IControl];
+sui_controls_TriggerControl.prototype = {
+	el: null
+	,button: null
+	,defaultValue: null
+	,streams: null
+	,values: null
+	,set: function(v) {
+		this.button.click();
+	}
+	,get: function() {
+		return thx_Nil.nil;
+	}
+	,isEnabled: function() {
+		return this.values.enabled.get();
+	}
+	,isFocused: function() {
+		return this.values.focused.get();
+	}
+	,disable: function() {
+		this.values.enabled.set(false);
+	}
+	,enable: function() {
+		this.values.enabled.set(true);
+	}
+	,focus: function() {
+		this.button.focus();
+	}
+	,blur: function() {
+		this.button.blur();
+	}
+	,reset: function() {
+		this.set(this.defaultValue);
+	}
+	,__class__: sui_controls_TriggerControl
+};
+var sui_controls_UrlControl = function(value,options) {
+	if(null == options) options = { };
+	if(null == options.placeholder) options.placeholder = "http://example.com";
+	sui_controls_BaseTextControl.call(this,value,"url","url",options);
+};
+sui_controls_UrlControl.__name__ = ["sui","controls","UrlControl"];
+sui_controls_UrlControl.__super__ = sui_controls_BaseTextControl;
+sui_controls_UrlControl.prototype = $extend(sui_controls_BaseTextControl.prototype,{
+	__class__: sui_controls_UrlControl
+});
+var sui_macro_Embed = function() { };
+sui_macro_Embed.__name__ = ["sui","macro","Embed"];
 var thx_Arrays = function() { };
 thx_Arrays.__name__ = ["thx","Arrays"];
 thx_Arrays.append = function(array,element) {
@@ -5497,6 +7139,8 @@ var thx_Nil = { __ename__ : ["thx","Nil"], __constructs__ : ["nil"] };
 thx_Nil.nil = ["nil",0];
 thx_Nil.nil.toString = $estr;
 thx_Nil.nil.__enum__ = thx_Nil;
+var thx_Nulls = function() { };
+thx_Nulls.__name__ = ["thx","Nulls"];
 var thx_Objects = function() { };
 thx_Objects.__name__ = ["thx","Objects"];
 thx_Objects.compare = function(a,b) {
@@ -6083,6 +7727,66 @@ thx__$ReadonlyArray_ReadonlyArray_$Impl_$.pop = function(this1) {
 	var pos = this1.length - 1;
 	array = this1.slice(0,pos).concat(this1.slice(pos + 1));
 	return { _0 : value, _1 : array};
+};
+var thx__$Result_Result_$Impl_$ = {};
+thx__$Result_Result_$Impl_$.__name__ = ["thx","_Result","Result_Impl_"];
+thx__$Result_Result_$Impl_$.success = function(value) {
+	return thx_Either.Right(value);
+};
+thx__$Result_Result_$Impl_$.failure = function(error) {
+	return thx_Either.Left(error);
+};
+thx__$Result_Result_$Impl_$.optionValue = function(this1) {
+	switch(this1[1]) {
+	case 1:
+		var v = this1[2];
+		return haxe_ds_Option.Some(v);
+	default:
+		return haxe_ds_Option.None;
+	}
+};
+thx__$Result_Result_$Impl_$.optionError = function(this1) {
+	switch(this1[1]) {
+	case 0:
+		var v = this1[2];
+		return haxe_ds_Option.Some(v);
+	default:
+		return haxe_ds_Option.None;
+	}
+};
+thx__$Result_Result_$Impl_$.value = function(this1) {
+	switch(this1[1]) {
+	case 1:
+		var v = this1[2];
+		return v;
+	default:
+		return null;
+	}
+};
+thx__$Result_Result_$Impl_$.error = function(this1) {
+	switch(this1[1]) {
+	case 0:
+		var v = this1[2];
+		return v;
+	default:
+		return null;
+	}
+};
+thx__$Result_Result_$Impl_$.get_isSuccess = function(this1) {
+	switch(this1[1]) {
+	case 1:
+		return true;
+	default:
+		return false;
+	}
+};
+thx__$Result_Result_$Impl_$.get_isFailure = function(this1) {
+	switch(this1[1]) {
+	case 0:
+		return true;
+	default:
+		return false;
+	}
 };
 var thx__$Semigroup_Semigroup_$Impl_$ = {};
 thx__$Semigroup_Semigroup_$Impl_$.__name__ = ["thx","_Semigroup","Semigroup_Impl_"];
@@ -10956,6 +12660,14 @@ thx_color_parse_ChannelInfo.CIDegree = function(value) { var $x = ["CIDegree",2,
 thx_color_parse_ChannelInfo.CIInt8 = function(value) { var $x = ["CIInt8",3,value]; $x.__enum__ = thx_color_parse_ChannelInfo; $x.toString = $estr; return $x; };
 thx_color_parse_ChannelInfo.CIInt = function(value) { var $x = ["CIInt",4,value]; $x.__enum__ = thx_color_parse_ChannelInfo; $x.toString = $estr; return $x; };
 thx_color_parse_ChannelInfo.CIBool = function(value) { var $x = ["CIBool",5,value]; $x.__enum__ = thx_color_parse_ChannelInfo; $x.toString = $estr; return $x; };
+var thx_error_AbstractMethod = function(posInfo) {
+	thx_Error.call(this,"method " + posInfo.className + "." + posInfo.methodName + "() is abstract",null,posInfo);
+};
+thx_error_AbstractMethod.__name__ = ["thx","error","AbstractMethod"];
+thx_error_AbstractMethod.__super__ = thx_Error;
+thx_error_AbstractMethod.prototype = $extend(thx_Error.prototype,{
+	__class__: thx_error_AbstractMethod
+});
 var thx_error_ErrorWrapper = function(message,innerError,stack,pos) {
 	thx_Error.call(this,message,stack,pos);
 	this.innerError = innerError;
@@ -11332,6 +13044,2261 @@ thx_fp_MapImpl.Tip = ["Tip",0];
 thx_fp_MapImpl.Tip.toString = $estr;
 thx_fp_MapImpl.Tip.__enum__ = thx_fp_MapImpl;
 thx_fp_MapImpl.Bin = function(size,key,value,lhs,rhs) { var $x = ["Bin",1,size,key,value,lhs,rhs]; $x.__enum__ = thx_fp_MapImpl; $x.toString = $estr; return $x; };
+var thx_promise_Future = function() {
+	this.handlers = [];
+	this.state = haxe_ds_Option.None;
+};
+thx_promise_Future.__name__ = ["thx","promise","Future"];
+thx_promise_Future.sequence = function(arr) {
+	return thx_promise_Future.create(function(callback) {
+		var poll;
+		var poll1 = null;
+		poll1 = function(_) {
+			if(arr.length == 0) callback(thx_Nil.nil); else arr.shift().then(poll1);
+		};
+		poll = poll1;
+		poll(null);
+	});
+};
+thx_promise_Future.afterAll = function(arr) {
+	return thx_promise_Future.create(function(callback) {
+		thx_promise_Future.all(arr).then(function(_) {
+			callback(thx_Nil.nil);
+		});
+	});
+};
+thx_promise_Future.all = function(arr) {
+	return thx_promise_Future.create(function(callback) {
+		var results = [];
+		var counter = 0;
+		arr.map(function(p,i) {
+			p.then(function(value) {
+				results[i] = value;
+				counter++;
+				if(counter == arr.length) callback(results);
+			});
+		});
+	});
+};
+thx_promise_Future.create = function(handler) {
+	var future = new thx_promise_Future();
+	handler($bind(future,future.setState));
+	return future;
+};
+thx_promise_Future.flatMap = function(future) {
+	return thx_promise_Future.create(function(callback) {
+		future.then(function(future1) {
+			future1.then(callback);
+		});
+	});
+};
+thx_promise_Future.value = function(v) {
+	return thx_promise_Future.create(function(callback) {
+		callback(v);
+	});
+};
+thx_promise_Future.prototype = {
+	handlers: null
+	,state: null
+	,delay: function(delayms) {
+		if(null == delayms) return thx_promise_Future.flatMap(this.map(function(value) {
+			return thx_promise_Timer.immediateValue(value);
+		})); else return thx_promise_Future.flatMap(this.map(function(value1) {
+			return thx_promise_Timer.delayValue(value1,delayms);
+		}));
+	}
+	,hasValue: function() {
+		return thx_Options.toBool(this.state);
+	}
+	,map: function(handler) {
+		var _g = this;
+		return thx_promise_Future.create(function(callback) {
+			_g.then(function(value) {
+				callback(handler(value));
+			});
+		});
+	}
+	,mapAsync: function(handler) {
+		var _g = this;
+		return thx_promise_Future.create(function(callback) {
+			_g.then(function(result) {
+				handler(result,callback);
+			});
+		});
+	}
+	,mapPromise: function(handler) {
+		var _g = this;
+		return thx_promise__$Promise_Promise_$Impl_$.create(function(resolve,reject) {
+			_g.then(function(result) {
+				thx_promise__$Promise_Promise_$Impl_$.failure(thx_promise__$Promise_Promise_$Impl_$.success(handler(result),resolve),reject);
+			});
+		});
+	}
+	,mapFuture: function(handler) {
+		return thx_promise_Future.flatMap(this.map(handler));
+	}
+	,then: function(handler) {
+		this.handlers.push(handler);
+		this.update();
+		return this;
+	}
+	,toString: function() {
+		return "Future";
+	}
+	,setState: function(newstate) {
+		{
+			var _g = this.state;
+			switch(_g[1]) {
+			case 1:
+				this.state = haxe_ds_Option.Some(newstate);
+				break;
+			case 0:
+				var r = _g[2];
+				throw new thx_Error("future was already \"" + Std.string(r) + "\", can't apply the new state \"" + Std.string(newstate) + "\"",null,{ fileName : "Future.hx", lineNumber : 110, className : "thx.promise.Future", methodName : "setState"});
+				break;
+			}
+		}
+		this.update();
+		return this;
+	}
+	,update: function() {
+		{
+			var _g = this.state;
+			switch(_g[1]) {
+			case 1:
+				break;
+			case 0:
+				var result = _g[2];
+				var index = -1;
+				while(++index < this.handlers.length) this.handlers[index](result);
+				this.handlers = [];
+				break;
+			}
+		}
+	}
+	,__class__: thx_promise_Future
+};
+var thx_promise_Futures = function() { };
+thx_promise_Futures.__name__ = ["thx","promise","Futures"];
+thx_promise_Futures.join = function(p1,p2) {
+	return thx_promise_Future.create(function(callback) {
+		var counter = 0;
+		var v1 = null;
+		var v2 = null;
+		var complete = function() {
+			if(counter < 2) return;
+			callback({ _0 : v1, _1 : v2});
+		};
+		p1.then(function(v) {
+			counter++;
+			v1 = v;
+			complete();
+		});
+		p2.then(function(v3) {
+			counter++;
+			v2 = v3;
+			complete();
+		});
+	});
+};
+thx_promise_Futures.log = function(future,prefix) {
+	if(prefix == null) prefix = "";
+	return future.then(function(r) {
+		haxe_Log.trace("" + prefix + " VALUE: " + Std.string(r),{ fileName : "Future.hx", lineNumber : 157, className : "thx.promise.Futures", methodName : "log"});
+	});
+};
+var thx_promise_FutureTuple6 = function() { };
+thx_promise_FutureTuple6.__name__ = ["thx","promise","FutureTuple6"];
+thx_promise_FutureTuple6.mapTuple = function(future,callback) {
+	return future.map(function(t) {
+		return callback(t._0,t._1,t._2,t._3,t._4,t._5);
+	});
+};
+thx_promise_FutureTuple6.mapTupleAsync = function(future,callback) {
+	return future.mapAsync(function(t,cb) {
+		callback(t._0,t._1,t._2,t._3,t._4,t._5,cb);
+		return;
+	});
+};
+thx_promise_FutureTuple6.mapTupleFuture = function(future,callback) {
+	return thx_promise_Future.flatMap(future.map(function(t) {
+		return callback(t._0,t._1,t._2,t._3,t._4,t._5);
+	}));
+};
+thx_promise_FutureTuple6.tuple = function(future,callback) {
+	return future.then(function(t) {
+		callback(t._0,t._1,t._2,t._3,t._4,t._5);
+	});
+};
+var thx_promise_FutureTuple5 = function() { };
+thx_promise_FutureTuple5.__name__ = ["thx","promise","FutureTuple5"];
+thx_promise_FutureTuple5.join = function(p1,p2) {
+	return thx_promise_Future.create(function(callback) {
+		thx_promise_Futures.join(p1,p2).then(function(t) {
+			callback((function($this) {
+				var $r;
+				var this1 = t._0;
+				$r = { _0 : this1._0, _1 : this1._1, _2 : this1._2, _3 : this1._3, _4 : this1._4, _5 : t._1};
+				return $r;
+			}(this)));
+		});
+	});
+};
+thx_promise_FutureTuple5.mapTuple = function(future,callback) {
+	return future.map(function(t) {
+		return callback(t._0,t._1,t._2,t._3,t._4);
+	});
+};
+thx_promise_FutureTuple5.mapTupleAsync = function(future,callback) {
+	return future.mapAsync(function(t,cb) {
+		callback(t._0,t._1,t._2,t._3,t._4,cb);
+		return;
+	});
+};
+thx_promise_FutureTuple5.mapTupleFuture = function(future,callback) {
+	return thx_promise_Future.flatMap(future.map(function(t) {
+		return callback(t._0,t._1,t._2,t._3,t._4);
+	}));
+};
+thx_promise_FutureTuple5.tuple = function(future,callback) {
+	return future.then(function(t) {
+		callback(t._0,t._1,t._2,t._3,t._4);
+	});
+};
+var thx_promise_FutureTuple4 = function() { };
+thx_promise_FutureTuple4.__name__ = ["thx","promise","FutureTuple4"];
+thx_promise_FutureTuple4.join = function(p1,p2) {
+	return thx_promise_Future.create(function(callback) {
+		thx_promise_Futures.join(p1,p2).then(function(t) {
+			callback((function($this) {
+				var $r;
+				var this1 = t._0;
+				$r = { _0 : this1._0, _1 : this1._1, _2 : this1._2, _3 : this1._3, _4 : t._1};
+				return $r;
+			}(this)));
+		});
+	});
+};
+thx_promise_FutureTuple4.mapTuple = function(future,callback) {
+	return future.map(function(t) {
+		return callback(t._0,t._1,t._2,t._3);
+	});
+};
+thx_promise_FutureTuple4.mapTupleAsync = function(future,callback) {
+	return future.mapAsync(function(t,cb) {
+		callback(t._0,t._1,t._2,t._3,cb);
+		return;
+	});
+};
+thx_promise_FutureTuple4.mapTupleFuture = function(future,callback) {
+	return thx_promise_Future.flatMap(future.map(function(t) {
+		return callback(t._0,t._1,t._2,t._3);
+	}));
+};
+thx_promise_FutureTuple4.tuple = function(future,callback) {
+	return future.then(function(t) {
+		callback(t._0,t._1,t._2,t._3);
+	});
+};
+var thx_promise_FutureTuple3 = function() { };
+thx_promise_FutureTuple3.__name__ = ["thx","promise","FutureTuple3"];
+thx_promise_FutureTuple3.join = function(p1,p2) {
+	return thx_promise_Future.create(function(callback) {
+		thx_promise_Futures.join(p1,p2).then(function(t) {
+			callback((function($this) {
+				var $r;
+				var this1 = t._0;
+				$r = { _0 : this1._0, _1 : this1._1, _2 : this1._2, _3 : t._1};
+				return $r;
+			}(this)));
+		});
+	});
+};
+thx_promise_FutureTuple3.mapTuple = function(future,callback) {
+	return future.map(function(t) {
+		return callback(t._0,t._1,t._2);
+	});
+};
+thx_promise_FutureTuple3.mapTupleAsync = function(future,callback) {
+	return future.mapAsync(function(t,cb) {
+		callback(t._0,t._1,t._2,cb);
+		return;
+	});
+};
+thx_promise_FutureTuple3.mapTupleFuture = function(future,callback) {
+	return thx_promise_Future.flatMap(future.map(function(t) {
+		return callback(t._0,t._1,t._2);
+	}));
+};
+thx_promise_FutureTuple3.tuple = function(future,callback) {
+	return future.then(function(t) {
+		callback(t._0,t._1,t._2);
+	});
+};
+var thx_promise_FutureTuple2 = function() { };
+thx_promise_FutureTuple2.__name__ = ["thx","promise","FutureTuple2"];
+thx_promise_FutureTuple2.join = function(p1,p2) {
+	return thx_promise_Future.create(function(callback) {
+		thx_promise_Futures.join(p1,p2).then(function(t) {
+			callback((function($this) {
+				var $r;
+				var this1 = t._0;
+				$r = { _0 : this1._0, _1 : this1._1, _2 : t._1};
+				return $r;
+			}(this)));
+		});
+	});
+};
+thx_promise_FutureTuple2.mapTuple = function(future,callback) {
+	return future.map(function(t) {
+		return callback(t._0,t._1);
+	});
+};
+thx_promise_FutureTuple2.mapTupleAsync = function(future,callback) {
+	return future.mapAsync(function(t,cb) {
+		callback(t._0,t._1,cb);
+		return;
+	});
+};
+thx_promise_FutureTuple2.mapTupleFuture = function(future,callback) {
+	return thx_promise_Future.flatMap(future.map(function(t) {
+		return callback(t._0,t._1);
+	}));
+};
+thx_promise_FutureTuple2.tuple = function(future,callback) {
+	return future.then(function(t) {
+		callback(t._0,t._1);
+	});
+};
+var thx_promise_FutureNil = function() { };
+thx_promise_FutureNil.__name__ = ["thx","promise","FutureNil"];
+thx_promise_FutureNil.join = function(p1,p2) {
+	return thx_promise_Future.create(function(callback) {
+		thx_promise_Futures.join(p1,p2).then(function(t) {
+			callback(t._1);
+		});
+	});
+};
+thx_promise_FutureNil.nil = function(p) {
+	return thx_promise_Future.create(function(callback) {
+		p.then(function(_) {
+			callback(thx_Nil.nil);
+		});
+	});
+};
+var thx_promise__$Promise_Promise_$Impl_$ = {};
+thx_promise__$Promise_Promise_$Impl_$.__name__ = ["thx","promise","_Promise","Promise_Impl_"];
+thx_promise__$Promise_Promise_$Impl_$.futureToPromise = function(future) {
+	return future.map(function(v) {
+		return thx_Either.Right(v);
+	});
+};
+thx_promise__$Promise_Promise_$Impl_$.sequence = function(arr) {
+	return thx_promise__$Promise_Promise_$Impl_$.create(function(resolve,reject) {
+		var poll;
+		var poll1 = null;
+		poll1 = function(_) {
+			if(arr.length == 0) resolve(thx_promise__$Promise_Promise_$Impl_$.nil); else thx_promise__$Promise_Promise_$Impl_$.mapFailure(thx_promise__$Promise_Promise_$Impl_$.mapSuccess(arr.shift(),poll1),reject);
+		};
+		poll = poll1;
+		poll(null);
+	});
+};
+thx_promise__$Promise_Promise_$Impl_$.afterAll = function(arr) {
+	return thx_promise__$Promise_Promise_$Impl_$.create(function(resolve,reject) {
+		thx_promise__$Promise_Promise_$Impl_$.either(thx_promise__$Promise_Promise_$Impl_$.all(arr),function(_) {
+			resolve(thx_Nil.nil);
+		},reject);
+	});
+};
+thx_promise__$Promise_Promise_$Impl_$.all = function(arr) {
+	if(arr.length == 0) return thx_promise__$Promise_Promise_$Impl_$.value([]);
+	return thx_promise__$Promise_Promise_$Impl_$.create(function(resolve,reject) {
+		var results = [];
+		var counter = 0;
+		var hasError = false;
+		arr.map(function(p,i) {
+			thx_promise__$Promise_Promise_$Impl_$.either(p,function(value) {
+				if(hasError) return;
+				results[i] = value;
+				counter++;
+				if(counter == arr.length) resolve(results);
+			},function(err) {
+				if(hasError) return;
+				hasError = true;
+				reject(err);
+			});
+		});
+	});
+};
+thx_promise__$Promise_Promise_$Impl_$.create = function(callback) {
+	return thx_promise_Future.create(function(cb) {
+		callback(function(value) {
+			cb(thx_Either.Right(value));
+		},function(error) {
+			cb(thx_Either.Left(error));
+		});
+	});
+};
+thx_promise__$Promise_Promise_$Impl_$.createFulfill = function(callback) {
+	return thx_promise_Future.create(callback);
+};
+thx_promise__$Promise_Promise_$Impl_$.error = function(err) {
+	return thx_promise__$Promise_Promise_$Impl_$.create(function(_,reject) {
+		reject(err);
+	});
+};
+thx_promise__$Promise_Promise_$Impl_$.value = function(v) {
+	return thx_promise__$Promise_Promise_$Impl_$.create(function(resolve,_) {
+		resolve(v);
+	});
+};
+thx_promise__$Promise_Promise_$Impl_$.always = function(this1,handler) {
+	this1.then(function(_) {
+		handler();
+	});
+};
+thx_promise__$Promise_Promise_$Impl_$.either = function(this1,success,failure) {
+	this1.then(function(r) {
+		switch(r[1]) {
+		case 1:
+			var value = r[2];
+			success(value);
+			break;
+		case 0:
+			var error = r[2];
+			failure(error);
+			break;
+		}
+	});
+	return this1;
+};
+thx_promise__$Promise_Promise_$Impl_$.delay = function(this1,delayms) {
+	return this1.delay(delayms);
+};
+thx_promise__$Promise_Promise_$Impl_$.isFailure = function(this1) {
+	{
+		var _g = this1.state;
+		switch(_g[1]) {
+		case 1:
+			return false;
+		case 0:
+			switch(_g[2][1]) {
+			case 1:
+				return false;
+			default:
+				return true;
+			}
+			break;
+		}
+	}
+};
+thx_promise__$Promise_Promise_$Impl_$.isResolved = function(this1) {
+	{
+		var _g = this1.state;
+		switch(_g[1]) {
+		case 1:
+			return false;
+		case 0:
+			switch(_g[2][1]) {
+			case 0:
+				return false;
+			default:
+				return true;
+			}
+			break;
+		}
+	}
+};
+thx_promise__$Promise_Promise_$Impl_$.failure = function(this1,failure) {
+	return thx_promise__$Promise_Promise_$Impl_$.either(this1,function(_) {
+	},failure);
+};
+thx_promise__$Promise_Promise_$Impl_$.mapAlways = function(this1,handler) {
+	return this1.map(function(_) {
+		return handler();
+	});
+};
+thx_promise__$Promise_Promise_$Impl_$.mapAlwaysAsync = function(this1,handler) {
+	return this1.mapAsync(function(_,cb) {
+		handler(cb);
+		return;
+	});
+};
+thx_promise__$Promise_Promise_$Impl_$.mapAlwaysFuture = function(this1,handler) {
+	return thx_promise_Future.flatMap(this1.map(function(_) {
+		return handler();
+	}));
+};
+thx_promise__$Promise_Promise_$Impl_$.mapEither = function(this1,success,failure) {
+	return this1.map(function(result) {
+		switch(result[1]) {
+		case 1:
+			var value = result[2];
+			return success(value);
+		case 0:
+			var error = result[2];
+			return failure(error);
+		}
+	});
+};
+thx_promise__$Promise_Promise_$Impl_$.mapEitherFuture = function(this1,success,failure) {
+	return thx_promise_Future.flatMap(this1.map(function(result) {
+		switch(result[1]) {
+		case 1:
+			var value = result[2];
+			return success(value);
+		case 0:
+			var error = result[2];
+			return failure(error);
+		}
+	}));
+};
+thx_promise__$Promise_Promise_$Impl_$.mapFailure = function(this1,failure) {
+	return thx_promise__$Promise_Promise_$Impl_$.mapEither(this1,function(value) {
+		return value;
+	},failure);
+};
+thx_promise__$Promise_Promise_$Impl_$.mapFailureFuture = function(this1,failure) {
+	return thx_promise__$Promise_Promise_$Impl_$.mapEitherFuture(this1,function(value) {
+		return thx_promise_Future.value(value);
+	},failure);
+};
+thx_promise__$Promise_Promise_$Impl_$.mapFailurePromise = function(this1,failure) {
+	return thx_promise__$Promise_Promise_$Impl_$.mapEitherFuture(this1,function(value) {
+		return thx_promise__$Promise_Promise_$Impl_$.value(value);
+	},failure);
+};
+thx_promise__$Promise_Promise_$Impl_$.mapSuccess = function(this1,success) {
+	return thx_promise__$Promise_Promise_$Impl_$.mapEitherFuture(this1,function(v) {
+		return thx_promise__$Promise_Promise_$Impl_$.value(success(v));
+	},function(err) {
+		return thx_promise__$Promise_Promise_$Impl_$.error(err);
+	});
+};
+thx_promise__$Promise_Promise_$Impl_$.mapSuccessPromise = function(this1,success) {
+	return thx_promise__$Promise_Promise_$Impl_$.mapEitherFuture(this1,success,function(err) {
+		return thx_promise__$Promise_Promise_$Impl_$.error(err);
+	});
+};
+thx_promise__$Promise_Promise_$Impl_$.success = function(this1,success) {
+	return thx_promise__$Promise_Promise_$Impl_$.either(this1,success,function(_) {
+	});
+};
+thx_promise__$Promise_Promise_$Impl_$.throwFailure = function(this1) {
+	return thx_promise__$Promise_Promise_$Impl_$.failure(this1,function(err) {
+		throw err;
+	});
+};
+thx_promise__$Promise_Promise_$Impl_$.toString = function(this1) {
+	return "Promise";
+};
+var thx_promise_Promises = function() { };
+thx_promise_Promises.__name__ = ["thx","promise","Promises"];
+thx_promise_Promises.join = function(p1,p2) {
+	return thx_promise__$Promise_Promise_$Impl_$.create(function(resolve,reject) {
+		var hasError = false;
+		var counter = 0;
+		var v1 = null;
+		var v2 = null;
+		var complete = function() {
+			if(counter < 2) return;
+			resolve({ _0 : v1, _1 : v2});
+		};
+		var handleError = function(error) {
+			if(hasError) return;
+			hasError = true;
+			reject(error);
+		};
+		thx_promise__$Promise_Promise_$Impl_$.either(p1,function(v) {
+			if(hasError) return;
+			counter++;
+			v1 = v;
+			complete();
+		},handleError);
+		thx_promise__$Promise_Promise_$Impl_$.either(p2,function(v3) {
+			if(hasError) return;
+			counter++;
+			v2 = v3;
+			complete();
+		},handleError);
+	});
+};
+thx_promise_Promises.log = function(promise,prefix) {
+	if(prefix == null) prefix = "";
+	return thx_promise__$Promise_Promise_$Impl_$.either(promise,function(r) {
+		haxe_Log.trace("" + prefix + " SUCCESS: " + Std.string(r),{ fileName : "Promise.hx", lineNumber : 202, className : "thx.promise.Promises", methodName : "log"});
+	},function(e) {
+		haxe_Log.trace("" + prefix + " ERROR: " + e.toString(),{ fileName : "Promise.hx", lineNumber : 203, className : "thx.promise.Promises", methodName : "log"});
+	});
+};
+var thx_promise_PromiseTuple6 = function() { };
+thx_promise_PromiseTuple6.__name__ = ["thx","promise","PromiseTuple6"];
+thx_promise_PromiseTuple6.mapTuplePromise = function(promise,success) {
+	return thx_promise__$Promise_Promise_$Impl_$.mapSuccessPromise(promise,function(t) {
+		return success(t._0,t._1,t._2,t._3,t._4,t._5);
+	});
+};
+thx_promise_PromiseTuple6.mapTuple = function(promise,success) {
+	return thx_promise__$Promise_Promise_$Impl_$.mapSuccess(promise,function(t) {
+		return success(t._0,t._1,t._2,t._3,t._4,t._5);
+	});
+};
+thx_promise_PromiseTuple6.tuple = function(promise,success,failure) {
+	return thx_promise__$Promise_Promise_$Impl_$.either(promise,function(t) {
+		success(t._0,t._1,t._2,t._3,t._4,t._5);
+	},null == failure?function(_) {
+	}:failure);
+};
+var thx_promise_PromiseTuple5 = function() { };
+thx_promise_PromiseTuple5.__name__ = ["thx","promise","PromiseTuple5"];
+thx_promise_PromiseTuple5.join = function(p1,p2) {
+	return thx_promise__$Promise_Promise_$Impl_$.create(function(resolve,reject) {
+		thx_promise__$Promise_Promise_$Impl_$.either(thx_promise_Promises.join(p1,p2),function(t) {
+			resolve((function($this) {
+				var $r;
+				var this1 = t._0;
+				$r = { _0 : this1._0, _1 : this1._1, _2 : this1._2, _3 : this1._3, _4 : this1._4, _5 : t._1};
+				return $r;
+			}(this)));
+		},function(e) {
+			reject(e);
+		});
+	});
+};
+thx_promise_PromiseTuple5.mapTuplePromise = function(promise,success) {
+	return thx_promise__$Promise_Promise_$Impl_$.mapSuccessPromise(promise,function(t) {
+		return success(t._0,t._1,t._2,t._3,t._4);
+	});
+};
+thx_promise_PromiseTuple5.mapTuple = function(promise,success) {
+	return thx_promise__$Promise_Promise_$Impl_$.mapSuccess(promise,function(t) {
+		return success(t._0,t._1,t._2,t._3,t._4);
+	});
+};
+thx_promise_PromiseTuple5.tuple = function(promise,success,failure) {
+	return thx_promise__$Promise_Promise_$Impl_$.either(promise,function(t) {
+		success(t._0,t._1,t._2,t._3,t._4);
+	},null == failure?function(_) {
+	}:failure);
+};
+var thx_promise_PromiseTuple4 = function() { };
+thx_promise_PromiseTuple4.__name__ = ["thx","promise","PromiseTuple4"];
+thx_promise_PromiseTuple4.join = function(p1,p2) {
+	return thx_promise__$Promise_Promise_$Impl_$.create(function(resolve,reject) {
+		thx_promise__$Promise_Promise_$Impl_$.either(thx_promise_Promises.join(p1,p2),function(t) {
+			resolve((function($this) {
+				var $r;
+				var this1 = t._0;
+				$r = { _0 : this1._0, _1 : this1._1, _2 : this1._2, _3 : this1._3, _4 : t._1};
+				return $r;
+			}(this)));
+		},function(e) {
+			reject(e);
+		});
+	});
+};
+thx_promise_PromiseTuple4.mapTuplePromise = function(promise,success) {
+	return thx_promise__$Promise_Promise_$Impl_$.mapSuccessPromise(promise,function(t) {
+		return success(t._0,t._1,t._2,t._3);
+	});
+};
+thx_promise_PromiseTuple4.mapTuple = function(promise,success) {
+	return thx_promise__$Promise_Promise_$Impl_$.mapSuccess(promise,function(t) {
+		return success(t._0,t._1,t._2,t._3);
+	});
+};
+thx_promise_PromiseTuple4.tuple = function(promise,success,failure) {
+	return thx_promise__$Promise_Promise_$Impl_$.either(promise,function(t) {
+		success(t._0,t._1,t._2,t._3);
+	},null == failure?function(_) {
+	}:failure);
+};
+var thx_promise_PromiseTuple3 = function() { };
+thx_promise_PromiseTuple3.__name__ = ["thx","promise","PromiseTuple3"];
+thx_promise_PromiseTuple3.join = function(p1,p2) {
+	return thx_promise__$Promise_Promise_$Impl_$.create(function(resolve,reject) {
+		thx_promise__$Promise_Promise_$Impl_$.either(thx_promise_Promises.join(p1,p2),function(t) {
+			resolve((function($this) {
+				var $r;
+				var this1 = t._0;
+				$r = { _0 : this1._0, _1 : this1._1, _2 : this1._2, _3 : t._1};
+				return $r;
+			}(this)));
+		},function(e) {
+			reject(e);
+		});
+	});
+};
+thx_promise_PromiseTuple3.mapTuplePromise = function(promise,success) {
+	return thx_promise__$Promise_Promise_$Impl_$.mapSuccessPromise(promise,function(t) {
+		return success(t._0,t._1,t._2);
+	});
+};
+thx_promise_PromiseTuple3.mapTuple = function(promise,success) {
+	return thx_promise__$Promise_Promise_$Impl_$.mapSuccess(promise,function(t) {
+		return success(t._0,t._1,t._2);
+	});
+};
+thx_promise_PromiseTuple3.tuple = function(promise,success,failure) {
+	return thx_promise__$Promise_Promise_$Impl_$.either(promise,function(t) {
+		success(t._0,t._1,t._2);
+	},null == failure?function(_) {
+	}:failure);
+};
+var thx_promise_PromiseTuple2 = function() { };
+thx_promise_PromiseTuple2.__name__ = ["thx","promise","PromiseTuple2"];
+thx_promise_PromiseTuple2.join = function(p1,p2) {
+	return thx_promise__$Promise_Promise_$Impl_$.create(function(resolve,reject) {
+		thx_promise__$Promise_Promise_$Impl_$.either(thx_promise_Promises.join(p1,p2),function(t) {
+			resolve((function($this) {
+				var $r;
+				var this1 = t._0;
+				$r = { _0 : this1._0, _1 : this1._1, _2 : t._1};
+				return $r;
+			}(this)));
+		},function(e) {
+			reject(e);
+		});
+	});
+};
+thx_promise_PromiseTuple2.mapTuplePromise = function(promise,success) {
+	return thx_promise__$Promise_Promise_$Impl_$.mapSuccessPromise(promise,function(t) {
+		return success(t._0,t._1);
+	});
+};
+thx_promise_PromiseTuple2.mapTuple = function(promise,success) {
+	return thx_promise__$Promise_Promise_$Impl_$.mapSuccess(promise,function(t) {
+		return success(t._0,t._1);
+	});
+};
+thx_promise_PromiseTuple2.tuple = function(promise,success,failure) {
+	return thx_promise__$Promise_Promise_$Impl_$.either(promise,function(t) {
+		success(t._0,t._1);
+	},null == failure?function(_) {
+	}:failure);
+};
+var thx_promise_PromiseNil = function() { };
+thx_promise_PromiseNil.__name__ = ["thx","promise","PromiseNil"];
+thx_promise_PromiseNil.join = function(p1,p2) {
+	return thx_promise__$Promise_Promise_$Impl_$.create(function(resolve,reject) {
+		thx_promise__$Promise_Promise_$Impl_$.either(thx_promise_Promises.join(p1,p2),function(t) {
+			resolve(t._1);
+		},function(e) {
+			reject(e);
+		});
+	});
+};
+thx_promise_PromiseNil.nil = function(p) {
+	return thx_promise__$Promise_Promise_$Impl_$.create(function(resolve,reject) {
+		thx_promise__$Promise_Promise_$Impl_$.failure(thx_promise__$Promise_Promise_$Impl_$.success(p,function(_) {
+			resolve(thx_Nil.nil);
+		}),reject);
+	});
+};
+var thx_promise_PromiseAPlus = function() { };
+thx_promise_PromiseAPlus.__name__ = ["thx","promise","PromiseAPlus"];
+thx_promise_PromiseAPlus.promise = function(p) {
+	return thx_promise__$Promise_Promise_$Impl_$.create(function(resolve,reject) {
+		p.then(resolve,function(e) {
+			reject(thx_Error.fromDynamic(e,{ fileName : "Promise.hx", lineNumber : 352, className : "thx.promise.PromiseAPlus", methodName : "promise"}));
+		});
+	});
+};
+thx_promise_PromiseAPlus.aPlus = function(p) {
+	return new Promise(function(resolve,reject) {
+		thx_promise__$Promise_Promise_$Impl_$.failure(thx_promise__$Promise_Promise_$Impl_$.success(p,resolve),reject);
+	});
+};
+var thx_promise_PromiseAPlusVoid = function() { };
+thx_promise_PromiseAPlusVoid.__name__ = ["thx","promise","PromiseAPlusVoid"];
+thx_promise_PromiseAPlusVoid.promise = function(p) {
+	return thx_promise__$Promise_Promise_$Impl_$.create(function(resolve,reject) {
+		p.then(function() {
+			resolve(thx_Nil.nil);
+		},function(e) {
+			reject(thx_Error.fromDynamic(e,{ fileName : "Promise.hx", lineNumber : 364, className : "thx.promise.PromiseAPlusVoid", methodName : "promise"}));
+		});
+	});
+};
+thx_promise_PromiseAPlusVoid.aPlus = function(p) {
+	return new Promise(function(resolve,reject) {
+		thx_promise__$Promise_Promise_$Impl_$.failure(thx_promise__$Promise_Promise_$Impl_$.success(p,function() {
+			resolve(thx_Nil.nil);
+		}),reject);
+	});
+};
+var thx_promise_Timer = function() { };
+thx_promise_Timer.__name__ = ["thx","promise","Timer"];
+thx_promise_Timer.delay = function(delayms) {
+	return thx_promise_Timer.delayValue(thx_Nil.nil,delayms);
+};
+thx_promise_Timer.delayValue = function(value,delayms) {
+	return thx_promise_Future.create(function(callback) {
+		thx_Timer.delay((function(f,a1) {
+			return function() {
+				f(a1);
+			};
+		})(callback,value),delayms);
+	});
+};
+thx_promise_Timer.immediate = function() {
+	return thx_promise_Timer.immediateValue(thx_Nil.nil);
+};
+thx_promise_Timer.immediateValue = function(value) {
+	return thx_promise_Future.create(function(callback) {
+		thx_Timer.immediate((function(f,a1) {
+			return function() {
+				f(a1);
+			};
+		})(callback,value));
+	});
+};
+var thx_stream_Emitter = function(init) {
+	this.init = init;
+};
+thx_stream_Emitter.__name__ = ["thx","stream","Emitter"];
+thx_stream_Emitter.prototype = {
+	init: null
+	,feed: function(value) {
+		var stream = new thx_stream_Stream(null);
+		stream.subscriber = function(r) {
+			switch(r[1]) {
+			case 0:
+				var v = r[2];
+				value.set(v);
+				break;
+			case 1:
+				var c = r[2];
+				if(c) stream.cancel(); else stream.end();
+				break;
+			}
+		};
+		value.upStreams.push(stream);
+		stream.addCleanUp(function() {
+			HxOverrides.remove(value.upStreams,stream);
+		});
+		this.init(stream);
+		return stream;
+	}
+	,plug: function(bus) {
+		var stream = new thx_stream_Stream(null);
+		stream.subscriber = $bind(bus,bus.emit);
+		bus.upStreams.push(stream);
+		stream.addCleanUp(function() {
+			HxOverrides.remove(bus.upStreams,stream);
+		});
+		this.init(stream);
+		return stream;
+	}
+	,sign: function(subscriber) {
+		var stream = new thx_stream_Stream(subscriber);
+		this.init(stream);
+		return stream;
+	}
+	,subscribe: function(pulse,end) {
+		if(null != pulse) pulse = pulse; else pulse = function(_) {
+		};
+		if(null != end) end = end; else end = function(_1) {
+		};
+		var stream = new thx_stream_Stream(function(r) {
+			switch(r[1]) {
+			case 0:
+				var v = r[2];
+				pulse(v);
+				break;
+			case 1:
+				var c = r[2];
+				end(c);
+				break;
+			}
+		});
+		this.init(stream);
+		return stream;
+	}
+	,concat: function(other) {
+		var _g = this;
+		return new thx_stream_Emitter(function(stream) {
+			_g.init(new thx_stream_Stream(function(r) {
+				switch(r[1]) {
+				case 0:
+					var v = r[2];
+					stream.pulse(v);
+					break;
+				case 1:
+					switch(r[2]) {
+					case true:
+						stream.cancel();
+						break;
+					case false:
+						other.init(stream);
+						break;
+					}
+					break;
+				}
+			}));
+		});
+	}
+	,count: function() {
+		return this.map((function() {
+			var c = 0;
+			return function(_) {
+				return ++c;
+			};
+		})());
+	}
+	,debounce: function(delay) {
+		var _g = this;
+		return new thx_stream_Emitter(function(stream) {
+			var cancel = function() {
+			};
+			stream.addCleanUp(function() {
+				cancel();
+			});
+			_g.init(new thx_stream_Stream(function(r) {
+				switch(r[1]) {
+				case 0:
+					var v = r[2];
+					cancel();
+					cancel = thx_Timer.delay((function(f,v1) {
+						return function() {
+							f(v1);
+						};
+					})($bind(stream,stream.pulse),v),delay);
+					break;
+				case 1:
+					switch(r[2]) {
+					case true:
+						stream.cancel();
+						break;
+					case false:
+						thx_Timer.delay($bind(stream,stream.end),delay);
+						break;
+					}
+					break;
+				}
+			}));
+		});
+	}
+	,delay: function(time) {
+		var _g = this;
+		return new thx_stream_Emitter(function(stream) {
+			var cancel = thx_Timer.delay(function() {
+				_g.init(stream);
+			},time);
+			stream.addCleanUp(cancel);
+		});
+	}
+	,diff: function(init,f) {
+		return this.window(2,null != init).map(function(a) {
+			if(a.length == 1) return f(init,a[0]); else return f(a[0],a[1]);
+		});
+	}
+	,merge: function(other) {
+		var _g = this;
+		return new thx_stream_Emitter(function(stream) {
+			_g.init(stream);
+			other.init(stream);
+		});
+	}
+	,previous: function() {
+		var _g = this;
+		return new thx_stream_Emitter(function(stream) {
+			var value = null;
+			var first = true;
+			var pulse = function() {
+				if(first) {
+					first = false;
+					return;
+				}
+				stream.pulse(value);
+			};
+			_g.init(new thx_stream_Stream(function(r) {
+				switch(r[1]) {
+				case 0:
+					var v = r[2];
+					pulse();
+					value = v;
+					break;
+				case 1:
+					switch(r[2]) {
+					case true:
+						stream.cancel();
+						break;
+					case false:
+						stream.end();
+						break;
+					}
+					break;
+				}
+			}));
+		});
+	}
+	,reduce: function(acc,f) {
+		var _g = this;
+		return new thx_stream_Emitter(function(stream) {
+			_g.init(new thx_stream_Stream(function(r) {
+				switch(r[1]) {
+				case 0:
+					var v = r[2];
+					acc = f(acc,v);
+					stream.pulse(acc);
+					break;
+				case 1:
+					switch(r[2]) {
+					case true:
+						stream.cancel();
+						break;
+					case false:
+						stream.end();
+						break;
+					}
+					break;
+				}
+			}));
+		});
+	}
+	,window: function(size,emitWithLess) {
+		if(emitWithLess == null) emitWithLess = false;
+		var _g = this;
+		return new thx_stream_Emitter(function(stream) {
+			var buf = [];
+			var pulse = function() {
+				if(buf.length > size) buf.shift();
+				if(buf.length == size || emitWithLess) stream.pulse(buf.slice());
+			};
+			_g.init(new thx_stream_Stream(function(r) {
+				switch(r[1]) {
+				case 0:
+					var v = r[2];
+					buf.push(v);
+					pulse();
+					break;
+				case 1:
+					switch(r[2]) {
+					case true:
+						stream.cancel();
+						break;
+					case false:
+						stream.end();
+						break;
+					}
+					break;
+				}
+			}));
+		});
+	}
+	,map: function(f) {
+		return this.mapFuture(function(v) {
+			return thx_promise_Future.value(f(v));
+		});
+	}
+	,mapFuture: function(f) {
+		var _g = this;
+		return new thx_stream_Emitter(function(stream) {
+			var queue = [];
+			var pos = 0;
+			var poll = function() {
+				while(queue[pos] != null) {
+					var r = queue[pos];
+					queue[pos++] = null;
+					switch(r[1]) {
+					case 0:
+						var v = r[2];
+						stream.pulse(v);
+						break;
+					case 1:
+						switch(r[2]) {
+						case true:
+							stream.cancel();
+							break;
+						case false:
+							stream.end();
+							break;
+						}
+						break;
+					}
+				}
+			};
+			var resolve = function(r1) {
+				switch(r1[1]) {
+				case 0:
+					var v1 = r1[2];
+					var index = queue.length;
+					queue.push(null);
+					f(v1).then(function(o) {
+						queue[index] = thx_stream_StreamValue.Pulse(o);
+						poll();
+					});
+					break;
+				case 1:
+					var c = r1[2];
+					queue.push(thx_stream_StreamValue.End(c));
+					poll();
+					break;
+				}
+			};
+			_g.init(new thx_stream_Stream(resolve));
+		});
+	}
+	,mapPromise: function(f) {
+		return this.mapFuture(function(v) {
+			return thx_promise_Future.create(function(resolve) {
+				thx_promise__$Promise_Promise_$Impl_$.throwFailure(thx_promise__$Promise_Promise_$Impl_$.success(f(v),resolve));
+			});
+		});
+	}
+	,toOption: function() {
+		return this.map(function(v) {
+			if(null == v) return haxe_ds_Option.None; else return haxe_ds_Option.Some(v);
+		});
+	}
+	,toNil: function() {
+		return this.map(function(_) {
+			return thx_Nil.nil;
+		});
+	}
+	,toTrue: function() {
+		return this.map(function(_) {
+			return true;
+		});
+	}
+	,toFalse: function() {
+		return this.map(function(_) {
+			return false;
+		});
+	}
+	,toValue: function(value) {
+		return this.map(function(_) {
+			return value;
+		});
+	}
+	,filter: function(f) {
+		return this.filterFuture(function(v) {
+			return thx_promise_Future.value(f(v));
+		});
+	}
+	,filterFuture: function(f) {
+		var _g = this;
+		return new thx_stream_Emitter(function(stream) {
+			var queue = [];
+			var pos = 0;
+			var poll = function() {
+				while(queue[pos] != null) {
+					var r = queue[pos];
+					queue[pos++] = null;
+					switch(r[1]) {
+					case 0:
+						switch(r[2][1]) {
+						case 0:
+							var v = r[2][2];
+							stream.pulse(v);
+							break;
+						case 1:
+							switch(r[2][2]) {
+							case true:
+								stream.cancel();
+								break;
+							case false:
+								stream.end();
+								break;
+							}
+							break;
+						}
+						break;
+					case 1:
+						break;
+					}
+				}
+			};
+			var resolve = function(r1) {
+				{
+					var other = r1;
+					switch(r1[1]) {
+					case 0:
+						var v1 = r1[2];
+						var index = queue.length;
+						queue.push(null);
+						f(v1).then(function(c) {
+							if(c) queue[index] = haxe_ds_Option.Some(r1); else queue[index] = haxe_ds_Option.None;
+							poll();
+						});
+						break;
+					default:
+						queue.push(haxe_ds_Option.Some(other));
+						poll();
+					}
+				}
+			};
+			_g.init(new thx_stream_Stream(resolve));
+		});
+	}
+	,filterPromise: function(f) {
+		return this.filterFuture(function(v) {
+			return thx_promise_Future.create(function(resolve) {
+				thx_promise__$Promise_Promise_$Impl_$.throwFailure(thx_promise__$Promise_Promise_$Impl_$.success(f(v),resolve));
+			});
+		});
+	}
+	,first: function() {
+		return this.take(1);
+	}
+	,distinct: function(equals) {
+		if(null == equals) equals = function(a,b) {
+			return a == b;
+		};
+		var last = null;
+		return this.filter(function(v) {
+			if(equals(v,last)) return false; else {
+				last = v;
+				return true;
+			}
+		});
+	}
+	,last: function() {
+		var _g = this;
+		return new thx_stream_Emitter(function(stream) {
+			var last = null;
+			_g.init(new thx_stream_Stream(function(r) {
+				switch(r[1]) {
+				case 0:
+					var v = r[2];
+					last = v;
+					break;
+				case 1:
+					switch(r[2]) {
+					case true:
+						stream.cancel();
+						break;
+					case false:
+						stream.pulse(last);
+						stream.end();
+						break;
+					}
+					break;
+				}
+			}));
+		});
+	}
+	,memberOf: function(arr,equality) {
+		return this.filter(function(v) {
+			return thx_Arrays.contains(arr,v,equality);
+		});
+	}
+	,notNull: function() {
+		return this.filter(function(v) {
+			return v != null;
+		});
+	}
+	,skip: function(n) {
+		return this.skipUntil((function() {
+			var count = 0;
+			return function(_) {
+				return count++ < n;
+			};
+		})());
+	}
+	,skipUntil: function(predicate) {
+		return this.filter((function() {
+			var flag = false;
+			return function(v) {
+				if(flag) return true;
+				if(predicate(v)) return false;
+				return flag = true;
+			};
+		})());
+	}
+	,take: function(count) {
+		return this.takeUntil((function(counter) {
+			return function(_) {
+				return counter++ < count;
+			};
+		})(0));
+	}
+	,takeAt: function(index) {
+		return this.take(index + 1).last();
+	}
+	,takeLast: function(n) {
+		return thx_stream_EmitterArrays.flatten(this.window(n).last());
+	}
+	,takeUntil: function(f) {
+		var _g = this;
+		return new thx_stream_Emitter(function(stream) {
+			var instream = null;
+			instream = new thx_stream_Stream(function(r) {
+				switch(r[1]) {
+				case 0:
+					var v = r[2];
+					if(f(v)) stream.pulse(v); else {
+						instream.end();
+						stream.end();
+					}
+					break;
+				case 1:
+					switch(r[2]) {
+					case true:
+						instream.cancel();
+						stream.cancel();
+						break;
+					case false:
+						instream.end();
+						stream.end();
+						break;
+					}
+					break;
+				}
+			});
+			_g.init(instream);
+		});
+	}
+	,withValue: function(expected) {
+		return this.filter(function(v) {
+			return v == expected;
+		});
+	}
+	,pair: function(other) {
+		var _g = this;
+		return new thx_stream_Emitter(function(stream) {
+			var _0 = null;
+			var _1 = null;
+			stream.addCleanUp(function() {
+				_0 = null;
+				_1 = null;
+			});
+			var pulse = function() {
+				if(null == _0 || null == _1) return;
+				stream.pulse({ _0 : _0, _1 : _1});
+			};
+			_g.init(new thx_stream_Stream(function(r) {
+				switch(r[1]) {
+				case 0:
+					var v = r[2];
+					_0 = v;
+					pulse();
+					break;
+				case 1:
+					switch(r[2]) {
+					case true:
+						stream.cancel();
+						break;
+					case false:
+						stream.end();
+						break;
+					}
+					break;
+				}
+			}));
+			other.init(new thx_stream_Stream(function(r1) {
+				switch(r1[1]) {
+				case 0:
+					var v1 = r1[2];
+					_1 = v1;
+					pulse();
+					break;
+				case 1:
+					switch(r1[2]) {
+					case true:
+						stream.cancel();
+						break;
+					case false:
+						stream.end();
+						break;
+					}
+					break;
+				}
+			}));
+		});
+	}
+	,sampleBy: function(sampler) {
+		var _g = this;
+		return new thx_stream_Emitter(function(stream) {
+			var _0 = null;
+			var _1 = null;
+			stream.addCleanUp(function() {
+				_0 = null;
+				_1 = null;
+			});
+			var pulse = function() {
+				if(null == _0 || null == _1) return;
+				stream.pulse({ _0 : _0, _1 : _1});
+			};
+			_g.init(new thx_stream_Stream(function(r) {
+				switch(r[1]) {
+				case 0:
+					var v = r[2];
+					_0 = v;
+					break;
+				case 1:
+					switch(r[2]) {
+					case true:
+						stream.cancel();
+						break;
+					case false:
+						stream.end();
+						break;
+					}
+					break;
+				}
+			}));
+			sampler.init(new thx_stream_Stream(function(r1) {
+				switch(r1[1]) {
+				case 0:
+					var v1 = r1[2];
+					_1 = v1;
+					pulse();
+					break;
+				case 1:
+					switch(r1[2]) {
+					case true:
+						stream.cancel();
+						break;
+					case false:
+						stream.end();
+						break;
+					}
+					break;
+				}
+			}));
+		});
+	}
+	,samplerOf: function(sampled) {
+		return sampled.sampleBy(this).map(function(t) {
+			return { _0 : t._1, _1 : t._0};
+		});
+	}
+	,zip: function(other) {
+		var _g = this;
+		return new thx_stream_Emitter(function(stream) {
+			var _0 = [];
+			var _1 = [];
+			stream.addCleanUp(function() {
+				_0 = null;
+				_1 = null;
+			});
+			var pulse = function() {
+				if(_0.length == 0 || _1.length == 0) return;
+				stream.pulse((function($this) {
+					var $r;
+					var _01 = _0.shift();
+					var _11 = _1.shift();
+					$r = { _0 : _01, _1 : _11};
+					return $r;
+				}(this)));
+			};
+			_g.init(new thx_stream_Stream(function(r) {
+				switch(r[1]) {
+				case 0:
+					var v = r[2];
+					_0.push(v);
+					pulse();
+					break;
+				case 1:
+					switch(r[2]) {
+					case true:
+						stream.cancel();
+						break;
+					case false:
+						stream.end();
+						break;
+					}
+					break;
+				}
+			}));
+			other.init(new thx_stream_Stream(function(r1) {
+				switch(r1[1]) {
+				case 0:
+					var v1 = r1[2];
+					_1.push(v1);
+					pulse();
+					break;
+				case 1:
+					switch(r1[2]) {
+					case true:
+						stream.cancel();
+						break;
+					case false:
+						stream.end();
+						break;
+					}
+					break;
+				}
+			}));
+		});
+	}
+	,audit: function(handler) {
+		return this.map(function(v) {
+			handler(v);
+			return v;
+		});
+	}
+	,log: function(prefix,posInfo) {
+		if(prefix == null) prefix = ""; else prefix = "" + prefix + ": ";
+		return this.map(function(v) {
+			haxe_Log.trace("" + prefix + Std.string(v),posInfo);
+			return v;
+		});
+	}
+	,split: function() {
+		var _g = this;
+		var inited = false;
+		var streams = [];
+		var init = function(stream) {
+			streams.push(stream);
+			if(!inited) {
+				inited = true;
+				thx_Timer.immediate(function() {
+					_g.init(new thx_stream_Stream(function(r) {
+						switch(r[1]) {
+						case 0:
+							var v = r[2];
+							var _g1 = 0;
+							while(_g1 < streams.length) {
+								var s = streams[_g1];
+								++_g1;
+								s.pulse(v);
+							}
+							break;
+						case 1:
+							switch(r[2]) {
+							case true:
+								var _g11 = 0;
+								while(_g11 < streams.length) {
+									var s1 = streams[_g11];
+									++_g11;
+									s1.cancel();
+								}
+								break;
+							case false:
+								var _g12 = 0;
+								while(_g12 < streams.length) {
+									var s2 = streams[_g12];
+									++_g12;
+									s2.end();
+								}
+								break;
+							}
+							break;
+						}
+					}));
+				});
+			}
+		};
+		var _0 = new thx_stream_Emitter(init);
+		var _1 = new thx_stream_Emitter(init);
+		return { _0 : _0, _1 : _1};
+	}
+	,__class__: thx_stream_Emitter
+};
+var thx_stream_Bus = function(distinctValuesOnly,equal) {
+	if(distinctValuesOnly == null) distinctValuesOnly = false;
+	var _g = this;
+	this.distinctValuesOnly = distinctValuesOnly;
+	if(null == equal) this.equal = function(a,b) {
+		return a == b;
+	}; else this.equal = equal;
+	this.downStreams = [];
+	this.upStreams = [];
+	thx_stream_Emitter.call(this,function(stream) {
+		_g.downStreams.push(stream);
+		stream.addCleanUp(function() {
+			HxOverrides.remove(_g.downStreams,stream);
+		});
+	});
+};
+thx_stream_Bus.__name__ = ["thx","stream","Bus"];
+thx_stream_Bus.__super__ = thx_stream_Emitter;
+thx_stream_Bus.prototype = $extend(thx_stream_Emitter.prototype,{
+	downStreams: null
+	,upStreams: null
+	,distinctValuesOnly: null
+	,equal: null
+	,value: null
+	,cancel: function() {
+		this.emit(thx_stream_StreamValue.End(true));
+	}
+	,clear: function() {
+		this.clearEmitters();
+		this.clearStreams();
+	}
+	,clearStreams: function() {
+		var _g = 0;
+		var _g1 = this.downStreams.slice();
+		while(_g < _g1.length) {
+			var stream = _g1[_g];
+			++_g;
+			stream.end();
+		}
+	}
+	,clearEmitters: function() {
+		var _g = 0;
+		var _g1 = this.upStreams.slice();
+		while(_g < _g1.length) {
+			var stream = _g1[_g];
+			++_g;
+			stream.cancel();
+		}
+	}
+	,emit: function(value) {
+		switch(value[1]) {
+		case 0:
+			var v = value[2];
+			if(this.distinctValuesOnly) {
+				if(this.equal(v,this.value)) return;
+				this.value = v;
+			}
+			var _g = 0;
+			var _g1 = this.downStreams.slice();
+			while(_g < _g1.length) {
+				var stream = _g1[_g];
+				++_g;
+				stream.pulse(v);
+			}
+			break;
+		case 1:
+			switch(value[2]) {
+			case true:
+				var _g2 = 0;
+				var _g11 = this.downStreams.slice();
+				while(_g2 < _g11.length) {
+					var stream1 = _g11[_g2];
+					++_g2;
+					stream1.cancel();
+				}
+				break;
+			case false:
+				var _g3 = 0;
+				var _g12 = this.downStreams.slice();
+				while(_g3 < _g12.length) {
+					var stream2 = _g12[_g3];
+					++_g3;
+					stream2.end();
+				}
+				break;
+			}
+			break;
+		}
+	}
+	,end: function() {
+		this.emit(thx_stream_StreamValue.End(false));
+	}
+	,pulse: function(value) {
+		this.emit(thx_stream_StreamValue.Pulse(value));
+	}
+	,__class__: thx_stream_Bus
+});
+var thx_stream_EagerEmitter = function(init) {
+	var _g = this;
+	thx_stream_Emitter.call(this,init);
+	this.stack = [];
+	this.conclusion = -1;
+	this.subscribe(function(p) {
+		_g.stack.push(p);
+	},function(c) {
+		if(c) _g.conclusion = 1; else _g.conclusion = 0;
+	});
+};
+thx_stream_EagerEmitter.__name__ = ["thx","stream","EagerEmitter"];
+thx_stream_EagerEmitter.__super__ = thx_stream_Emitter;
+thx_stream_EagerEmitter.prototype = $extend(thx_stream_Emitter.prototype,{
+	stack: null
+	,conclusion: null
+	,sign: function(subscriber) {
+		var stream = thx_stream_Emitter.prototype.sign.call(this,subscriber);
+		var _g = 0;
+		var _g1 = this.stack;
+		while(_g < _g1.length) {
+			var v = _g1[_g];
+			++_g;
+			subscriber(thx_stream_StreamValue.Pulse(v));
+		}
+		if(this.conclusion >= 0) subscriber(thx_stream_StreamValue.End(this.conclusion == 1));
+		return stream;
+	}
+	,__class__: thx_stream_EagerEmitter
+});
+var thx_stream_Emitters = function() { };
+thx_stream_Emitters.__name__ = ["thx","stream","Emitters"];
+thx_stream_Emitters.skipNull = function(emitter) {
+	return emitter.filter(function(value) {
+		return null != value;
+	});
+};
+thx_stream_Emitters.unique = function(emitter) {
+	return emitter.filter((function() {
+		var buf = [];
+		return function(v) {
+			if(HxOverrides.indexOf(buf,v,0) >= 0) return false; else {
+				buf.push(v);
+				return true;
+			}
+		};
+	})());
+};
+thx_stream_Emitters.toPromise = function(emitter) {
+	return thx_promise__$Promise_Promise_$Impl_$.create(function(resolve,reject) {
+		var arr = [];
+		emitter.subscribe($arrayPushClosure(arr),function(c) {
+			if(c) reject(new thx_Error("stream has been canceled",null,{ fileName : "Emitter.hx", lineNumber : 545, className : "thx.stream.Emitters", methodName : "toPromise"})); else resolve(arr);
+		});
+	});
+};
+var thx_stream_EmitterBytes = function() { };
+thx_stream_EmitterBytes.__name__ = ["thx","stream","EmitterBytes"];
+thx_stream_EmitterBytes.toPromise = function(emitter) {
+	return thx_promise__$Promise_Promise_$Impl_$.create(function(resolve,reject) {
+		var buf = haxe_io_Bytes.alloc(0);
+		emitter.subscribe(function(b) {
+			var nbuf = haxe_io_Bytes.alloc(buf.length + b.length);
+			nbuf.blit(0,buf,0,buf.length);
+			nbuf.blit(buf.length,b,0,b.length);
+			buf = nbuf;
+		},function(cancel) {
+			if(cancel) reject(new thx_Error("Data stream has been cancelled",null,{ fileName : "Emitter.hx", lineNumber : 564, className : "thx.stream.EmitterBytes", methodName : "toPromise"})); else resolve(buf);
+		});
+	});
+};
+var thx_stream_EmitterStrings = function() { };
+thx_stream_EmitterStrings.__name__ = ["thx","stream","EmitterStrings"];
+thx_stream_EmitterStrings.match = function(emitter,pattern) {
+	return emitter.filter(function(s) {
+		return pattern.match(s);
+	});
+};
+thx_stream_EmitterStrings.toBool = function(emitter) {
+	return emitter.map(function(s) {
+		return s != null && s != "";
+	});
+};
+thx_stream_EmitterStrings.truthy = function(emitter) {
+	return emitter.filter(function(s) {
+		return s != null && s != "";
+	});
+};
+thx_stream_EmitterStrings.unique = function(emitter) {
+	return emitter.filter((function() {
+		var buf = new haxe_ds_StringMap();
+		return function(v) {
+			if(__map_reserved[v] != null?buf.existsReserved(v):buf.h.hasOwnProperty(v)) return false; else {
+				if(__map_reserved[v] != null) buf.setReserved(v,true); else buf.h[v] = true;
+				return true;
+			}
+		};
+	})());
+};
+thx_stream_EmitterStrings.join = function(emitter,sep) {
+	return emitter.reduce("",function(acc,v) {
+		return acc + sep + v;
+	});
+};
+thx_stream_EmitterStrings.filterEmpty = function(emitter) {
+	return emitter.filter(function(v) {
+		return !thx_Strings.isEmpty(v);
+	});
+};
+var thx_stream_EmitterInts = function() { };
+thx_stream_EmitterInts.__name__ = ["thx","stream","EmitterInts"];
+thx_stream_EmitterInts.average = function(emitter) {
+	return emitter.map((function() {
+		var sum = 0.0;
+		var count = 0;
+		return function(v) {
+			return (sum += v) / ++count;
+		};
+	})());
+};
+thx_stream_EmitterInts.greaterThan = function(emitter,x) {
+	return emitter.filter(function(v) {
+		return v > x;
+	});
+};
+thx_stream_EmitterInts.greaterThanOrEqualTo = function(emitter,x) {
+	return emitter.filter(function(v) {
+		return v >= x;
+	});
+};
+thx_stream_EmitterInts.inRange = function(emitter,min,max) {
+	return emitter.filter(function(v) {
+		return v <= max && v >= min;
+	});
+};
+thx_stream_EmitterInts.insideRange = function(emitter,min,max) {
+	return emitter.filter(function(v) {
+		return v < max && v > min;
+	});
+};
+thx_stream_EmitterInts.lessThan = function(emitter,x) {
+	return emitter.filter(function(v) {
+		return v < x;
+	});
+};
+thx_stream_EmitterInts.lessThanOrEqualTo = function(emitter,x) {
+	return emitter.filter(function(v) {
+		return v <= x;
+	});
+};
+thx_stream_EmitterInts.max = function(emitter) {
+	return emitter.filter((function() {
+		var max = null;
+		return function(v) {
+			if(null == max || v > max) {
+				max = v;
+				return true;
+			} else return false;
+		};
+	})());
+};
+thx_stream_EmitterInts.min = function(emitter) {
+	return emitter.filter((function() {
+		var min = null;
+		return function(v) {
+			if(null == min || v < min) {
+				min = v;
+				return true;
+			} else return false;
+		};
+	})());
+};
+thx_stream_EmitterInts.sum = function(emitter) {
+	return emitter.map((function() {
+		var value = 0;
+		return function(v) {
+			return value += v;
+		};
+	})());
+};
+thx_stream_EmitterInts.toBool = function(emitter) {
+	return emitter.map(function(i) {
+		return i != 0;
+	});
+};
+thx_stream_EmitterInts.unique = function(emitter) {
+	return emitter.filter((function() {
+		var buf = new haxe_ds_IntMap();
+		return function(v) {
+			if(buf.h.hasOwnProperty(v)) return false; else {
+				buf.h[v] = true;
+				return true;
+			}
+		};
+	})());
+};
+var thx_stream_EmitterFloats = function() { };
+thx_stream_EmitterFloats.__name__ = ["thx","stream","EmitterFloats"];
+thx_stream_EmitterFloats.average = function(emitter) {
+	return emitter.map((function() {
+		var sum = 0.0;
+		var count = 0;
+		return function(v) {
+			return (sum += v) / ++count;
+		};
+	})());
+};
+thx_stream_EmitterFloats.greaterThan = function(emitter,x) {
+	return emitter.filter(function(v) {
+		return v > x;
+	});
+};
+thx_stream_EmitterFloats.greaterThanOrEqualTo = function(emitter,x) {
+	return emitter.filter(function(v) {
+		return v >= x;
+	});
+};
+thx_stream_EmitterFloats.inRange = function(emitter,min,max) {
+	return emitter.filter(function(v) {
+		return v <= max && v >= min;
+	});
+};
+thx_stream_EmitterFloats.insideRange = function(emitter,min,max) {
+	return emitter.filter(function(v) {
+		return v < max && v > min;
+	});
+};
+thx_stream_EmitterFloats.lessThan = function(emitter,x) {
+	return emitter.filter(function(v) {
+		return v < x;
+	});
+};
+thx_stream_EmitterFloats.lessThanOrEqualTo = function(emitter,x) {
+	return emitter.filter(function(v) {
+		return v <= x;
+	});
+};
+thx_stream_EmitterFloats.max = function(emitter) {
+	return emitter.filter((function() {
+		var max = -Infinity;
+		return function(v) {
+			if(v > max) {
+				max = v;
+				return true;
+			} else return false;
+		};
+	})());
+};
+thx_stream_EmitterFloats.min = function(emitter) {
+	return emitter.filter((function() {
+		var min = Infinity;
+		return function(v) {
+			if(v < min) {
+				min = v;
+				return true;
+			} else return false;
+		};
+	})());
+};
+thx_stream_EmitterFloats.sum = function(emitter) {
+	return emitter.map((function() {
+		var sum = 0.0;
+		return function(v) {
+			return sum += v;
+		};
+	})());
+};
+var thx_stream_EmitterOptions = function() { };
+thx_stream_EmitterOptions.__name__ = ["thx","stream","EmitterOptions"];
+thx_stream_EmitterOptions.either = function(emitter,some,none,end) {
+	if(null == some) some = function(_) {
+	};
+	if(null == none) none = function() {
+	};
+	return emitter.subscribe(function(o) {
+		switch(o[1]) {
+		case 0:
+			var v = o[2];
+			some(v);
+			break;
+		case 1:
+			none();
+			break;
+		}
+	},end);
+};
+thx_stream_EmitterOptions.filterOption = function(emitter) {
+	return emitter.filter(function(opt) {
+		return thx_Options.toBool(opt);
+	}).map(function(opt1) {
+		return thx_Options.get(opt1);
+	});
+};
+thx_stream_EmitterOptions.toBool = function(emitter) {
+	return emitter.map(function(opt) {
+		return thx_Options.toBool(opt);
+	});
+};
+thx_stream_EmitterOptions.toValue = function(emitter) {
+	return emitter.map(function(opt) {
+		return thx_Options.get(opt);
+	});
+};
+var thx_stream_EmitterBools = function() { };
+thx_stream_EmitterBools.__name__ = ["thx","stream","EmitterBools"];
+thx_stream_EmitterBools.negate = function(emitter) {
+	return emitter.map(function(v) {
+		return !v;
+	});
+};
+var thx_stream_EmitterEmitters = function() { };
+thx_stream_EmitterEmitters.__name__ = ["thx","stream","EmitterEmitters"];
+thx_stream_EmitterEmitters.flatMap = function(emitter) {
+	return new thx_stream_Emitter(function(stream) {
+		emitter.init(new thx_stream_Stream(function(r) {
+			switch(r[1]) {
+			case 0:
+				var em = r[2];
+				em.init(stream);
+				break;
+			case 1:
+				switch(r[2]) {
+				case true:
+					stream.cancel();
+					break;
+				case false:
+					stream.end();
+					break;
+				}
+				break;
+			}
+		}));
+	});
+};
+var thx_stream_EmitterArrays = function() { };
+thx_stream_EmitterArrays.__name__ = ["thx","stream","EmitterArrays"];
+thx_stream_EmitterArrays.containerOf = function(emitter,value) {
+	return emitter.filter(function(arr) {
+		return HxOverrides.indexOf(arr,value,0) >= 0;
+	});
+};
+thx_stream_EmitterArrays.flatten = function(emitter) {
+	return new thx_stream_Emitter(function(stream) {
+		emitter.init(new thx_stream_Stream(function(r) {
+			switch(r[1]) {
+			case 0:
+				var arr = r[2];
+				arr.map($bind(stream,stream.pulse));
+				break;
+			case 1:
+				switch(r[2]) {
+				case true:
+					stream.cancel();
+					break;
+				case false:
+					stream.end();
+					break;
+				}
+				break;
+			}
+		}));
+	});
+};
+var thx_stream_EmitterValues = function() { };
+thx_stream_EmitterValues.__name__ = ["thx","stream","EmitterValues"];
+thx_stream_EmitterValues.left = function(emitter) {
+	return emitter.map(function(v) {
+		return v._0;
+	});
+};
+thx_stream_EmitterValues.right = function(emitter) {
+	return emitter.map(function(v) {
+		return v._1;
+	});
+};
+var thx_stream_IStream = function() { };
+thx_stream_IStream.__name__ = ["thx","stream","IStream"];
+thx_stream_IStream.prototype = {
+	cancel: null
+	,__class__: thx_stream_IStream
+};
+var thx_stream_Stream = function(subscriber) {
+	this.subscriber = subscriber;
+	this.cleanUps = [];
+	this.finalized = false;
+	this.canceled = false;
+};
+thx_stream_Stream.__name__ = ["thx","stream","Stream"];
+thx_stream_Stream.__interfaces__ = [thx_stream_IStream];
+thx_stream_Stream.prototype = {
+	subscriber: null
+	,cleanUps: null
+	,finalized: null
+	,canceled: null
+	,addCleanUp: function(f) {
+		this.cleanUps.push(f);
+	}
+	,cancel: function() {
+		this.canceled = true;
+		this.finalize(thx_stream_StreamValue.End(true));
+	}
+	,end: function() {
+		this.finalize(thx_stream_StreamValue.End(false));
+	}
+	,pulse: function(v) {
+		this.subscriber(thx_stream_StreamValue.Pulse(v));
+	}
+	,finalize: function(signal) {
+		if(this.finalized) return;
+		this.finalized = true;
+		while(this.cleanUps.length > 0) (this.cleanUps.shift())();
+		this.subscriber(signal);
+		this.subscriber = function(_) {
+		};
+	}
+	,__class__: thx_stream_Stream
+};
+var thx_stream_StreamValue = { __ename__ : ["thx","stream","StreamValue"], __constructs__ : ["Pulse","End"] };
+thx_stream_StreamValue.Pulse = function(value) { var $x = ["Pulse",0,value]; $x.__enum__ = thx_stream_StreamValue; $x.toString = $estr; return $x; };
+thx_stream_StreamValue.End = function(cancel) { var $x = ["End",1,cancel]; $x.__enum__ = thx_stream_StreamValue; $x.toString = $estr; return $x; };
+var thx_stream_Value = function(value,equals) {
+	var _g = this;
+	if(null == equals) this.equals = thx_Functions.equality; else this.equals = equals;
+	this.value = value;
+	this.downStreams = [];
+	this.upStreams = [];
+	thx_stream_Emitter.call(this,function(stream) {
+		_g.downStreams.push(stream);
+		stream.addCleanUp(function() {
+			HxOverrides.remove(_g.downStreams,stream);
+		});
+		stream.pulse(_g.value);
+	});
+};
+thx_stream_Value.__name__ = ["thx","stream","Value"];
+thx_stream_Value.createOption = function(value,equals) {
+	var def;
+	if(null == value) def = haxe_ds_Option.None; else def = haxe_ds_Option.Some(value);
+	return new thx_stream_Value(def,function(a,b) {
+		return thx_Options.equals(a,b,equals);
+	});
+};
+thx_stream_Value.__super__ = thx_stream_Emitter;
+thx_stream_Value.prototype = $extend(thx_stream_Emitter.prototype,{
+	value: null
+	,downStreams: null
+	,upStreams: null
+	,equals: null
+	,get: function() {
+		return this.value;
+	}
+	,clear: function() {
+		this.clearEmitters();
+		this.clearStreams();
+	}
+	,clearStreams: function() {
+		var _g = 0;
+		var _g1 = this.downStreams.slice();
+		while(_g < _g1.length) {
+			var stream = _g1[_g];
+			++_g;
+			stream.end();
+		}
+	}
+	,clearEmitters: function() {
+		var _g = 0;
+		var _g1 = this.upStreams.slice();
+		while(_g < _g1.length) {
+			var stream = _g1[_g];
+			++_g;
+			stream.cancel();
+		}
+	}
+	,set: function(value) {
+		if(this.equals(this.value,value)) return;
+		this.value = value;
+		this.update();
+	}
+	,update: function() {
+		var _g = 0;
+		var _g1 = this.downStreams.slice();
+		while(_g < _g1.length) {
+			var stream = _g1[_g];
+			++_g;
+			stream.pulse(this.value);
+		}
+	}
+	,__class__: thx_stream_Value
+});
+var thx_stream_dom_Dom = function() { };
+thx_stream_dom_Dom.__name__ = ["thx","stream","dom","Dom"];
+thx_stream_dom_Dom.ready = function() {
+	return thx_promise__$Promise_Promise_$Impl_$.create(function(resolve,_) {
+		window.document.addEventListener("DOMContentLoaded",function(_1) {
+			resolve(thx_Nil.nil);
+		},false);
+	});
+};
+thx_stream_dom_Dom.streamClick = function(el,capture) {
+	if(capture == null) capture = false;
+	return thx_stream_dom_Dom.streamEvent(el,"click",capture);
+};
+thx_stream_dom_Dom.streamEvent = function(el,name,capture) {
+	if(capture == null) capture = false;
+	return new thx_stream_Emitter(function(stream) {
+		el.addEventListener(name,$bind(stream,stream.pulse),capture);
+		stream.addCleanUp(function() {
+			el.removeEventListener(name,$bind(stream,stream.pulse),capture);
+		});
+	});
+};
+thx_stream_dom_Dom.streamFocus = function(el,capture) {
+	if(capture == null) capture = false;
+	return thx_stream_dom_Dom.streamEvent(el,"focus",capture).toTrue().merge(thx_stream_dom_Dom.streamEvent(el,"blur",capture).toFalse());
+};
+thx_stream_dom_Dom.streamKey = function(el,name,capture) {
+	if(capture == null) capture = false;
+	return new thx_stream_Emitter((function($this) {
+		var $r;
+		if(!StringTools.startsWith(name,"key")) name = "key" + name;
+		$r = function(stream) {
+			el.addEventListener(name,$bind(stream,stream.pulse),capture);
+			stream.addCleanUp(function() {
+				el.removeEventListener(name,$bind(stream,stream.pulse),capture);
+			});
+		};
+		return $r;
+	}(this)));
+};
+thx_stream_dom_Dom.streamChecked = function(el,capture) {
+	if(capture == null) capture = false;
+	return thx_stream_dom_Dom.streamEvent(el,"change",capture).map(function(_) {
+		return el.checked;
+	});
+};
+thx_stream_dom_Dom.streamChange = function(el,capture) {
+	if(capture == null) capture = false;
+	return thx_stream_dom_Dom.streamEvent(el,"change",capture).map(function(_) {
+		return el.value;
+	});
+};
+thx_stream_dom_Dom.streamInput = function(el,capture) {
+	if(capture == null) capture = false;
+	return thx_stream_dom_Dom.streamEvent(el,"input",capture).map(function(_) {
+		return el.value;
+	});
+};
+thx_stream_dom_Dom.streamMouseDown = function(el,capture) {
+	if(capture == null) capture = false;
+	return thx_stream_dom_Dom.streamEvent(el,"mousedown",capture);
+};
+thx_stream_dom_Dom.streamMouseEvent = function(el,name,capture) {
+	if(capture == null) capture = false;
+	return thx_stream_dom_Dom.streamEvent(el,name,capture);
+};
+thx_stream_dom_Dom.streamMouseMove = function(el,capture) {
+	if(capture == null) capture = false;
+	return thx_stream_dom_Dom.streamEvent(el,"mousemove",capture);
+};
+thx_stream_dom_Dom.streamMouseUp = function(el,capture) {
+	if(capture == null) capture = false;
+	return thx_stream_dom_Dom.streamEvent(el,"mouseup",capture);
+};
+thx_stream_dom_Dom.subscribeAttribute = function(el,name) {
+	return function(value) {
+		if(null == value) el.removeAttribute(name); else el.setAttribute(name,value);
+	};
+};
+thx_stream_dom_Dom.subscribeFocus = function(el) {
+	return function(focus) {
+		if(focus) el.focus(); else el.blur();
+	};
+};
+thx_stream_dom_Dom.subscribeHTML = function(el) {
+	return function(html) {
+		el.innerHTML = html;
+	};
+};
+thx_stream_dom_Dom.subscribeText = function(el,force) {
+	if(force == null) force = false;
+	return function(text) {
+		if(el.textContent != text || force) el.textContent = text;
+	};
+};
+thx_stream_dom_Dom.subscribeToggleAttribute = function(el,name,value) {
+	if(null == value) value = el.getAttribute(name);
+	return function(on) {
+		if(on) el.setAttribute(name,value); else el.removeAttribute(name);
+	};
+};
+thx_stream_dom_Dom.subscribeToggleClass = function(el,name) {
+	return function(on) {
+		if(on) el.classList.add(name); else el.classList.remove(name);
+	};
+};
+thx_stream_dom_Dom.subscribeSwapClass = function(el,nameOn,nameOff) {
+	return function(on) {
+		if(on) {
+			el.classList.add(nameOn);
+			el.classList.remove(nameOff);
+		} else {
+			el.classList.add(nameOff);
+			el.classList.remove(nameOn);
+		}
+	};
+};
+thx_stream_dom_Dom.subscribeToggleVisibility = function(el) {
+	var originalDisplay = el.style.display;
+	if(originalDisplay == "none") originalDisplay = "";
+	return function(on) {
+		if(on) el.style.display = originalDisplay; else el.style.display = "none";
+	};
+};
 var thx_unit_angle__$BinaryDegree_BinaryDegree_$Impl_$ = {};
 thx_unit_angle__$BinaryDegree_BinaryDegree_$Impl_$.__name__ = ["thx","unit","angle","_BinaryDegree","BinaryDegree_Impl_"];
 thx_unit_angle__$BinaryDegree_BinaryDegree_$Impl_$.fromFloat = function(value) {
@@ -13191,6 +17158,7 @@ thx_unit_angle__$Turn_Turn_$Impl_$.normalizeDirection = function(this1) {
 function $iterator(o) { if( o instanceof Array ) return function() { return HxOverrides.iter(o); }; return typeof(o.iterator) == 'function' ? $bind(o,o.iterator) : o.iterator; }
 var $_, $fid = 0;
 function $bind(o,m) { if( m == null ) return null; if( m.__id__ == null ) m.__id__ = $fid++; var f; if( o.hx__closures__ == null ) o.hx__closures__ = {}; else f = o.hx__closures__[m.__id__]; if( f == null ) { f = function(){ return f.method.apply(f.scope, arguments); }; f.scope = o; f.method = m; o.hx__closures__[m.__id__] = f; } return f; }
+function $arrayPushClosure(a) { return function(x) { a.push(x); }; }
 if(Array.prototype.indexOf) HxOverrides.indexOf = function(a,o,i) {
 	return Array.prototype.indexOf.call(a,o,i);
 };
@@ -13234,6 +17202,7 @@ if(ArrayBuffer.prototype.slice == null) ArrayBuffer.prototype.slice = js_html_co
 var DataView = $global.DataView || js_html_compat_DataView;
 var Uint8Array = $global.Uint8Array || js_html_compat_Uint8Array._new;
 msignal_SlotList.NIL = new msignal_SlotList(null,null);
+dots_Dom.addCss(".sui-control i.sui-icon-remove{background-image:url(\"data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgiPz4NCjwhLS0gR2VuZXJhdG9yOiBBZG9iZSBJbGx1c3RyYXRvciAxNi4wLjAsIFNWRyBFeHBvcnQgUGx1Zy1JbiAuIFNWRyBWZXJzaW9uOiA2LjAwIEJ1aWxkIDApICAtLT4NCjwhRE9DVFlQRSBzdmcgUFVCTElDICItLy9XM0MvL0RURCBTVkcgMS4xLy9FTiIgImh0dHA6Ly93d3cudzMub3JnL0dyYXBoaWNzL1NWRy8xLjEvRFREL3N2ZzExLmR0ZCI+DQo8c3ZnIHZlcnNpb249IjEuMSIgaWQ9IkxheWVyXzEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgeG1sbnM6eGxpbms9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkveGxpbmsiIHg9IjBweCIgeT0iMHB4Ig0KCSB3aWR0aD0iNjRweCIgaGVpZ2h0PSI2NHB4IiB2aWV3Qm94PSIwIDAgNjQgNjQiIGVuYWJsZS1iYWNrZ3JvdW5kPSJuZXcgMCAwIDY0IDY0IiB4bWw6c3BhY2U9InByZXNlcnZlIj4NCjxnIGlkPSJDSVJDTEVfX3gyRl9fTUlOVVNfMV8iIGVuYWJsZS1iYWNrZ3JvdW5kPSJuZXcgICAgIj4NCgk8ZyBpZD0iQ0lSQ0xFX194MkZfX01JTlVTIj4NCgkJPGc+DQoJCQk8cGF0aCBkPSJNNDUsMjlIMTljLTEuNjU3LDAtMywxLjM0My0zLDNzMS4zNDMsMywzLDNoMjZjMS42NTcsMCwzLTEuMzQzLDMtM1M0Ni42NTcsMjksNDUsMjl6IE0zMiwwQzE0LjMyNywwLDAsMTQuMzI3LDAsMzINCgkJCQlzMTQuMzI3LDMyLDMyLDMyczMyLTE0LjMyNywzMi0zMlM0OS42NzMsMCwzMiwweiBNMzIsNThDMTcuNjQxLDU4LDYsNDYuMzU5LDYsMzJDNiwxNy42NCwxNy42NDEsNiwzMiw2DQoJCQkJYzE0LjM1OSwwLDI2LDExLjY0MSwyNiwyNkM1OCw0Ni4zNTksNDYuMzU5LDU4LDMyLDU4eiIvPg0KCQk8L2c+DQoJPC9nPg0KPC9nPg0KPC9zdmc+DQo=\")}.sui-control i.sui-icon-add{background-image:url(\"data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgiPz4NCjwhLS0gR2VuZXJhdG9yOiBBZG9iZSBJbGx1c3RyYXRvciAxNi4wLjAsIFNWRyBFeHBvcnQgUGx1Zy1JbiAuIFNWRyBWZXJzaW9uOiA2LjAwIEJ1aWxkIDApICAtLT4NCjwhRE9DVFlQRSBzdmcgUFVCTElDICItLy9XM0MvL0RURCBTVkcgMS4xLy9FTiIgImh0dHA6Ly93d3cudzMub3JnL0dyYXBoaWNzL1NWRy8xLjEvRFREL3N2ZzExLmR0ZCI+DQo8c3ZnIHZlcnNpb249IjEuMSIgaWQ9IkxheWVyXzEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgeG1sbnM6eGxpbms9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkveGxpbmsiIHg9IjBweCIgeT0iMHB4Ig0KCSB3aWR0aD0iNjRweCIgaGVpZ2h0PSI2NHB4IiB2aWV3Qm94PSIwIDAgNjQgNjQiIGVuYWJsZS1iYWNrZ3JvdW5kPSJuZXcgMCAwIDY0IDY0IiB4bWw6c3BhY2U9InByZXNlcnZlIj4NCjxnIGlkPSJDSVJDTEVfX3gyRl9fUExVU18xXyIgZW5hYmxlLWJhY2tncm91bmQ9Im5ldyAgICAiPg0KCTxnIGlkPSJDSVJDTEVfX3gyRl9fUExVUyI+DQoJCTxnPg0KCQkJPHBhdGggZD0iTTQ1LDI5SDM1VjE5YzAtMS42NTctMS4zNDMtMy0zLTNzLTMsMS4zNDMtMywzdjEwSDE5Yy0xLjY1NywwLTMsMS4zNDMtMywzczEuMzQzLDMsMywzaDEwdjEwYzAsMS42NTcsMS4zNDMsMywzLDMNCgkJCQlzMy0xLjM0MywzLTNWMzVoMTBjMS42NTcsMCwzLTEuMzQzLDMtM1M0Ni42NTcsMjksNDUsMjl6IE0zMiwwQzE0LjMyNywwLDAsMTQuMzI3LDAsMzJzMTQuMzI3LDMyLDMyLDMyczMyLTE0LjMyNywzMi0zMg0KCQkJCVM0OS42NzMsMCwzMiwweiBNMzIsNThDMTcuNjQxLDU4LDYsNDYuMzU5LDYsMzJDNiwxNy42NCwxNy42NDEsNiwzMiw2YzE0LjM1OSwwLDI2LDExLjY0MSwyNiwyNkM1OCw0Ni4zNTksNDYuMzU5LDU4LDMyLDU4eiIvPg0KCQk8L2c+DQoJPC9nPg0KPC9nPg0KPC9zdmc+DQo=\")}.sui-control i.sui-icon-up{background-image:url(\"data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgiPz4NCjwhLS0gR2VuZXJhdG9yOiBBZG9iZSBJbGx1c3RyYXRvciAxNi4wLjAsIFNWRyBFeHBvcnQgUGx1Zy1JbiAuIFNWRyBWZXJzaW9uOiA2LjAwIEJ1aWxkIDApICAtLT4NCjwhRE9DVFlQRSBzdmcgUFVCTElDICItLy9XM0MvL0RURCBTVkcgMS4xLy9FTiIgImh0dHA6Ly93d3cudzMub3JnL0dyYXBoaWNzL1NWRy8xLjEvRFREL3N2ZzExLmR0ZCI+DQo8c3ZnIHZlcnNpb249IjEuMSIgaWQ9IkxheWVyXzEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgeG1sbnM6eGxpbms9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkveGxpbmsiIHg9IjBweCIgeT0iMHB4Ig0KCSB3aWR0aD0iNjRweCIgaGVpZ2h0PSI2NHB4IiB2aWV3Qm94PSIwIDAgNjQgNjQiIGVuYWJsZS1iYWNrZ3JvdW5kPSJuZXcgMCAwIDY0IDY0IiB4bWw6c3BhY2U9InByZXNlcnZlIj4NCjxnIGlkPSJBUlJPV19feDJGX19VUF8xXyIgZW5hYmxlLWJhY2tncm91bmQ9Im5ldyAgICAiPg0KCTxnIGlkPSJBUlJPV19feDJGX19VUCI+DQoJCTxnPg0KCQkJPHBhdGggZD0iTTUyLjE1OSwzOC45MThMNTIuMTU5LDM4LjkxOEwzNC4xNiwyMC45MTdsLTAuMDAxLDAuMDAxQzMzLjYxMywyMC4zNTIsMzIuODQ4LDIwLDMyLDIwYy0wLjAwMiwwLTAuMDA0LDAtMC4wMDcsMA0KCQkJCXMtMC4wMDQsMC0wLjAwNywwYy0wLjg0OCwwLTEuNjEzLDAuMzUyLTIuMTU5LDAuOTE4bC0wLjAwMS0wLjAwMWwtMTgsMThsMC4wMDgsMC4wMDhDMTEuMzE4LDM5LjQ2NCwxMSw0MC4xOTUsMTEsNDENCgkJCQljMCwxLjY1NywxLjM0MywzLDMsM2MwLjkxLDAsMS43MjUtMC40MDYsMi4yNzUtMS4wNDZsMTUuNzE4LTE1LjcxOEw0Ny45MTcsNDMuMTZsMC4wMDEtMC4wMDFDNDguNDU4LDQzLjY4LDQ5LjE5MSw0NCw1MCw0NA0KCQkJCWMxLjY1NywwLDMtMS4zNDMsMy0zQzUzLDQwLjE5MSw1Mi42OCwzOS40NTgsNTIuMTU5LDM4LjkxOHoiLz4NCgkJPC9nPg0KCTwvZz4NCjwvZz4NCjwvc3ZnPg0K\")}.sui-control i.sui-icon-down{background-image:url(\"data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgiPz4NCjwhLS0gR2VuZXJhdG9yOiBBZG9iZSBJbGx1c3RyYXRvciAxNi4wLjAsIFNWRyBFeHBvcnQgUGx1Zy1JbiAuIFNWRyBWZXJzaW9uOiA2LjAwIEJ1aWxkIDApICAtLT4NCjwhRE9DVFlQRSBzdmcgUFVCTElDICItLy9XM0MvL0RURCBTVkcgMS4xLy9FTiIgImh0dHA6Ly93d3cudzMub3JnL0dyYXBoaWNzL1NWRy8xLjEvRFREL3N2ZzExLmR0ZCI+DQo8c3ZnIHZlcnNpb249IjEuMSIgaWQ9IkxheWVyXzEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgeG1sbnM6eGxpbms9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkveGxpbmsiIHg9IjBweCIgeT0iMHB4Ig0KCSB3aWR0aD0iNjRweCIgaGVpZ2h0PSI2NHB4IiB2aWV3Qm94PSIwIDAgNjQgNjQiIGVuYWJsZS1iYWNrZ3JvdW5kPSJuZXcgMCAwIDY0IDY0IiB4bWw6c3BhY2U9InByZXNlcnZlIj4NCjxnIGlkPSJBUlJPV19feDJGX19ET1dOXzFfIiBlbmFibGUtYmFja2dyb3VuZD0ibmV3ICAgICI+DQoJPGcgaWQ9IkFSUk9XX194MkZfX0RPV04iPg0KCQk8Zz4NCgkJCTxwYXRoIGQ9Ik01MywyM2MwLTEuNjU3LTEuMzQzLTMtMy0zYy0wLjgwOSwwLTEuNTQyLDAuMzIxLTIuMDgyLDAuODQxbC0wLjAwMS0wLjAwMUwzMS45OTMsMzYuNzY0TDE2LjI3NSwyMS4wNDYNCgkJCQlDMTUuNzI1LDIwLjQwNiwxNC45MSwyMCwxNCwyMGMtMS42NTcsMC0zLDEuMzQzLTMsM2MwLDAuODA1LDAuMzE4LDEuNTM2LDAuODM1LDIuMDc1bC0wLjAwOCwwLjAwOGwxOCwxOGwwLjAwMS0wLjAwMQ0KCQkJCUMzMC4zNzQsNDMuNjQ4LDMxLjEzOSw0NCwzMS45ODcsNDRjMC4wMDIsMCwwLjAwNCwwLDAuMDA3LDBjMC4wMDIsMCwwLjAwNCwwLDAuMDA3LDBjMC44NDksMCwxLjYxMi0wLjM1MiwyLjE1OS0wLjkxOA0KCQkJCWwwLjAwMSwwLjAwMWwxOC0xOGwtMC4wMDEtMC4wMDFDNTIuNjgsMjQuNTQzLDUzLDIzLjgwOSw1MywyM3oiLz4NCgkJPC9nPg0KCTwvZz4NCjwvZz4NCjwvc3ZnPg0K\")}.sui-grid{border-collapse:collapse;}.sui-grid *{box-sizing:border-box}.sui-grid td{border-bottom:1px solid #ddd;margin:0;padding:0}.sui-grid tr:first-child td{border-top:1px solid #ddd}.sui-grid td:first-child{border-left:1px solid #ddd}.sui-grid td:last-child{border-right:1px solid #ddd}.sui-grid td.sui-top,.sui-grid td.sui-left{background-color:#fff}.sui-grid td.sui-bottom,.sui-grid td.sui-right{background-color:#f6f6f6}.sui-bottom-left,.sui-bottom-right,.sui-top-left,.sui-top-right{position:absolute;background-color:#fff}.sui-top-right{top:0;right:0;-webkit-box-shadow:-1px 1px 6px rgba(0,0,0,0.1);-moz-box-shadow:-1px 1px 6px rgba(0,0,0,0.1);box-shadow:-1px 1px 6px rgba(0,0,0,0.1);}.sui-top-right.sui-grid tr:first-child td{border-top:none}.sui-top-right.sui-grid td:last-child{border-right:none}.sui-top-left{top:0;left:0;-webkit-box-shadow:1px 1px 6px rgba(0,0,0,0.1);-moz-box-shadow:1px 1px 6px rgba(0,0,0,0.1);box-shadow:1px 1px 6px rgba(0,0,0,0.1);}.sui-top-left.sui-grid tr:first-child td{border-top:none}.sui-top-left.sui-grid td:last-child{border-left:none}.sui-bottom-right{bottom:0;right:0;-webkit-box-shadow:-1px 1px 6px rgba(0,0,0,0.1);-moz-box-shadow:-1px 1px 6px rgba(0,0,0,0.1);box-shadow:-1px 1px 6px rgba(0,0,0,0.1);}.sui-bottom-right.sui-grid tr:first-child td{border-bottom:none}.sui-bottom-right.sui-grid td:last-child{border-right:none}.sui-bottom-left{bottom:0;left:0;-webkit-box-shadow:1px 1px 6px rgba(0,0,0,0.1);-moz-box-shadow:1px 1px 6px rgba(0,0,0,0.1);box-shadow:1px 1px 6px rgba(0,0,0,0.1);}.sui-bottom-left.sui-grid tr:first-child td{border-bottom:none}.sui-bottom-left.sui-grid td:last-child{border-left:none}.sui-fill{position:absolute;width:100%;max-height:100%;top:0;left:0}.sui-append{width:100%}.sui-control,.sui-folder{-moz-user-select:-moz-none;-khtml-user-select:none;-webkit-user-select:none;-o-user-select:none;user-select:none;font-size:11px;font-family:Helvetica,\"Nimbus Sans L\",\"Liberation Sans\",Arial,sans-serif;line-height:18px;vertical-align:middle;}.sui-control *,.sui-folder *{box-sizing:border-box;margin:0;padding:0}.sui-control button,.sui-folder button{line-height:18px;vertical-align:middle}.sui-control input,.sui-folder input{line-height:18px;vertical-align:middle;border:none;background-color:#f6f6f6;max-width:16em}.sui-control button:hover,.sui-folder button:hover{background-color:#fafafa;border:1px solid #ddd}.sui-control button:focus,.sui-folder button:focus{background-color:#fafafa;border:1px solid #aaa;outline:#eee solid 2px}.sui-control input:focus,.sui-folder input:focus{outline:#eee solid 2px;$outline-offset:-2px;background-color:#fafafa}.sui-control output,.sui-folder output{padding:0 6px;background-color:#fff;display:inline-block}.sui-control input[type=\"number\"],.sui-folder input[type=\"number\"],.sui-control input[type=\"date\"],.sui-folder input[type=\"date\"],.sui-control input[type=\"datetime-local\"],.sui-folder input[type=\"datetime-local\"],.sui-control input[type=\"time\"],.sui-folder input[type=\"time\"]{text-align:right}.sui-control input[type=\"number\"],.sui-folder input[type=\"number\"]{font-family:Consolas,Monaco,Lucida Console,Liberation Mono,DejaVu Sans Mono,Bitstream Vera Sans Mono,Courier New,monospace}.sui-control input,.sui-folder input{padding:0 6px}.sui-control input[type=\"color\"],.sui-folder input[type=\"color\"],.sui-control input[type=\"checkbox\"],.sui-folder input[type=\"checkbox\"]{padding:0;margin:0}.sui-control input[type=\"range\"],.sui-folder input[type=\"range\"]{margin:0 8px;min-height:19px}.sui-control button,.sui-folder button{background-color:#eee;border:1px solid #aaa;border-radius:4px}.sui-control.sui-control-single input,.sui-folder.sui-control-single input,.sui-control.sui-control-single output,.sui-folder.sui-control-single output,.sui-control.sui-control-single button,.sui-folder.sui-control-single button,.sui-control.sui-control-single select,.sui-folder.sui-control-single select{width:100%}.sui-control.sui-control-single input[type=\"checkbox\"],.sui-folder.sui-control-single input[type=\"checkbox\"]{width:initial}.sui-control.sui-control-double input,.sui-folder.sui-control-double input,.sui-control.sui-control-double output,.sui-folder.sui-control-double output,.sui-control.sui-control-double button,.sui-folder.sui-control-double button,.sui-control.sui-control-double select,.sui-folder.sui-control-double select{width:50%}.sui-control.sui-control-double .input1,.sui-folder.sui-control-double .input1{width:calc(100% - 7em);max-width:8em}.sui-control.sui-control-double .input2,.sui-folder.sui-control-double .input2{width:7em}.sui-control.sui-control-double .input1[type=\"range\"],.sui-folder.sui-control-double .input1[type=\"range\"]{width:calc(100% - 7em - 16px)}.sui-control.sui-type-bool,.sui-folder.sui-type-bool{text-align:center}.sui-control.sui-invalid,.sui-folder.sui-invalid{border-left:4px solid #d00}.sui-array{list-style:none;}.sui-array .sui-array-item{border-bottom:1px dotted #aaa;position:relative;}.sui-array .sui-array-item .sui-icon,.sui-array .sui-array-item .sui-icon-mini{opacity:.1}.sui-array .sui-array-item .sui-array-add .sui-icon,.sui-array .sui-array-item .sui-array-add .sui-icon-mini{opacity:.2}.sui-array .sui-array-item > *{vertical-align:top}.sui-array .sui-array-item:first-child > .sui-move > .sui-icon-up{visibility:hidden}.sui-array .sui-array-item:last-child{border-bottom:none;}.sui-array .sui-array-item:last-child > .sui-move > .sui-icon-down{visibility:hidden}.sui-array .sui-array-item > div{display:inline-block}.sui-array .sui-array-item .sui-move{position:absolute;width:8px;height:100%;}.sui-array .sui-array-item .sui-move .sui-icon-mini{display:block;position:absolute}.sui-array .sui-array-item .sui-move .sui-icon-up{top:0;left:1px}.sui-array .sui-array-item .sui-move .sui-icon-down{bottom:0;left:1px}.sui-array .sui-array-item .sui-control-container{margin:0 14px 0 10px;width:calc(100% - 24px)}.sui-array .sui-array-item .sui-remove{width:12px;position:absolute;right:1px;top:0}.sui-array .sui-array-item .sui-icon-remove,.sui-array .sui-array-item .sui-icon-up,.sui-array .sui-array-item .sui-icon-down{cursor:pointer}.sui-array .sui-array-item.sui-focus > .sui-move .sui-icon,.sui-array .sui-array-item.sui-focus > .sui-remove .sui-icon,.sui-array .sui-array-item.sui-focus > .sui-move .sui-icon-mini,.sui-array .sui-array-item.sui-focus > .sui-remove .sui-icon-mini{opacity:.4}.sui-array ~ .sui-control{margin-bottom:0}.sui-map{border-collapse:collapse;}.sui-map .sui-map-item > td{border-bottom:1px dotted #aaa;}.sui-map .sui-map-item > td:first-child{border-left:none}.sui-map .sui-map-item:last-child > td{border-bottom:none}.sui-map .sui-map-item .sui-icon{opacity:.1}.sui-map .sui-map-item .sui-array-add .sui-icon{opacity:.2}.sui-map .sui-map-item .sui-remove{width:14px;text-align:right;padding:0 1px}.sui-map .sui-map-item .sui-icon-remove{cursor:pointer}.sui-map .sui-map-item.sui-focus > .sui-remove .sui-icon{opacity:.4}.sui-disabled .sui-icon,.sui-disabled .sui-icon-mini,.sui-disabled .sui-icon:hover,.sui-disabled .sui-icon-mini:hover{opacity:.05 !important;cursor:default}.sui-array-add{text-align:right;}.sui-array-add .sui-icon,.sui-array-add .sui-icon-mini{margin-right:1px;opacity:.2;cursor:pointer}.sui-icon,.sui-icon-mini{display:inline-block;opacity:.4;vertical-align:middle;}.sui-icon:hover,.sui-icon-mini:hover{opacity:.8 !important}.sui-icon{width:12px;height:12px;background-size:12px 12px}.sui-icon-mini{width:8px;height:8px;background-size:8px 8px}.sui-folder{padding:0 6px;font-weight:bold}.sui-collapsible{cursor:pointer}.sui-bottom-left .sui-trigger-toggle,.sui-bottom-right .sui-trigger-toggle{transform:rotate(180deg)}.sui-choice-options > .sui-grid,.sui-grid-inner{width:100%}.sui-choice-options > .sui-grid > tr > td:first-child,.sui-choice-options > .sui-grid > tbody > tr > td:first-child{border-left:none}.sui-choice-options > .sui-grid > tr:last-child > td,.sui-choice-options > .sui-grid > tbody > tr:last-child > td{border-bottom:none}.sui-grid-inner{border-left:6px solid #f6f6f6}.sui-choice-header select{width:100%}");
 var scope = ("undefined" !== typeof window && window) || ("undefined" !== typeof global && global) || Function("return this")();
 if(!scope.setImmediate) scope.setImmediate = function(callback) {
 	scope.setTimeout(callback,0);
@@ -13268,7 +17237,8 @@ if(typeof(scope.performance.now) == "undefined") {
 	scope.performance.now = now;
 }
 DateTools.DAYS_OF_MONTH = [31,28,31,30,31,30,31,31,30,31,30,31];
-crowded_CrowdService.server = "http://localhost:2000";
+dots_Html.pattern = new EReg("[<]([^> ]+)","");
+dots_Query.doc = document;
 haxe_crypto_Base64.CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 haxe_ds_ObjectMap.count = 0;
 haxe_io_FPHelper.i64tmp = (function($this) {
@@ -13283,9 +17253,11 @@ murmur_Canvas.width = 1900;
 murmur_Canvas.height = 1000;
 murmur_Canvas.document = window.document;
 murmur_Canvas.paused = 0;
-murmur_Canvas._velocity = 1.0;
+murmur_Canvas._velocity = 1.2;
 murmur_Canvas._numPeople = 50;
 murmur_PeopleImage.count = 0;
+sui_controls_ColorControl.PATTERN = new EReg("^[#][0-9a-f]{6}$","i");
+sui_controls_DataList.nid = 0;
 thx_Floats.TOLERANCE = 10e-5;
 thx_Floats.EPSILON = 1e-9;
 thx_Floats.pattern_parse = new EReg("^(\\+|-)?\\d+(\\.\\d+)?(e-?\\d+)?$","");
@@ -13345,6 +17317,7 @@ thx_color_parse_ColorParser.parser = new thx_color_parse_ColorParser();
 thx_color_parse_ColorParser.isPureHex = new EReg("^([0-9a-f]{2}){3,4}$","i");
 thx_fp__$Map_Map_$Impl_$.delta = 5;
 thx_fp__$Map_Map_$Impl_$.ratio = 2;
+thx_promise__$Promise_Promise_$Impl_$.nil = thx_promise__$Promise_Promise_$Impl_$.value(thx_Nil.nil);
 thx_unit_angle__$BinaryDegree_BinaryDegree_$Impl_$.ofUnit = 0.00390625;
 thx_unit_angle__$BinaryDegree_BinaryDegree_$Impl_$.turn = 256.0;
 thx_unit_angle__$BinaryDegree_BinaryDegree_$Impl_$.dividerBinaryDegree = 0.00390625;

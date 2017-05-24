@@ -13,11 +13,12 @@ import thx.Timer;
 import murmur.MurmurTools;
 import murmur.People;
 
-class Canvas {
+class Canvas{
 
   /// dimensions
-  public var width  = 1900;
-  public var height = 1000;
+  
+  public var width  = #if nico 1600 #else 1440 #end;
+  public var height = 900;
 
   //storing velocityfunction
   static var velocityfunc;
@@ -27,8 +28,8 @@ class Canvas {
   static var paused = 0;
 
   //boidz specific
-  public var velocity=1.2;
-  static var _numPeople=300;
+  public var velocity=0.9;
+  static var _numPeople=200;
 public var randomVelocity:Bool=false;
 public var flock:Flock;
 public var canvas:js.html.CanvasElement;
@@ -100,7 +101,7 @@ public var zone:boidz.rules.SteerTowardZone;
     flock.addRule(waypoints);
     flock.addRule(avoidCollisions);
     flock.addRule(respectBoundaries);
-    
+    respectBoundaries.enabled=false;
     addBoids(flock, _numPeople, velocity, respectBoundaries.offset);
 
     canvasBoundaries = new CanvasBoundaries(respectBoundaries);
@@ -109,12 +110,12 @@ public var zone:boidz.rules.SteerTowardZone;
     zoneBounds= new ZoneBounds(new RespectBoundaries(20+Math.random()*800, 30+Math.random()*600, 30+Math.random()*300, 40+Math.random()*600, 50, 25));
 
     zone= new SteerTowardZone(flock,zoneBounds);
-    //flock.addRule(zone);
+    flock.addRule(zone);
    // display.addRenderable(new boidz.render.canvas.TargetZone(zone.points));
    // display.addRenderable(canvasBoundaries);
     #if debug display.addRenderable(canvasWaypoints);#end
     display.addRenderable(canvasFlock);
-    //display.addRenderable(zoneBounds);
+    #if debug display.addRenderable(zoneBounds);#end
     
 
 
@@ -161,21 +162,21 @@ public var zone:boidz.rules.SteerTowardZone;
     });
 
 
-    thx.Timer.repeat(function() {
-      var average = benchmarks.average().roundTo(2),
-          min     = benchmarks.min().roundTo(2),
-          max     = benchmarks.max().roundTo(2);
-      execution.set('$average ($min -> $max)');
+    // thx.Timer.repeat(function() {
+    //   var average = benchmarks.average().roundTo(2),
+    //       min     = benchmarks.min().roundTo(2),
+    //       max     = benchmarks.max().roundTo(2);
+    //   execution.set('$average ($min -> $max)');
 
-      average = renderings.average().roundTo(1);
-      min     = renderings.min().roundTo(1);
-      max     = renderings.max().roundTo(1);
-      rendering.set('$average ($min -> $max)');
+    //   average = renderings.average().roundTo(1);
+    //   min     = renderings.min().roundTo(1);
+    //   max     = renderings.max().roundTo(1);
+    //   rendering.set('$average ($min -> $max)');
 
-      min     = (1000 / frames.min()).roundTo(1);
-      max     = (1000 / frames.max()).roundTo(1);
-      frameRate.set('$average/s ($min -> $max)');
-    }, 2000);
+    //   min     = (1000 / frames.min()).roundTo(1);
+    //   max     = (1000 / frames.max()).roundTo(1);
+    //   frameRate.set('$average/s ($min -> $max)');
+    // }, 2000);
 
     #if debug
     // var ui = new UI(display,flock,addBoids,velocity,respectBoundaries,avoidCollisions,canvasBoundaries,width,height,waypoints,canvasWaypoints,
@@ -186,7 +187,7 @@ public var zone:boidz.rules.SteerTowardZone;
     DS.dispatch();
  #end
 
-    var scenario= new Scenario(this,2000
+    var scenario= new Scenario(this,30000
       );
 
     //new crowded.Crowd();
@@ -209,12 +210,14 @@ public var zone:boidz.rules.SteerTowardZone;
       // create a new boid and add it to the stage
       var b = new Boid(
             offset + (width - offset * 2) * Math.random(),
-            offset + (height - offset * 2) * Math.random(),
+            offset+ ( offset * 2),
             velocity,
             Math.random() * 360);
       flock.boids.push(b);
     }
   }
+
+
 
   public function updateVelocity() {
       for(boid in flock.boids)

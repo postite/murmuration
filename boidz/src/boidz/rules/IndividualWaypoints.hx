@@ -4,7 +4,7 @@ import thx.unit.angle.Degree;
 import boidz.IFlockRule;
 
 class IndividualWaypoints implements IFlockRule {
-  public var goals(default, null) : Array<{ x : Float, y : Float }>;
+  public var goals(default, default) : Array<{ x : Float, y : Float }>;
   public var enabled : Bool = true;
   public var radius : Float;
   public var onStep : { x : Float, y : Float } -> Void;

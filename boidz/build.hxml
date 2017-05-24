@@ -6,6 +6,7 @@
 -main murmur.Canvas
 #-main Paf
 -lib sui
+-lib random
 -lib dots
 -lib thx.color
 -lib thx.core
@@ -13,9 +14,10 @@
 -lib thx.stream
 -lib thx.stream.dom
 -lib thx.unit
--lib postite
+#-lib postite
 -D benchmark
 -D network-sandbox
--debug
+#-D nico
+#-debug
 #-resource people/n&b1.png@pip
--cmd open boidz/bin/index.html
+-cmd open -a safari  boidz/bin/index.html

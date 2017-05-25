@@ -102,7 +102,7 @@ class People implements IRenderable<CanvasRender> {
 
     
     //count=count%8;
-    var im= b.peopleImage;
+    var im= b.image;
     //find canvas height >
     
     var yFactor=(b.y/ctx.canvas.height)+0.3;
@@ -112,7 +112,12 @@ class People implements IRenderable<CanvasRender> {
     var wratio=im.width/im.height;
     var newH=300*yFactor;
     var newW=newH*wratio;
+    //try{
    ctx.drawImage(im,b.x-(newW/2),b.y-(newH/2),newW,newH);
+    // }catch(msg:Dynamic){
+    //   im=b.peopleImage.render();
+    //   ctx.drawImage(im,b.x-(newW/2),b.y-(newH/2),newW,newH);
+    // }
     }
 
     // render centroid

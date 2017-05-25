@@ -5,6 +5,8 @@
 #-cp /
 -main murmur.Canvas
 #-main Paf
+-lib js-kit
+-lib hxnodejs
 -lib sui
 -lib random
 -lib dots
@@ -17,7 +19,10 @@
 #-lib postite
 -D benchmark
 -D network-sandbox
+-D source-map-content
+-D hxnodejs_no_version_warning
 #-D nico
 #-debug
 #-resource people/n&b1.png@pip
--cmd open -a safari  boidz/bin/index.html
+#-cmd open -a safari  boidz/bin/index.html
+-cmd open -a safari http://192.168.1.34:3700

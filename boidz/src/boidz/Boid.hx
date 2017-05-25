@@ -8,7 +8,10 @@ class Boid {
   public var v : Float;
   public var d : Degree;
 
-public var peopleImage:js.html.Image;
+  public var peopleImage:PeopleImage;
+  public var image:js.html.Image;
+
+  public var state:Int;
 
   public function new (x : Float, y : Float, ?v = 0.0, ?d : Degree) {
     if(null == d)
@@ -18,6 +21,7 @@ public var peopleImage:js.html.Image;
     this.v = v;
     this.d = d;
 
-    peopleImage= new PeopleImage().render();
+    peopleImage= new PeopleImage();
+    image= peopleImage.render();
   }
 }

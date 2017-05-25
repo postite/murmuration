@@ -6,6 +6,26 @@ function $extend(from, fields) {
 	if( fields.toString !== Object.prototype.toString ) proto.toString = fields.toString;
 	return proto;
 }
+var _$Api_Color_$Impl_$ = {};
+_$Api_Color_$Impl_$.__name__ = ["_Api","Color_Impl_"];
+_$Api_Color_$Impl_$.$name = function(c) {
+	switch(c) {
+	case "#00AAFF":
+		return "blue";
+	case "#8116C9":
+		return "violet";
+	case "#9FD665":
+		return "green";
+	case "#E6D67E":
+		return "ocre";
+	case "#F27C4E":
+		return "orange";
+	default:
+		return "rien";
+	}
+};
+var Api = function() { };
+Api.__name__ = ["Api"];
 var DateTools = function() { };
 DateTools.__name__ = ["DateTools"];
 DateTools.getMonthDays = function(d) {
@@ -171,12 +191,6 @@ HxOverrides.iter = function(a) {
 };
 var Lambda = function() { };
 Lambda.__name__ = ["Lambda"];
-Lambda.array = function(it) {
-	var a = [];
-	var tmp = $iterator(it)();
-	while(tmp.hasNext()) a.push(tmp.next());
-	return a;
-};
 Lambda.has = function(it,elt) {
 	var tmp = $iterator(it)();
 	while(tmp.hasNext()) if(tmp.next() == elt) {
@@ -185,79 +199,6 @@ Lambda.has = function(it,elt) {
 	return false;
 };
 Math.__name__ = ["Math"];
-var Random = function() { };
-Random.__name__ = ["Random"];
-Random.bool = function() {
-	return Math.random() < 0.5;
-};
-Random["int"] = function(from,to) {
-	return from + Math.floor((to - from + 1) * Math.random());
-};
-Random["float"] = function(from,to) {
-	return from + (to - from) * Math.random();
-};
-Random.string = function(length,charactersToUse) {
-	if(charactersToUse == null) {
-		charactersToUse = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-	}
-	var str = "";
-	var _g1 = 0;
-	while(_g1 < length) {
-		++_g1;
-		str += charactersToUse.charAt(Math.floor((charactersToUse.length - 1 + 1) * Math.random()));
-	}
-	return str;
-};
-Random.date = function(earliest,latest) {
-	var from = earliest.getTime();
-	var t = from + (latest.getTime() - from) * Math.random();
-	return new Date(t);
-};
-Random.fromArray = function(arr) {
-	if(arr != null && arr.length > 0) {
-		return arr[Math.floor((arr.length - 1 + 1) * Math.random())];
-	} else {
-		return null;
-	}
-};
-Random.shuffle = function(arr) {
-	if(arr != null) {
-		var _g1 = 0;
-		var _g = arr.length;
-		while(_g1 < _g) {
-			var i = _g1++;
-			var j = Math.floor((arr.length - 1 + 1) * Math.random());
-			var a = arr[i];
-			arr[i] = arr[j];
-			arr[j] = a;
-		}
-	}
-	return arr;
-};
-Random.fromIterable = function(it) {
-	if(it != null) {
-		var arr = Lambda.array(it);
-		if(arr != null && arr.length > 0) {
-			return arr[Math.floor((arr.length - 1 + 1) * Math.random())];
-		} else {
-			return null;
-		}
-	} else {
-		return null;
-	}
-};
-Random.enumConstructor = function(e) {
-	if(e != null) {
-		var arr = e.__empty_constructs__;
-		if(arr != null && arr.length > 0) {
-			return arr[Math.floor((arr.length - 1 + 1) * Math.random())];
-		} else {
-			return null;
-		}
-	} else {
-		return null;
-	}
-};
 var Reflect = function() { };
 Reflect.__name__ = ["Reflect"];
 Reflect.field = function(o,field) {
@@ -465,7 +406,6 @@ ValueType.TClass = function(c) { var $x = ["TClass",6,c]; $x.__enum__ = ValueTyp
 ValueType.TEnum = function(e) { var $x = ["TEnum",7,e]; $x.__enum__ = ValueType; return $x; };
 ValueType.TUnknown = ["TUnknown",8];
 ValueType.TUnknown.__enum__ = ValueType;
-ValueType.__empty_constructs__ = [ValueType.TNull,ValueType.TInt,ValueType.TFloat,ValueType.TBool,ValueType.TObject,ValueType.TFunction,ValueType.TUnknown];
 var Type = function() { };
 Type.__name__ = ["Type"];
 Type.getEnum = function(o) {
@@ -583,7 +523,8 @@ var boidz_Boid = function(x,y,v,d) {
 	this.y = y;
 	this.v = v;
 	this.d = d;
-	this.peopleImage = new murmur_PeopleImage().render();
+	this.peopleImage = new murmur_PeopleImage();
+	this.image = this.peopleImage.render();
 };
 boidz_Boid.__name__ = ["boidz","Boid"];
 boidz_Boid.prototype = {
@@ -592,6 +533,8 @@ boidz_Boid.prototype = {
 	,v: null
 	,d: null
 	,peopleImage: null
+	,image: null
+	,state: null
 	,__class__: boidz_Boid
 };
 var boidz_Display = function(render) {
@@ -1213,7 +1156,6 @@ haxe_StackItem.Module = function(m) { var $x = ["Module",1,m]; $x.__enum__ = hax
 haxe_StackItem.FilePos = function(s,file,line) { var $x = ["FilePos",2,s,file,line]; $x.__enum__ = haxe_StackItem; return $x; };
 haxe_StackItem.Method = function(classname,method) { var $x = ["Method",3,classname,method]; $x.__enum__ = haxe_StackItem; return $x; };
 haxe_StackItem.LocalFunction = function(v) { var $x = ["LocalFunction",4,v]; $x.__enum__ = haxe_StackItem; return $x; };
-haxe_StackItem.__empty_constructs__ = [haxe_StackItem.CFunction];
 var haxe_CallStack = function() { };
 haxe_CallStack.__name__ = ["haxe","CallStack"];
 haxe_CallStack.getStack = function(e) {
@@ -1731,7 +1673,6 @@ var haxe_ds_Option = { __ename__ : ["haxe","ds","Option"], __constructs__ : ["So
 haxe_ds_Option.Some = function(v) { var $x = ["Some",0,v]; $x.__enum__ = haxe_ds_Option; return $x; };
 haxe_ds_Option.None = ["None",1];
 haxe_ds_Option.None.__enum__ = haxe_ds_Option;
-haxe_ds_Option.__empty_constructs__ = [haxe_ds_Option.None];
 var haxe_ds__$StringMap_StringMapIterator = function(map,keys) {
 	this.map = map;
 	this.keys = keys;
@@ -2450,7 +2391,7 @@ var murmur_Canvas = function() {
 	this.velocity = 0.9;
 	this.height = 900;
 	this.width = 1440;
-	this.execute();
+	new socket_SocketManager().connected.addOnce($bind(this,this.execute));
 };
 murmur_Canvas.__name__ = ["murmur","Canvas"];
 murmur_Canvas.pause = function() {
@@ -2477,6 +2418,7 @@ murmur_Canvas.main = function() {
 murmur_Canvas.prototype = {
 	width: null
 	,height: null
+	,clientID: null
 	,velocity: null
 	,randomVelocity: null
 	,flock: null
@@ -2492,13 +2434,17 @@ murmur_Canvas.prototype = {
 	,zoneBounds: null
 	,zone: null
 	,DS: null
-	,execute: function() {
+	,execute: function(dims) {
 		var _gthis = this;
+		this.width = dims.width;
+		this.height = dims.height;
+		this.clientID = dims.clientID;
 		murmur_Canvas.spaceKeydown(murmur_Canvas.pause);
 		this.DS = murmur_DoneSignal.getInstance();
 		this.flock = new boidz_Flock();
 		this.canvas = this.getCanvas();
 		this.render = new boidz_render_canvas_CanvasRender(this.canvas);
+		new boidz_render_canvas_CanvasRender(this.getCanvas());
 		this.display = new boidz_Display(this.render);
 		var this1 = 25;
 		this.avoidCollisions = new boidz_rules_AvoidCollisions(this.flock,3,this1);
@@ -2507,10 +2453,8 @@ murmur_Canvas.prototype = {
 		var this2 = 25;
 		this.respectBoundaries = new boidz_rules_RespectBoundaries(-300,tmp,-300,tmp1,50,this2);
 		this.waypoints = new boidz_rules_IndividualWaypoints(this.flock,10);
-		this.flock.addRule(this.waypoints);
-		this.flock.addRule(this.avoidCollisions);
-		this.flock.addRule(this.respectBoundaries);
-		this.respectBoundaries.enabled = false;
+		this.flock.addRule(new murmur_SplitBoundaries(0,this.width,0,this.height));
+		murmur_SplitBoundaries.outBounds.add($bind(this,this.removeBoid));
 		this.addBoids(this.flock,murmur_Canvas._numPeople,this.velocity,this.respectBoundaries.offset);
 		this.canvasBoundaries = new boidz_render_canvas_CanvasBoundaries(this.respectBoundaries);
 		this.canvasWaypoints = new boidz_render_canvas_CanvasIndividualWaypoints(this.waypoints);
@@ -2522,7 +2466,6 @@ murmur_Canvas.prototype = {
 		var this3 = 25;
 		this.zoneBounds = new boidz_render_canvas_ZoneBounds(new boidz_rules_RespectBoundaries(tmp2,tmp3,tmp4,tmp5,50,this3));
 		this.zone = new boidz_rules_SteerTowardZone(this.flock,this.zoneBounds);
-		this.flock.addRule(this.zone);
 		this.display.addRenderable(this.canvasFlock);
 		this.canvas.addEventListener("click",function(e) {
 			_gthis.waypoints.addGoal(e.clientX,e.clientY);
@@ -2552,7 +2495,7 @@ murmur_Canvas.prototype = {
 			frames.push(n - start);
 			start = n;
 		});
-		new murmur_Scenario(this,30000);
+		this.wait(dims.clientID);
 	}
 	,getCanvas: function() {
 		var canvas = window.document.createElement("canvas");
@@ -2561,13 +2504,46 @@ murmur_Canvas.prototype = {
 		window.document.body.appendChild(canvas);
 		return canvas;
 	}
+	,wait: function(state) {
+		var _gthis = this;
+		socket_SocketManager.emitSignal.add(function(dir,boid) {
+			console.log("new" + state);
+			if(state != boid.state) {
+				boid.state = state;
+				switch(dir) {
+				case "left":
+					boid.x = _gthis.width;
+					break;
+				case "right":
+					boid.x = 0;
+					break;
+				}
+				_gthis.addBoid(boid);
+			}
+		});
+	}
 	,addBoids: function(flock,howMany,velocity,offset) {
 		Math.min(this.width,this.height);
 		var _g1 = 0;
 		while(_g1 < howMany) {
 			++_g1;
-			flock.boids.push(new boidz_Boid(offset + (this.width - offset * 2) * Math.random(),offset + offset * 2,velocity,Math.random() * 360));
+			var b = new boidz_Boid(offset + (this.width - offset * 2) * Math.random(),offset + offset * 2,velocity,Math.random() * 360);
+			b.state = this.clientID;
+			flock.boids.push(b);
 		}
+	}
+	,addBoid: function(b) {
+		var _gthis = this;
+		console.log("addBoid in" + b.peopleImage.path);
+		var img = new Image();
+		img.src = b.peopleImage.path;
+		img.onload = function(e) {
+			b.image = e.target;
+			_gthis.flock.boids.push(b);
+		};
+	}
+	,removeBoid: function(dir,b) {
+		HxOverrides.remove(this.flock.boids,b);
 	}
 	,updateVelocity: function() {
 		var _g = 0;
@@ -2718,7 +2694,7 @@ murmur_People.prototype = {
 		while(_g4 < _g11.length) {
 			var b2 = _g11[_g4];
 			++_g4;
-			var im = b2.peopleImage;
+			var im = b2.image;
 			var yFactor = b2.y / ctx.canvas.height + 0.3;
 			ctx.globalAlpha = yFactor;
 			var wratio = im.width / im.height;
@@ -2738,7 +2714,6 @@ murmur_People.prototype = {
 var murmur_PeopleImage = function() {
 	murmur_PeopleImage.count = Math.round(Math.random() * 400);
 	this.path = "people/people" + murmur_PeopleImage.count + ".png";
-	this.render();
 };
 murmur_PeopleImage.__name__ = ["murmur","PeopleImage"];
 murmur_PeopleImage.prototype = {
@@ -2752,77 +2727,101 @@ murmur_PeopleImage.prototype = {
 	}
 	,__class__: murmur_PeopleImage
 };
-var murmur_Scenario = function(can,delay) {
-	this.counter = 0;
-	this.scenarios = [];
-	this.randomVelocity = false;
-	this.can = can;
-	this.scenarios.push($bind(this,this.scene1));
-	this.scenarios.push($bind(this,this.scene2));
-	this.scenarios.push($bind(this,this.scene3));
-	this.scenarios.push($bind(this,this.scene4));
-	this.scenarios.push($bind(this,this.scene5));
-	this.delay = delay;
-	new haxe_Timer(delay).run = $bind(this,this.doScene);
+var murmur_SplitBoundaries = function(minx,maxx,miny,maxy,offset,maxSteer) {
+	if(offset == null) {
+		offset = 0.0;
+	}
+	this.enabled = true;
+	if(null == maxSteer) {
+		var this1 = 10;
+		maxSteer = this1;
+	}
+	this.minx = minx;
+	this.maxx = maxx;
+	this.miny = miny;
+	this.maxy = maxy;
+	this.offset = offset;
+	this.maxSteer = maxSteer;
+	console.log("new split");
 };
-murmur_Scenario.__name__ = ["murmur","Scenario"];
-murmur_Scenario.prototype = {
-	can: null
-	,randomVelocity: null
-	,delay: null
-	,scenarios: null
-	,counter: null
-	,doScene: function() {
-		var coun = Math.abs(this.counter++ % this.scenarios.length) | 0;
-		console.log(coun);
-		this.removeorAdd();
-		this.scenarios[coun]();
+murmur_SplitBoundaries.__name__ = ["murmur","SplitBoundaries"];
+murmur_SplitBoundaries.__interfaces__ = [boidz_IFlockRule];
+murmur_SplitBoundaries.prototype = {
+	minx: null
+	,maxx: null
+	,miny: null
+	,maxy: null
+	,offset: null
+	,enabled: null
+	,maxSteer: null
+	,before: function() {
+		return true;
 	}
-	,scene1: function() {
-		this.can.velocity = .5;
-		this.can.updateVelocity();
-		this.can.waypoints.goals = [];
-		this.can.avoidCollisions.enabled = false;
-		this.can.avoidCollisions.set_radius(80);
-		this.can.DS.dispatch();
-	}
-	,scene2: function() {
-		this.can.velocity = .6;
-		this.can.updateVelocity();
-		this.can.avoidCollisions.enabled = true;
-		this.can.avoidCollisions.set_radius(80);
-		this.can.DS.dispatch();
-	}
-	,scene3: function() {
-		this.can.velocity = .7;
-		this.can.updateVelocity();
-		this.can.DS.dispatch();
-	}
-	,scene4: function() {
-		this.can.velocity = .6;
-		this.can.updateVelocity();
-		this.can.avoidCollisions.enabled = false;
-		this.can.waypoints.addGoal(Math.random() * this.can.width,Math.random() * this.can.height);
-		this.can.DS.dispatch();
-	}
-	,scene5: function() {
-		this.can.velocity = .8;
-		this.can.updateVelocity();
-		this.can.DS.dispatch();
-	}
-	,removeorAdd: function() {
-		var num = Std.random(10);
-		var rem = Math.random() < 0.5;
-		console.log("num=" + num + " rem=" + (rem == null?"null":"" + rem));
-		if(rem) {
-			if(num < this.can.flock.boids.length) {
-				this.can.flock.boids.splice(0,num);
+	,modify: function(b) {
+		if(b.x < this.minx + this.offset && boidz_util_Steer.facingLeft(b.d) || b.x > this.maxx - this.offset && boidz_util_Steer.facingRight(b.d)) {
+			if(b.x > this.maxx - this.offset && boidz_util_Steer.facingRight(b.d)) {
+				murmur_SplitBoundaries.outBounds.dispatch("right",b);
 			}
-		} else {
-			this.can.addBoids(this.can.flock,num,this.can.velocity,this.can.respectBoundaries.offset);
+			if(b.x < this.minx + this.offset && boidz_util_Steer.facingLeft(b.d)) {
+				murmur_SplitBoundaries.outBounds.dispatch("left",b);
+			}
+			b.d = b.d + this.maxSteer * (b.d < 0?-1:1);
+		}
+		if(b.y < this.miny + this.offset && boidz_util_Steer.facingUp(b.d) || b.y > this.maxy - this.offset && boidz_util_Steer.facingDown(b.d)) {
+			b.d = b.d + this.maxSteer * (b.d < 0?-1:1);
 		}
 	}
-	,__class__: murmur_Scenario
+	,__class__: murmur_SplitBoundaries
+};
+var socket_SocketManager = function() {
+	this.dims = { width : 0, height : 0, clientID : 0};
+	this._messages = [];
+	this.connected = new msignal_Signal1();
+	var _gthis = this;
+	var $window = window;
+	var document = window.document;
+	$window.onload = function() {
+		_gthis.dims.width = $window.innerWidth;
+		_gthis.dims.height = $window.innerHeight;
+		_gthis.connect();
+	};
+	murmur_SplitBoundaries.outBounds.add($bind(this,this.sendMessage));
+};
+socket_SocketManager.__name__ = ["socket","SocketManager"];
+socket_SocketManager.prototype = {
+	connected: null
+	,_messages: null
+	,clientId: null
+	,_socket: null
+	,dims: null
+	,sendMessage: function(dir,boid) {
+		console.log("ok boid");
+		console.log(boid);
+		this._socket.emit("send",{ dir : dir, data : boid});
+	}
+	,connect: function() {
+		var _gthis = this;
+		this._messages = [];
+		this._socket = io.connect("http://192.168.1.34:3700");
+		this._socket.on("message",function(args) {
+			if(args.data != null) {
+				socket_SocketManager.emitSignal.dispatch(args.dir,args.data);
+			} else {
+				console.log("There is a problem: " + Std.string(args.data));
+			}
+		});
+		this._socket.on("clientConnect",function(data) {
+			_gthis.clientId = data.clients;
+			console.log("clientId=" + _gthis.clientId);
+			_gthis.dims.clientID = _gthis.clientId;
+			_gthis.displayClient();
+			_gthis.connected.dispatch(_gthis.dims);
+		});
+	}
+	,displayClient: function() {
+		window.document.querySelector("#clientId").innerHTML = "clientID=" + this.clientId;
+	}
+	,__class__: socket_SocketManager
 };
 var thx_Arrays = function() { };
 thx_Arrays.__name__ = ["thx","Arrays"];
@@ -4174,7 +4173,6 @@ thx_OrderingImpl.GT = ["GT",1];
 thx_OrderingImpl.GT.__enum__ = thx_OrderingImpl;
 thx_OrderingImpl.EQ = ["EQ",2];
 thx_OrderingImpl.EQ.__enum__ = thx_OrderingImpl;
-thx_OrderingImpl.__empty_constructs__ = [thx_OrderingImpl.LT,thx_OrderingImpl.GT,thx_OrderingImpl.EQ];
 var thx_Dates = function() { };
 thx_Dates.__name__ = ["thx","Dates"];
 thx_Dates.compare = function(a,b) {
@@ -4891,7 +4889,6 @@ thx_DynamicsT.tuples = function(o) {
 var thx_Either = { __ename__ : ["thx","Either"], __constructs__ : ["Left","Right"] };
 thx_Either.Left = function(value) { var $x = ["Left",0,value]; $x.__enum__ = thx_Either; return $x; };
 thx_Either.Right = function(value) { var $x = ["Right",1,value]; $x.__enum__ = thx_Either; return $x; };
-thx_Either.__empty_constructs__ = [];
 var thx_Eithers = function() { };
 thx_Eithers.__name__ = ["thx","Eithers"];
 thx_Eithers.isLeft = function(either) {
@@ -6520,11 +6517,9 @@ thx__$Nel_Nel_$Impl_$.semigroup = function() {
 var thx_NonEmptyList = { __ename__ : ["thx","NonEmptyList"], __constructs__ : ["Single","ConsNel"] };
 thx_NonEmptyList.Single = function(x) { var $x = ["Single",0,x]; $x.__enum__ = thx_NonEmptyList; return $x; };
 thx_NonEmptyList.ConsNel = function(x,xs) { var $x = ["ConsNel",1,x,xs]; $x.__enum__ = thx_NonEmptyList; return $x; };
-thx_NonEmptyList.__empty_constructs__ = [];
 var thx_Nil = { __ename__ : ["thx","Nil"], __constructs__ : ["nil"] };
 thx_Nil.nil = ["nil",0];
 thx_Nil.nil.__enum__ = thx_Nil;
-thx_Nil.__empty_constructs__ = [thx_Nil.nil];
 var thx_Objects = function() { };
 thx_Objects.__name__ = ["thx","Objects"];
 thx_Objects.compare = function(a,b) {
@@ -8164,7 +8159,6 @@ thx_TimePeriod.Month = ["Month",5];
 thx_TimePeriod.Month.__enum__ = thx_TimePeriod;
 thx_TimePeriod.Year = ["Year",6];
 thx_TimePeriod.Year.__enum__ = thx_TimePeriod;
-thx_TimePeriod.__empty_constructs__ = [thx_TimePeriod.Second,thx_TimePeriod.Minute,thx_TimePeriod.Hour,thx_TimePeriod.Day,thx_TimePeriod.Week,thx_TimePeriod.Month,thx_TimePeriod.Year];
 var thx_Timer = function() { };
 thx_Timer.__name__ = ["thx","Timer"];
 thx_Timer.debounce = function(callback,delayms,leading) {
@@ -12897,7 +12891,6 @@ thx_color_parse_ChannelInfo.CIDegree = function(value) { var $x = ["CIDegree",2,
 thx_color_parse_ChannelInfo.CIInt8 = function(value) { var $x = ["CIInt8",3,value]; $x.__enum__ = thx_color_parse_ChannelInfo; return $x; };
 thx_color_parse_ChannelInfo.CIInt = function(value) { var $x = ["CIInt",4,value]; $x.__enum__ = thx_color_parse_ChannelInfo; return $x; };
 thx_color_parse_ChannelInfo.CIBool = function(value) { var $x = ["CIBool",5,value]; $x.__enum__ = thx_color_parse_ChannelInfo; return $x; };
-thx_color_parse_ChannelInfo.__empty_constructs__ = [];
 var thx_error_ErrorWrapper = function(message,innerError,stack,pos) {
 	thx_Error.call(this,message,stack,pos);
 	this.innerError = innerError;
@@ -13235,7 +13228,6 @@ var thx_fp_MapImpl = { __ename__ : ["thx","fp","MapImpl"], __constructs__ : ["Ti
 thx_fp_MapImpl.Tip = ["Tip",0];
 thx_fp_MapImpl.Tip.__enum__ = thx_fp_MapImpl;
 thx_fp_MapImpl.Bin = function(size,key,value,lhs,rhs) { var $x = ["Bin",1,size,key,value,lhs,rhs]; $x.__enum__ = thx_fp_MapImpl; return $x; };
-thx_fp_MapImpl.__empty_constructs__ = [thx_fp_MapImpl.Tip];
 var thx_unit_angle__$BinaryDegree_BinaryDegree_$Impl_$ = {};
 thx_unit_angle__$BinaryDegree_BinaryDegree_$Impl_$.__name__ = ["thx","unit","angle","_BinaryDegree","BinaryDegree_Impl_"];
 thx_unit_angle__$BinaryDegree_BinaryDegree_$Impl_$.fromFloat = function(value) {
@@ -15244,14 +15236,21 @@ if(typeof(scope.performance.now) == "undefined") {
 	};
 	scope.performance.now = now;
 }
+_$Api_Color_$Impl_$.green = "#9FD665";
+_$Api_Color_$Impl_$.ocre = "#E6D67E";
+_$Api_Color_$Impl_$.blue = "#00AAFF";
+_$Api_Color_$Impl_$.orange = "#F27C4E";
+_$Api_Color_$Impl_$.violet = "#8116C9";
 DateTools.DAYS_OF_MONTH = [31,28,31,30,31,30,31,31,30,31,30,31];
 haxe_crypto_Base64.CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 haxe_ds_ObjectMap.count = 0;
 js_Boot.__toStr = { }.toString;
 murmur_Canvas.document = window.document;
 murmur_Canvas.paused = 0;
-murmur_Canvas._numPeople = 200;
+murmur_Canvas._numPeople = 50;
 murmur_PeopleImage.count = 0;
+murmur_SplitBoundaries.outBounds = new msignal_Signal2();
+socket_SocketManager.emitSignal = new msignal_Signal2();
 thx_Dates.order = thx__$Ord_Ord_$Impl_$.fromIntComparison(thx_Dates.compare);
 thx_Floats.TOLERANCE = 10e-5;
 thx_Floats.EPSILON = 1e-9;

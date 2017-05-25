@@ -19,6 +19,9 @@ class Canvas{
   
   public var width  = #if nico 1600 #else 1440 #end;
   public var height = 900;
+  var clientID:Int;
+  // public var width  = 400;
+  // public var height = 400;
 
   //storing velocityfunction
   static var velocityfunc;
@@ -28,8 +31,8 @@ class Canvas{
   static var paused = 0;
 
   //boidz specific
-  public var velocity=0.9;
-  static var _numPeople=200;
+public var velocity=0.9;
+static var _numPeople=50;
 public var randomVelocity:Bool=false;
 public var flock:Flock;
 public var canvas:js.html.CanvasElement;
@@ -67,15 +70,18 @@ public var zone:boidz.rules.SteerTowardZone;
      js.Browser.location.reload();
   }
   public function new(){
-    execute();
+    var sok=new socket.SocketManager();
+    sok.connected.addOnce(execute);
   }
 
   public static function main(){
     new Canvas();
   }
 
-  public  function execute() {
-
+  public  function execute(dims:{width:Int,height:Int,clientID:Int}) {
+    width=dims.width;
+    height=dims.height;
+    clientID=dims.clientID;
   //activate pausing
   spaceKeydown(pause);
 
@@ -86,22 +92,27 @@ public var zone:boidz.rules.SteerTowardZone;
   //activate reload
   //haxe.Timer.delay(timed,60000);
  
-
         flock  = new Flock();
         canvas = getCanvas();
         render = new CanvasRender(canvas);
+        //add a new Canvas
+        var render2= new CanvasRender(getCanvas());
         display = new Display(render);
+       // display.addRenderable(new CanvasBoundaries()
         avoidCollisions = new AvoidCollisions(flock, 3, 25);
         respectBoundaries = new RespectBoundaries(-300, width+300, -300, height+300, 50, 25);
         waypoints = new IndividualWaypoints(flock, 10);
         //velocity = _velocity;
 
+        var split= new SplitBoundaries(0, width, 0, height);
+        flock.addRule(split);
+        murmur.SplitBoundaries.outBounds.add(removeBoid);
 
     //flock.addRule(new SteerTowardCenter(flock));
-    flock.addRule(waypoints);
-    flock.addRule(avoidCollisions);
-    flock.addRule(respectBoundaries);
-    respectBoundaries.enabled=false;
+    //flock.addRule(waypoints);
+    //flock.addRule(avoidCollisions);
+    //flock.addRule(respectBoundaries);
+    //respectBoundaries.enabled=false;
     addBoids(flock, _numPeople, velocity, respectBoundaries.offset);
 
     canvasBoundaries = new CanvasBoundaries(respectBoundaries);
@@ -110,17 +121,13 @@ public var zone:boidz.rules.SteerTowardZone;
     zoneBounds= new ZoneBounds(new RespectBoundaries(20+Math.random()*800, 30+Math.random()*600, 30+Math.random()*300, 40+Math.random()*600, 50, 25));
 
     zone= new SteerTowardZone(flock,zoneBounds);
-    flock.addRule(zone);
+   // flock.addRule(zone);
    // display.addRenderable(new boidz.render.canvas.TargetZone(zone.points));
    // display.addRenderable(canvasBoundaries);
     #if debug display.addRenderable(canvasWaypoints);#end
     display.addRenderable(canvasFlock);
     #if debug display.addRenderable(zoneBounds);#end
     
-
-
-
-
 
     canvas.addEventListener("click", function(e) {
       waypoints.addGoal(e.clientX, e.clientY);
@@ -178,7 +185,7 @@ public var zone:boidz.rules.SteerTowardZone;
     //   frameRate.set('$average/s ($min -> $max)');
     // }, 2000);
 
-    #if debug
+    #if (debug && ui)
     // var ui = new UI(display,flock,addBoids,velocity,respectBoundaries,avoidCollisions,canvasBoundaries,width,height,waypoints,canvasWaypoints,
     //   cast execution,
     //   cast rendering,
@@ -186,11 +193,15 @@ public var zone:boidz.rules.SteerTowardZone;
     var ui= new UI(this);
     DS.dispatch();
  #end
-
+    #if scenario 
     var scenario= new Scenario(this,30000
       );
-
+    #end
     //new crowded.Crowd();
+    //
+    //
+    //
+     wait(dims.clientID);
   }
 
    function getCanvas() {
@@ -204,6 +215,31 @@ public var zone:boidz.rules.SteerTowardZone;
     return canvas;
   }
 
+  function wait(state:Int){
+    socket.SocketManager.emitSignal.add(function(dir,boid){
+      trace("new"+state);
+      if(state!=boid.state){
+      //var people= People.fromLight(p);
+      boid.state=state;
+      
+      switch (dir) {
+        case "left":boid.x=width;
+        case "right":boid.x=0;
+      }
+      
+      // peoples.push(people);
+      // people._in();
+      addBoid(boid);
+      }
+
+      
+
+    });
+    //CanvasClient.People.signal.add(fire);
+  }
+
+  
+
   public function addBoids(flock : Flock, howMany : Int, velocity : Float, offset : Float) {
     var w = Math.min(width, height);
     for (i in 0...howMany) {
@@ -213,8 +249,29 @@ public var zone:boidz.rules.SteerTowardZone;
             offset+ ( offset * 2),
             velocity,
             Math.random() * 360);
+      // adding a state 
+      b.state=clientID;
+
       flock.boids.push(b);
     }
+  }
+
+  function addBoid(b:Boid){
+    trace( "addBoid in"+ b.peopleImage.path);
+    var img = new js.html.Image();
+      img.src = b.peopleImage.path;
+      img.onload=function(e){
+        var i:js.html.Image= e.target;
+        b.image=i;
+        flock.boids.push(b);
+        //trace( 'w=${i.width} h=${i.height}');
+      }
+    
+
+  }
+
+  function removeBoid(dir:String,b:Boid){
+    flock.boids.remove(b);
   }
 
 

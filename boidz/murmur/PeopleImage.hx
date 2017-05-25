@@ -3,14 +3,14 @@ import js.html.*;
 class PeopleImage {
 
 	static var count:Int=0;
-	var path:String;
+	public var path:String;
 
 	public function new() {
 			
 			//count++;
 			count=Math.round(Math.random()*400);
 			this.path= 'people/people$count.png';
-			this.render();
+			//this.render();
 	}
 
 	public function render():js.html.Image{

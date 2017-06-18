@@ -8,7 +8,7 @@ class Scenario {
 
 	var scenarios=[];
 	var counter=0;
-	public function new(can:murmur.Canvas,delay:Int)
+	public function new(can:murmur.Canvas)
      
     {
     	this.can=can;
@@ -17,25 +17,41 @@ class Scenario {
     	scenarios.push(scene3);
     	scenarios.push(scene4);
     	scenarios.push(scene5);
-
-    	this.delay=delay;
-    	var timer= new haxe.Timer(delay);
-    	
-    	timer.run=doScene;
-    	//haxe.Timer.(doScene,delay);
+	
     }
 
-
-    function doScene(){
-    	
-    		var coun = Std.int(Math.abs(counter++ %scenarios.length));
-    	trace( coun);
-    	removeorAdd();
-    	scenarios[coun]();
+    public function addWalk(){
+        can.walk.enabled=true;
+        if (can.clientID==0)
+        can.display.addRenderable(can.walk);
+    }   
+    public function removeWalk(){
+        can.walk.enabled=false;
+        can.display.addRenderable(can.walk);
     }
+
+    public function act(value){
+        trace( 'Sacenario Act $value');
+        switch(value){
+            case "walk": 
+            can.walk= new Walk(0);
+            addWalk();
+            case "nowalk":
+            removeWalk();
+            case x:
+            trace(x);
+            Reflect.callMethod(this,Reflect.field(this,x),[]);
+            
+            //wait for last run ?
+            
+
+            
+        }
+    }
+    
 
     function scene1(){
-    	can.velocity=.5;
+    	can.velocity=2;
     	can.updateVelocity();
     	can.waypoints.goals=[];
     	can.avoidCollisions.enabled=false;
@@ -46,7 +62,7 @@ class Scenario {
     function scene2(){
     	can.velocity=.6;
     	can.updateVelocity();
-   
+        can.steerCenter.enabled=false;
   // can.flock.boids.splice(12, can.flock.boids.length - 12);
 
     	

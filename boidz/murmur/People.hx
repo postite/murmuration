@@ -105,7 +105,7 @@ class People implements IRenderable<CanvasRender> {
     var im= b.image;
     //find canvas height >
     
-    var yFactor=(b.y/ctx.canvas.height)+0.3;
+    var yFactor=(b.y/ctx.canvas.height)+0.5; // to expose
     var opacity=yFactor;
     ctx.globalAlpha = opacity;
    

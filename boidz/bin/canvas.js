@@ -191,6 +191,12 @@ HxOverrides.iter = function(a) {
 };
 var Lambda = function() { };
 Lambda.__name__ = ["Lambda"];
+Lambda.array = function(it) {
+	var a = [];
+	var tmp = $iterator(it)();
+	while(tmp.hasNext()) a.push(tmp.next());
+	return a;
+};
 Lambda.has = function(it,elt) {
 	var tmp = $iterator(it)();
 	while(tmp.hasNext()) if(tmp.next() == elt) {
@@ -199,6 +205,79 @@ Lambda.has = function(it,elt) {
 	return false;
 };
 Math.__name__ = ["Math"];
+var Random = function() { };
+Random.__name__ = ["Random"];
+Random.bool = function() {
+	return Math.random() < 0.5;
+};
+Random["int"] = function(from,to) {
+	return from + Math.floor((to - from + 1) * Math.random());
+};
+Random["float"] = function(from,to) {
+	return from + (to - from) * Math.random();
+};
+Random.string = function(length,charactersToUse) {
+	if(charactersToUse == null) {
+		charactersToUse = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+	}
+	var str = "";
+	var _g1 = 0;
+	while(_g1 < length) {
+		++_g1;
+		str += charactersToUse.charAt(Math.floor((charactersToUse.length - 1 + 1) * Math.random()));
+	}
+	return str;
+};
+Random.date = function(earliest,latest) {
+	var from = earliest.getTime();
+	var t = from + (latest.getTime() - from) * Math.random();
+	return new Date(t);
+};
+Random.fromArray = function(arr) {
+	if(arr != null && arr.length > 0) {
+		return arr[Math.floor((arr.length - 1 + 1) * Math.random())];
+	} else {
+		return null;
+	}
+};
+Random.shuffle = function(arr) {
+	if(arr != null) {
+		var _g1 = 0;
+		var _g = arr.length;
+		while(_g1 < _g) {
+			var i = _g1++;
+			var j = Math.floor((arr.length - 1 + 1) * Math.random());
+			var a = arr[i];
+			arr[i] = arr[j];
+			arr[j] = a;
+		}
+	}
+	return arr;
+};
+Random.fromIterable = function(it) {
+	if(it != null) {
+		var arr = Lambda.array(it);
+		if(arr != null && arr.length > 0) {
+			return arr[Math.floor((arr.length - 1 + 1) * Math.random())];
+		} else {
+			return null;
+		}
+	} else {
+		return null;
+	}
+};
+Random.enumConstructor = function(e) {
+	if(e != null) {
+		var arr = e.__empty_constructs__;
+		if(arr != null && arr.length > 0) {
+			return arr[Math.floor((arr.length - 1 + 1) * Math.random())];
+		} else {
+			return null;
+		}
+	} else {
+		return null;
+	}
+};
 var Reflect = function() { };
 Reflect.__name__ = ["Reflect"];
 Reflect.field = function(o,field) {
@@ -406,6 +485,7 @@ ValueType.TClass = function(c) { var $x = ["TClass",6,c]; $x.__enum__ = ValueTyp
 ValueType.TEnum = function(e) { var $x = ["TEnum",7,e]; $x.__enum__ = ValueType; return $x; };
 ValueType.TUnknown = ["TUnknown",8];
 ValueType.TUnknown.__enum__ = ValueType;
+ValueType.__empty_constructs__ = [ValueType.TNull,ValueType.TInt,ValueType.TFloat,ValueType.TBool,ValueType.TObject,ValueType.TFunction,ValueType.TUnknown];
 var Type = function() { };
 Type.__name__ = ["Type"];
 Type.getEnum = function(o) {
@@ -983,6 +1063,31 @@ boidz_rules_RespectBoundaries.prototype = {
 	}
 	,__class__: boidz_rules_RespectBoundaries
 };
+var boidz_rules_SteerTowardCenter = function(flock,maxSteer) {
+	this.enabled = true;
+	if(null == maxSteer) {
+		var this1 = 10;
+		maxSteer = this1;
+	}
+	this.flock = flock;
+	this.goal = new boidz_rules_SteerTowardGoal(flock.x,flock.y,maxSteer);
+};
+boidz_rules_SteerTowardCenter.__name__ = ["boidz","rules","SteerTowardCenter"];
+boidz_rules_SteerTowardCenter.__interfaces__ = [boidz_IFlockRule];
+boidz_rules_SteerTowardCenter.prototype = {
+	flock: null
+	,goal: null
+	,enabled: null
+	,before: function() {
+		this.goal.x = this.flock.x;
+		this.goal.y = this.flock.y;
+		return true;
+	}
+	,modify: function(b) {
+		this.goal.modify(b);
+	}
+	,__class__: boidz_rules_SteerTowardCenter
+};
 var boidz_rules_SteerTowardGoal = function(x,y,maxSteer) {
 	this.enabled = true;
 	if(null == maxSteer) {
@@ -1156,6 +1261,7 @@ haxe_StackItem.Module = function(m) { var $x = ["Module",1,m]; $x.__enum__ = hax
 haxe_StackItem.FilePos = function(s,file,line) { var $x = ["FilePos",2,s,file,line]; $x.__enum__ = haxe_StackItem; return $x; };
 haxe_StackItem.Method = function(classname,method) { var $x = ["Method",3,classname,method]; $x.__enum__ = haxe_StackItem; return $x; };
 haxe_StackItem.LocalFunction = function(v) { var $x = ["LocalFunction",4,v]; $x.__enum__ = haxe_StackItem; return $x; };
+haxe_StackItem.__empty_constructs__ = [haxe_StackItem.CFunction];
 var haxe_CallStack = function() { };
 haxe_CallStack.__name__ = ["haxe","CallStack"];
 haxe_CallStack.getStack = function(e) {
@@ -1673,6 +1779,7 @@ var haxe_ds_Option = { __ename__ : ["haxe","ds","Option"], __constructs__ : ["So
 haxe_ds_Option.Some = function(v) { var $x = ["Some",0,v]; $x.__enum__ = haxe_ds_Option; return $x; };
 haxe_ds_Option.None = ["None",1];
 haxe_ds_Option.None.__enum__ = haxe_ds_Option;
+haxe_ds_Option.__empty_constructs__ = [haxe_ds_Option.None];
 var haxe_ds__$StringMap_StringMapIterator = function(map,keys) {
 	this.map = map;
 	this.keys = keys;
@@ -2416,7 +2523,9 @@ murmur_Canvas.main = function() {
 	new murmur_Canvas();
 };
 murmur_Canvas.prototype = {
-	width: null
+	scenario: null
+	,walk: null
+	,width: null
 	,height: null
 	,clientID: null
 	,velocity: null
@@ -2433,6 +2542,7 @@ murmur_Canvas.prototype = {
 	,canvasFlock: null
 	,zoneBounds: null
 	,zone: null
+	,steerCenter: null
 	,DS: null
 	,execute: function(dims) {
 		var _gthis = this;
@@ -2444,7 +2554,6 @@ murmur_Canvas.prototype = {
 		this.flock = new boidz_Flock();
 		this.canvas = this.getCanvas();
 		this.render = new boidz_render_canvas_CanvasRender(this.canvas);
-		new boidz_render_canvas_CanvasRender(this.getCanvas());
 		this.display = new boidz_Display(this.render);
 		var this1 = 25;
 		this.avoidCollisions = new boidz_rules_AvoidCollisions(this.flock,3,this1);
@@ -2455,6 +2564,9 @@ murmur_Canvas.prototype = {
 		this.waypoints = new boidz_rules_IndividualWaypoints(this.flock,10);
 		this.flock.addRule(new murmur_SplitBoundaries(0,this.width,0,this.height));
 		murmur_SplitBoundaries.outBounds.add($bind(this,this.removeBoid));
+		this.steerCenter = new boidz_rules_SteerTowardCenter(this.flock);
+		this.flock.addRule(this.steerCenter);
+		this.flock.addRule(this.avoidCollisions);
 		this.addBoids(this.flock,murmur_Canvas._numPeople,this.velocity,this.respectBoundaries.offset);
 		this.canvasBoundaries = new boidz_render_canvas_CanvasBoundaries(this.respectBoundaries);
 		this.canvasWaypoints = new boidz_render_canvas_CanvasIndividualWaypoints(this.waypoints);
@@ -2495,22 +2607,34 @@ murmur_Canvas.prototype = {
 			frames.push(n - start);
 			start = n;
 		});
+		this.scenario = new murmur_Scenario(this);
 		this.wait(dims.clientID);
-	}
-	,getCanvas: function() {
-		var canvas = window.document.createElement("canvas");
-		canvas.width = this.width;
-		canvas.height = this.height;
-		window.document.body.appendChild(canvas);
-		return canvas;
 	}
 	,wait: function(state) {
 		var _gthis = this;
-		socket_SocketManager.emitSignal.add(function(dir,boid) {
-			console.log("new" + state);
+		socket_SocketManager.walkSignal.add(function(dir,sprite) {
+			_gthis.changeAnyColor();
+			console.log("state=" + state + " spriteState=" + sprite.state);
+			_gthis.display.removeRenderable(_gthis.walk);
+			_gthis.walk.enabled = false;
+			if(state != sprite.state) {
+				_gthis.walk.setState(state);
+				_gthis.display.addRenderable(_gthis.walk);
+				switch(dir) {
+				case "left":
+					_gthis.walk.back(dir,sprite);
+					break;
+				case "right":
+					_gthis.walk.back(dir,sprite);
+					break;
+				}
+				_gthis.walk.enabled = true;
+			}
+		});
+		socket_SocketManager.emitSignal.add(function(dir1,boid) {
 			if(state != boid.state) {
 				boid.state = state;
-				switch(dir) {
+				switch(dir1) {
 				case "left":
 					boid.x = _gthis.width;
 					break;
@@ -2521,6 +2645,28 @@ murmur_Canvas.prototype = {
 				_gthis.addBoid(boid);
 			}
 		});
+		socket_SocketManager.ctrlSignal.add(function(type,value) {
+			console.log("new ctrl Signal");
+			switch(type) {
+			case "action":
+				_gthis.doAct(value);
+				break;
+			case "color":
+				_gthis.changeColor(value);
+				break;
+			default:
+			}
+		});
+	}
+	,doAct: function(val) {
+		console.log("doAct " + val);
+		this.scenario.act(val);
+	}
+	,changeAnyColor: function() {
+		this.changeColor("#" + StringTools.hex(Math.random() * 16777215 | 0));
+	}
+	,changeColor: function(color) {
+		window.document.body.style.backgroundColor = color;
 	}
 	,addBoids: function(flock,howMany,velocity,offset) {
 		Math.min(this.width,this.height);
@@ -2534,7 +2680,6 @@ murmur_Canvas.prototype = {
 	}
 	,addBoid: function(b) {
 		var _gthis = this;
-		console.log("addBoid in" + b.peopleImage.path);
 		var img = new Image();
 		img.src = b.peopleImage.path;
 		img.onload = function(e) {
@@ -2553,6 +2698,13 @@ murmur_Canvas.prototype = {
 			++_g;
 			boid.v = this.velocity * (this.randomVelocity?Math.random():this.velocity);
 		}
+	}
+	,getCanvas: function() {
+		var canvas = window.document.createElement("canvas");
+		canvas.width = this.width;
+		canvas.height = this.height;
+		window.document.body.appendChild(canvas);
+		return canvas;
 	}
 	,__class__: murmur_Canvas
 };
@@ -2695,7 +2847,7 @@ murmur_People.prototype = {
 			var b2 = _g11[_g4];
 			++_g4;
 			var im = b2.image;
-			var yFactor = b2.y / ctx.canvas.height + 0.3;
+			var yFactor = b2.y / ctx.canvas.height + 0.5;
 			ctx.globalAlpha = yFactor;
 			var wratio = im.width / im.height;
 			var newH = 300 * yFactor;
@@ -2727,6 +2879,110 @@ murmur_PeopleImage.prototype = {
 	}
 	,__class__: murmur_PeopleImage
 };
+var murmur_Scenario = function(can) {
+	this.counter = 0;
+	this.scenarios = [];
+	this.randomVelocity = false;
+	this.can = can;
+	this.scenarios.push($bind(this,this.scene1));
+	this.scenarios.push($bind(this,this.scene2));
+	this.scenarios.push($bind(this,this.scene3));
+	this.scenarios.push($bind(this,this.scene4));
+	this.scenarios.push($bind(this,this.scene5));
+};
+murmur_Scenario.__name__ = ["murmur","Scenario"];
+murmur_Scenario.prototype = {
+	can: null
+	,randomVelocity: null
+	,delay: null
+	,scenarios: null
+	,counter: null
+	,addWalk: function() {
+		this.can.walk.enabled = true;
+		if(this.can.clientID == 0) {
+			this.can.display.addRenderable(this.can.walk);
+		}
+	}
+	,removeWalk: function() {
+		this.can.walk.enabled = false;
+		this.can.display.addRenderable(this.can.walk);
+	}
+	,act: function(value) {
+		console.log("Sacenario Act " + value);
+		switch(value) {
+		case "nowalk":
+			this.removeWalk();
+			break;
+		case "walk":
+			this.can.walk = new murmur_Walk(0);
+			this.addWalk();
+			break;
+		default:
+			console.log(value);
+			Reflect.field(this,value).apply(this,[]);
+		}
+	}
+	,scene1: function() {
+		this.can.velocity = 2;
+		this.can.updateVelocity();
+		this.can.waypoints.goals = [];
+		this.can.avoidCollisions.enabled = false;
+		this.can.avoidCollisions.set_radius(80);
+		this.can.DS.dispatch();
+	}
+	,scene2: function() {
+		this.can.velocity = .6;
+		this.can.updateVelocity();
+		this.can.steerCenter.enabled = false;
+		this.can.avoidCollisions.enabled = true;
+		this.can.avoidCollisions.set_radius(80);
+		this.can.DS.dispatch();
+	}
+	,scene3: function() {
+		this.can.velocity = .7;
+		this.can.updateVelocity();
+		this.can.DS.dispatch();
+	}
+	,scene4: function() {
+		this.can.velocity = .6;
+		this.can.updateVelocity();
+		this.can.avoidCollisions.enabled = false;
+		this.can.waypoints.addGoal(Math.random() * this.can.width,Math.random() * this.can.height);
+		this.can.DS.dispatch();
+	}
+	,scene5: function() {
+		this.can.velocity = .8;
+		this.can.updateVelocity();
+		this.can.DS.dispatch();
+	}
+	,removeorAdd: function() {
+		var num = Std.random(10);
+		var rem = Math.random() < 0.5;
+		console.log("num=" + num + " rem=" + (rem == null?"null":"" + rem));
+		if(rem) {
+			if(num < this.can.flock.boids.length) {
+				this.can.flock.boids.splice(0,num);
+			}
+		} else {
+			this.can.addBoids(this.can.flock,num,this.can.velocity,this.can.respectBoundaries.offset);
+		}
+	}
+	,__class__: murmur_Scenario
+};
+var socket_signal_SplitOut = function() {
+	msignal_Signal2.call(this,String,Dynamic);
+};
+socket_signal_SplitOut.__name__ = ["socket","signal","SplitOut"];
+socket_signal_SplitOut.getInstance = function() {
+	if(socket_signal_SplitOut._instance == null) {
+		socket_signal_SplitOut._instance = new socket_signal_SplitOut();
+	}
+	return socket_signal_SplitOut._instance;
+};
+socket_signal_SplitOut.__super__ = msignal_Signal2;
+socket_signal_SplitOut.prototype = $extend(msignal_Signal2.prototype,{
+	__class__: socket_signal_SplitOut
+});
 var murmur_SplitBoundaries = function(minx,maxx,miny,maxy,offset,maxSteer) {
 	if(offset == null) {
 		offset = 0.0;
@@ -2773,6 +3029,112 @@ murmur_SplitBoundaries.prototype = {
 	}
 	,__class__: murmur_SplitBoundaries
 };
+var murmur_Sprite = function(options,state) {
+	this.y = 0;
+	this.width = options.width;
+	this.height = options.height;
+	this.loop = options.loop != null?options.loop:true;
+	this.currentFrame = 0;
+	this.tickCount = 0;
+	this.state = state;
+	this.ticksPerFrame = Math.floor(60 / options.fps);
+	this.numberOfFrames = options.numberOfFrames != 0?options.numberOfFrames:1;
+	this.loadImage(options.src);
+};
+murmur_Sprite.__name__ = ["murmur","Sprite"];
+murmur_Sprite.prototype = {
+	state: null
+	,width: null
+	,height: null
+	,image: null
+	,currentFrame: null
+	,tickCount: null
+	,ticksPerFrame: null
+	,numberOfFrames: null
+	,loop: null
+	,step: null
+	,x: null
+	,y: null
+	,loadImage: function(src) {
+		this.image = new Image();
+		this.image.src = src;
+	}
+	,setFrame: function(index) {
+		this.currentFrame = index;
+	}
+	,render: function(context) {
+		context.drawImage(this.image,this.currentFrame * this.image.width / this.numberOfFrames,0,this.image.width / this.numberOfFrames,this.height,this.x,this.y,this.image.width / this.numberOfFrames,this.height);
+	}
+	,update: function(context) {
+		this.tickCount += 1;
+		if(this.tickCount > this.ticksPerFrame) {
+			this.tickCount = 0;
+			if(this.currentFrame < this.numberOfFrames - 1) {
+				this.currentFrame += 1;
+			} else if(this.loop) {
+				this.currentFrame = 0;
+			}
+		}
+		this.render(context);
+	}
+	,back: function() {
+		this.x = -this.image.width / this.numberOfFrames;
+	}
+	,move: function(step) {
+		this.x = this.x + step;
+	}
+	,__class__: murmur_Sprite
+};
+var socket_signal_WalkOut = function() {
+	msignal_Signal2.call(this,String,Dynamic);
+};
+socket_signal_WalkOut.__name__ = ["socket","signal","WalkOut"];
+socket_signal_WalkOut.getInstance = function() {
+	if(socket_signal_WalkOut._instance == null) {
+		socket_signal_WalkOut._instance = new socket_signal_WalkOut();
+	}
+	return socket_signal_WalkOut._instance;
+};
+socket_signal_WalkOut.__super__ = msignal_Signal2;
+socket_signal_WalkOut.prototype = $extend(msignal_Signal2.prototype,{
+	__class__: socket_signal_WalkOut
+});
+var murmur_Walk = function(state) {
+	this.enabled = true;
+	this.sprite = new murmur_Sprite({ src : "anim/compiled_small.jpg", width : 400, height : 375, numberOfFrames : 13, fps : 7},state);
+};
+murmur_Walk.__name__ = ["murmur","Walk"];
+murmur_Walk.__interfaces__ = [boidz_IRenderable];
+murmur_Walk.prototype = {
+	enabled: null
+	,sprite: null
+	,back: function(dir,sprite) {
+		switch(dir) {
+		case "left":
+			break;
+		case "right":
+			this.sprite.back();
+			break;
+		default:
+		}
+	}
+	,setState: function(state) {
+		this.sprite.state = state;
+	}
+	,moveX: function(v) {
+		this.sprite.x += v;
+	}
+	,render: function(render) {
+		this.moveX(4);
+		this.sprite.update(render.ctx);
+		if(this.sprite.x > render.canvas.width) {
+			if(this.enabled) {
+				murmur_Walk.outBounds.dispatch("right",this.sprite);
+			}
+		}
+	}
+	,__class__: murmur_Walk
+};
 var socket_SocketManager = function() {
 	this.dims = { width : 0, height : 0, clientID : 0};
 	this._messages = [];
@@ -2781,11 +3143,13 @@ var socket_SocketManager = function() {
 	var $window = window;
 	var document = window.document;
 	$window.onload = function() {
-		_gthis.dims.width = $window.innerWidth;
-		_gthis.dims.height = $window.innerHeight;
+		_gthis.dims.width = $window.outerWidth;
+		_gthis.dims.height = $window.outerHeight;
 		_gthis.connect();
 	};
-	murmur_SplitBoundaries.outBounds.add($bind(this,this.sendMessage));
+	socket_signal_SplitOut.getInstance().add($bind(this,this.sendMessage));
+	socket_signal_WalkOut.getInstance().add($bind(this,this.sendWalk));
+	socket_signal_ControlSignal.getInstance().add($bind(this,this.sendControl));
 };
 socket_SocketManager.__name__ = ["socket","SocketManager"];
 socket_SocketManager.prototype = {
@@ -2794,9 +3158,15 @@ socket_SocketManager.prototype = {
 	,clientId: null
 	,_socket: null
 	,dims: null
+	,sendControl: function(type,value) {
+		console.log("sendControl");
+		this._socket.emit("ctrl",{ type : type, value : value});
+	}
+	,sendWalk: function(dir,sprite) {
+		console.log("sendWalk");
+		this._socket.emit("walk",{ dir : dir, sprite : sprite});
+	}
 	,sendMessage: function(dir,boid) {
-		console.log("ok boid");
-		console.log(boid);
 		this._socket.emit("send",{ dir : dir, data : boid});
 	}
 	,connect: function() {
@@ -2809,6 +3179,14 @@ socket_SocketManager.prototype = {
 			} else {
 				console.log("There is a problem: " + Std.string(args.data));
 			}
+		});
+		this._socket.on("walking",function(args1) {
+			console.log("yo walk");
+			socket_SocketManager.walkSignal.dispatch(args1.dir,args1.sprite);
+		});
+		this._socket.on("control",function(args2) {
+			console.log("yo control");
+			socket_SocketManager.ctrlSignal.dispatch(args2.type,args2.value);
 		});
 		this._socket.on("clientConnect",function(data) {
 			_gthis.clientId = data.clients;
@@ -2823,6 +3201,20 @@ socket_SocketManager.prototype = {
 	}
 	,__class__: socket_SocketManager
 };
+var socket_signal_ControlSignal = function() {
+	msignal_Signal2.call(this,String,Dynamic);
+};
+socket_signal_ControlSignal.__name__ = ["socket","signal","ControlSignal"];
+socket_signal_ControlSignal.getInstance = function() {
+	if(socket_signal_ControlSignal._instance == null) {
+		socket_signal_ControlSignal._instance = new socket_signal_ControlSignal();
+	}
+	return socket_signal_ControlSignal._instance;
+};
+socket_signal_ControlSignal.__super__ = msignal_Signal2;
+socket_signal_ControlSignal.prototype = $extend(msignal_Signal2.prototype,{
+	__class__: socket_signal_ControlSignal
+});
 var thx_Arrays = function() { };
 thx_Arrays.__name__ = ["thx","Arrays"];
 thx_Arrays.append = function(array,element) {
@@ -4173,6 +4565,7 @@ thx_OrderingImpl.GT = ["GT",1];
 thx_OrderingImpl.GT.__enum__ = thx_OrderingImpl;
 thx_OrderingImpl.EQ = ["EQ",2];
 thx_OrderingImpl.EQ.__enum__ = thx_OrderingImpl;
+thx_OrderingImpl.__empty_constructs__ = [thx_OrderingImpl.LT,thx_OrderingImpl.GT,thx_OrderingImpl.EQ];
 var thx_Dates = function() { };
 thx_Dates.__name__ = ["thx","Dates"];
 thx_Dates.compare = function(a,b) {
@@ -4889,6 +5282,7 @@ thx_DynamicsT.tuples = function(o) {
 var thx_Either = { __ename__ : ["thx","Either"], __constructs__ : ["Left","Right"] };
 thx_Either.Left = function(value) { var $x = ["Left",0,value]; $x.__enum__ = thx_Either; return $x; };
 thx_Either.Right = function(value) { var $x = ["Right",1,value]; $x.__enum__ = thx_Either; return $x; };
+thx_Either.__empty_constructs__ = [];
 var thx_Eithers = function() { };
 thx_Eithers.__name__ = ["thx","Eithers"];
 thx_Eithers.isLeft = function(either) {
@@ -6517,9 +6911,11 @@ thx__$Nel_Nel_$Impl_$.semigroup = function() {
 var thx_NonEmptyList = { __ename__ : ["thx","NonEmptyList"], __constructs__ : ["Single","ConsNel"] };
 thx_NonEmptyList.Single = function(x) { var $x = ["Single",0,x]; $x.__enum__ = thx_NonEmptyList; return $x; };
 thx_NonEmptyList.ConsNel = function(x,xs) { var $x = ["ConsNel",1,x,xs]; $x.__enum__ = thx_NonEmptyList; return $x; };
+thx_NonEmptyList.__empty_constructs__ = [];
 var thx_Nil = { __ename__ : ["thx","Nil"], __constructs__ : ["nil"] };
 thx_Nil.nil = ["nil",0];
 thx_Nil.nil.__enum__ = thx_Nil;
+thx_Nil.__empty_constructs__ = [thx_Nil.nil];
 var thx_Objects = function() { };
 thx_Objects.__name__ = ["thx","Objects"];
 thx_Objects.compare = function(a,b) {
@@ -8159,6 +8555,7 @@ thx_TimePeriod.Month = ["Month",5];
 thx_TimePeriod.Month.__enum__ = thx_TimePeriod;
 thx_TimePeriod.Year = ["Year",6];
 thx_TimePeriod.Year.__enum__ = thx_TimePeriod;
+thx_TimePeriod.__empty_constructs__ = [thx_TimePeriod.Second,thx_TimePeriod.Minute,thx_TimePeriod.Hour,thx_TimePeriod.Day,thx_TimePeriod.Week,thx_TimePeriod.Month,thx_TimePeriod.Year];
 var thx_Timer = function() { };
 thx_Timer.__name__ = ["thx","Timer"];
 thx_Timer.debounce = function(callback,delayms,leading) {
@@ -12891,6 +13288,7 @@ thx_color_parse_ChannelInfo.CIDegree = function(value) { var $x = ["CIDegree",2,
 thx_color_parse_ChannelInfo.CIInt8 = function(value) { var $x = ["CIInt8",3,value]; $x.__enum__ = thx_color_parse_ChannelInfo; return $x; };
 thx_color_parse_ChannelInfo.CIInt = function(value) { var $x = ["CIInt",4,value]; $x.__enum__ = thx_color_parse_ChannelInfo; return $x; };
 thx_color_parse_ChannelInfo.CIBool = function(value) { var $x = ["CIBool",5,value]; $x.__enum__ = thx_color_parse_ChannelInfo; return $x; };
+thx_color_parse_ChannelInfo.__empty_constructs__ = [];
 var thx_error_ErrorWrapper = function(message,innerError,stack,pos) {
 	thx_Error.call(this,message,stack,pos);
 	this.innerError = innerError;
@@ -13228,6 +13626,7 @@ var thx_fp_MapImpl = { __ename__ : ["thx","fp","MapImpl"], __constructs__ : ["Ti
 thx_fp_MapImpl.Tip = ["Tip",0];
 thx_fp_MapImpl.Tip.__enum__ = thx_fp_MapImpl;
 thx_fp_MapImpl.Bin = function(size,key,value,lhs,rhs) { var $x = ["Bin",1,size,key,value,lhs,rhs]; $x.__enum__ = thx_fp_MapImpl; return $x; };
+thx_fp_MapImpl.__empty_constructs__ = [thx_fp_MapImpl.Tip];
 var thx_unit_angle__$BinaryDegree_BinaryDegree_$Impl_$ = {};
 thx_unit_angle__$BinaryDegree_BinaryDegree_$Impl_$.__name__ = ["thx","unit","angle","_BinaryDegree","BinaryDegree_Impl_"];
 thx_unit_angle__$BinaryDegree_BinaryDegree_$Impl_$.fromFloat = function(value) {
@@ -15249,8 +15648,11 @@ murmur_Canvas.document = window.document;
 murmur_Canvas.paused = 0;
 murmur_Canvas._numPeople = 50;
 murmur_PeopleImage.count = 0;
-murmur_SplitBoundaries.outBounds = new msignal_Signal2();
+murmur_SplitBoundaries.outBounds = socket_signal_SplitOut.getInstance();
+murmur_Walk.outBounds = socket_signal_WalkOut.getInstance();
 socket_SocketManager.emitSignal = new msignal_Signal2();
+socket_SocketManager.walkSignal = new msignal_Signal2();
+socket_SocketManager.ctrlSignal = new msignal_Signal2();
 thx_Dates.order = thx__$Ord_Ord_$Impl_$.fromIntComparison(thx_Dates.compare);
 thx_Floats.TOLERANCE = 10e-5;
 thx_Floats.EPSILON = 1e-9;

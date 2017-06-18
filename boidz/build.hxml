@@ -25,4 +25,7 @@
 #-debug
 #-resource people/n&b1.png@pip
 #-cmd open -a safari  boidz/bin/index.html
--cmd open -a safari http://192.168.1.34:3700
+#
+
+#-cmd open -a safari http://192.168.0.26:3700
+		

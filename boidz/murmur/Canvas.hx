@@ -16,10 +16,11 @@ import murmur.People;
 class Canvas{
 
   /// dimensions
-  
+  var scenario:Scenario;
+  public var walk:Walk;
   public var width  = #if nico 1600 #else 1440 #end;
   public var height = 900;
-  var clientID:Int;
+  public var clientID:Int;
   // public var width  = 400;
   // public var height = 400;
 
@@ -46,7 +47,7 @@ public var canvasWaypoints:boidz.render.canvas.CanvasIndividualWaypoints;
 public var canvasFlock:People;
 public var zoneBounds:boidz.render.canvas.ZoneBounds;
 public var zone:boidz.rules.SteerTowardZone;
-
+public var steerCenter:SteerTowardCenter;
   //pausing onspaceBAr
   static function pause(){
     velocityfunc(paused);
@@ -96,7 +97,7 @@ public var zone:boidz.rules.SteerTowardZone;
         canvas = getCanvas();
         render = new CanvasRender(canvas);
         //add a new Canvas
-        var render2= new CanvasRender(getCanvas());
+      
         display = new Display(render);
        // display.addRenderable(new CanvasBoundaries()
         avoidCollisions = new AvoidCollisions(flock, 3, 25);
@@ -107,10 +108,10 @@ public var zone:boidz.rules.SteerTowardZone;
         var split= new SplitBoundaries(0, width, 0, height);
         flock.addRule(split);
         murmur.SplitBoundaries.outBounds.add(removeBoid);
-
-    //flock.addRule(new SteerTowardCenter(flock));
+        steerCenter=new SteerTowardCenter(flock);
+    flock.addRule(steerCenter);
     //flock.addRule(waypoints);
-    //flock.addRule(avoidCollisions);
+    flock.addRule(avoidCollisions);
     //flock.addRule(respectBoundaries);
     //respectBoundaries.enabled=false;
     addBoids(flock, _numPeople, velocity, respectBoundaries.offset);
@@ -118,6 +119,8 @@ public var zone:boidz.rules.SteerTowardZone;
     canvasBoundaries = new CanvasBoundaries(respectBoundaries);
     canvasWaypoints = new CanvasIndividualWaypoints(waypoints);
     canvasFlock = new People(flock);
+    
+   // Walk.outBounds.add(walk.back);
     zoneBounds= new ZoneBounds(new RespectBoundaries(20+Math.random()*800, 30+Math.random()*600, 30+Math.random()*300, 40+Math.random()*600, 50, 25));
 
     zone= new SteerTowardZone(flock,zoneBounds);
@@ -126,6 +129,7 @@ public var zone:boidz.rules.SteerTowardZone;
    // display.addRenderable(canvasBoundaries);
     #if debug display.addRenderable(canvasWaypoints);#end
     display.addRenderable(canvasFlock);
+    
     #if debug display.addRenderable(zoneBounds);#end
     
 
@@ -134,6 +138,7 @@ public var zone:boidz.rules.SteerTowardZone;
     }, false);
 
     
+
     var benchmarks = [],
         frames = [],
         renderings = [],
@@ -153,6 +158,7 @@ public var zone:boidz.rules.SteerTowardZone;
         flock.update();
         benchmarks.splice(1, 10);
         benchmarks.push(Timer.time() - time);
+        
 
         delta -= step;
       }
@@ -194,30 +200,53 @@ public var zone:boidz.rules.SteerTowardZone;
     DS.dispatch();
  #end
     #if scenario 
-    var scenario= new Scenario(this,30000
+    var scenario= new TimedScenario(this,30000
       );
     #end
     //new crowded.Crowd();
     //
     //
     //
+    scenario= new Scenario(this);
      wait(dims.clientID);
+     
+     // if( dims.clientID==0)
+     // display.addRenderable(walk);
+      
   }
 
-   function getCanvas() {
-    var canvas = Browser.document.createCanvasElement();
-    canvas.width = width;
-    canvas.height = height;
-    Browser.document.body.appendChild(canvas);
 
 
+  
 
-    return canvas;
-  }
-
+  /*listening to sockets
+  ----------------------*/
   function wait(state:Int){
-    socket.SocketManager.emitSignal.add(function(dir,boid){
-      trace("new"+state);
+
+    socket.SocketManager.walkSignal.add(function(dir,sprite:murmur.Sprite){
+      changeAnyColor();
+      trace('state=$state spriteState=${sprite.state}');
+      display.removeRenderable(walk);
+      walk.enabled=false;
+
+      if(state!=sprite.state){
+      //var people= People.fromLight(p);
+      walk.setState(state);
+      display.addRenderable(walk);
+     
+      switch (dir) {
+        case "left":walk.back(dir,sprite);
+        case "right":walk.back(dir,sprite);
+      }
+       walk.enabled=true;
+      // peoples.push(people);
+      // people._in();
+      
+      }
+
+    });
+    socket.SocketManager.emitSignal.add(function(dir,boid:Boid){
+      //trace("new"+state);
       if(state!=boid.state){
       //var people= People.fromLight(p);
       boid.state=state;
@@ -235,11 +264,40 @@ public var zone:boidz.rules.SteerTowardZone;
       
 
     });
+    socket.SocketManager.ctrlSignal.add(function (type,value){
+      trace("new ctrl Signal");
+      switch (type){
+        case "color": changeColor(value);
+        case "action": doAct(value);
+        case _: 
+      }
+    });
     //CanvasClient.People.signal.add(fire);
   }
 
-  
+  //// sockets actions
+  public function doAct(val){
+      trace( 'doAct $val');
+      scenario.act(val);
 
+  }
+  function changeAnyColor(){
+    changeColor("#"+StringTools.hex(
+        Std.int(Math.random()
+        * 0xFFFFFF ))
+      );
+  }
+  function changeColor(color){
+    js.Browser.document.body.style.backgroundColor=color;
+  }
+
+  /*___________end sockets________*/
+
+  
+  
+  //---------------
+  // Boid utilities
+  //---------------
   public function addBoids(flock : Flock, howMany : Int, velocity : Float, offset : Float) {
     var w = Math.min(width, height);
     for (i in 0...howMany) {
@@ -255,9 +313,9 @@ public var zone:boidz.rules.SteerTowardZone;
       flock.boids.push(b);
     }
   }
-
+  
   function addBoid(b:Boid){
-    trace( "addBoid in"+ b.peopleImage.path);
+   // trace( "addBoid in"+ b.peopleImage.path);
     var img = new js.html.Image();
       img.src = b.peopleImage.path;
       img.onload=function(e){
@@ -274,10 +332,20 @@ public var zone:boidz.rules.SteerTowardZone;
     flock.boids.remove(b);
   }
 
+  /*________________*/
 
-
+  // realTime velocity update
   public function updateVelocity() {
       for(boid in flock.boids)
         boid.v = velocity * (randomVelocity ? Math.random() : velocity);
-    }
+  }
+
+   // just find the canvas on htmlPage
+   function getCanvas() {
+    var canvas = Browser.document.createCanvasElement();
+    canvas.width = width;
+    canvas.height = height;
+    Browser.document.body.appendChild(canvas);
+    return canvas;
+  }
 }

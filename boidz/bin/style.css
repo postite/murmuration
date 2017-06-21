@@ -1,0 +1,46 @@
+body {
+margin:0;
+/*background-color:pink;*/
+}
+#clientId{
+	position:absolute;
+}
+
+.box{
+	width: 200px;
+	height: 200px;
+	background-color: gray;
+	margin:1em;
+	float:left;
+}
+h6{
+	font-size: 2em;
+}
+
+/*.box{
+	
+	width: 70px;
+	height: 70px;
+	background-color: gray;
+	margin:1em;
+	float:left;
+}
+h6{
+	margin:0;
+	font-size: 1em;
+}*/
+.bar{
+
+}
+.bar > div{
+	float:left;
+}
+.bar:after{
+	content: '';
+    display: block;
+	clear:both;
+}
+#debug{
+	top:0;
+	position:absolute;
+}

@@ -13,7 +13,7 @@ class People implements IRenderable<CanvasRender> {
   var flock : Flock;
   public var enabled : Bool = true;
   public var renderCentroid : Bool = #if debug true #else false #end;
-  public var renderTrail : Bool = true;
+  public var renderTrail : Bool = false;
   public var trailLength : Int = 20;
   var boidColor : String;
   var crownColor : String;
@@ -52,7 +52,7 @@ class People implements IRenderable<CanvasRender> {
   public function render(render : CanvasRender) {
     var ctx = render.ctx;
 
-    ctx.imageSmoothingEnabled=true;
+    //ctx.imageSmoothingEnabled=true;
  
 
     // boidz trail

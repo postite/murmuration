@@ -7,69 +7,57 @@ import boidz.rules.*;
 import boidz.render.canvas.*;
 using thx.Arrays;
 using thx.Floats;
+import thx.color.Rgb;
 
 import js.Browser;
 import thx.Timer;
 import murmur.MurmurTools;
 import murmur.People;
-
+import js.Browser.*;
 class Canvas{
 
   /// dimensions
+  public var timedScenario:murmur.TimedScenario;
   var scenario:Scenario;
   public var walk:Walk;
   public var width  = #if nico 1600 #else 1440 #end;
   public var height = 900;
   public var clientID:Int;
-  // public var width  = 400;
-  // public var height = 400;
 
   //storing velocityfunction
   static var velocityfunc;
   
-  static var document:js.html.Document= js.Browser.document;
+  
 
   static var paused = 0;
 
   //boidz specific
-public var velocity=0.9;
-static var _numPeople=50;
-public var randomVelocity:Bool=false;
-public var flock:Flock;
-public var canvas:js.html.CanvasElement;
-public var render:boidz.render.canvas.CanvasRender;
-public var display:Display<boidz.render.canvas.CanvasRender>;
-public var avoidCollisions:boidz.rules.AvoidCollisions;
-public var respectBoundaries:boidz.rules.RespectBoundaries;
-public var waypoints:boidz.rules.IndividualWaypoints;
-public var canvasBoundaries:boidz.render.canvas.CanvasBoundaries;
-public var canvasWaypoints:boidz.render.canvas.CanvasIndividualWaypoints;
-public var canvasFlock:People;
-public var zoneBounds:boidz.render.canvas.ZoneBounds;
-public var zone:boidz.rules.SteerTowardZone;
-public var steerCenter:SteerTowardCenter;
-  //pausing onspaceBAr
-  static function pause(){
-    velocityfunc(paused);
-    if( paused==0)paused=1
-      else
-      paused=0; 
-  }
-
+  public var velocity=0.9;
+  static var _numPeople=150;
+  public var fall:Fall;
+  public var randomVelocity:Bool=false;
+  public var flock:Flock;
+  public var canvas:js.html.CanvasElement;
+  public var render:boidz.render.canvas.CanvasRender;
+  public var display:Display<boidz.render.canvas.CanvasRender>;
+  public var avoidCollisions:boidz.rules.AvoidCollisions;
+  public var respectBoundaries:boidz.rules.RespectBoundaries;
+  public var waypoints:boidz.rules.IndividualWaypoints;
+  public var canvasBoundaries:boidz.render.canvas.CanvasBoundaries;
+  public var canvasWaypoints:boidz.render.canvas.CanvasIndividualWaypoints;
+  public var canvasFlock:boidz.IRenderable<CanvasRender>;
+  public var zoneBounds:boidz.render.canvas.ZoneBounds;
+  public var zone:boidz.rules.SteerTowardZone;
+  public var steerCenter:SteerTowardCenter;
+  public var split:murmur.SplitBoundaries;
+  var debugRender :boidz.render.canvas.DebugRender;
+  
+  // signal for Timed Scenario
   public var DS:murmur.DoneSignal;
 
-  static function spaceKeydown(callback:Void->Void){
-     document.addEventListener("keydown", function(e) {
-  if (e.keyCode == 13) {
-    callback();
-  }
-}, false);
-  }
 
-  //reload every ...
-  static  function timed(){
-     js.Browser.location.reload();
-  }
+
+  //listening to Sockets
   public function new(){
     var sok=new socket.SocketManager();
     sok.connected.addOnce(execute);
@@ -83,50 +71,74 @@ public var steerCenter:SteerTowardCenter;
     width=dims.width;
     height=dims.height;
     clientID=dims.clientID;
-  //activate pausing
-  spaceKeydown(pause);
 
-  //listen to reload
-  DS= DoneSignal.getInstance();
- // DS.add(timed);
+    //activate pausing
+    spaceKeydown(toggleDebug);
 
-  //activate reload
-  //haxe.Timer.delay(timed,60000);
+    //listen to reload
+    DS= DoneSignal.getInstance();
+    // DS.add(timed);
+
+    //activate reload
+    //haxe.Timer.delay(timed,60000);
  
-        flock  = new Flock();
-        canvas = getCanvas();
-        render = new CanvasRender(canvas);
-        //add a new Canvas
-      
-        display = new Display(render);
-       // display.addRenderable(new CanvasBoundaries()
-        avoidCollisions = new AvoidCollisions(flock, 3, 25);
-        respectBoundaries = new RespectBoundaries(-300, width+300, -300, height+300, 50, 25);
-        waypoints = new IndividualWaypoints(flock, 10);
-        //velocity = _velocity;
+     flock  = new Flock();
+     canvas = getCanvas();
+     
+     render = new CanvasRender(canvas);
+     debugRender=new DebugRender(getDebugContainer());
+      debugRender.clientID=dims.clientID;
+    //debugDisplay= ;
+    //add a new Canvas
+    
+     display = new Display(render);
+     var debugDisplay= new Display(debugRender);
+     debugDisplay.render();
+     DS.add(function(s:String){
+      debugRender.actionID=s;
+      debugRender.peopleID=flock.boids.length;
+      debugDisplay.render();
+    });
+    // display.addRenderable(new CanvasBoundaries()
+     avoidCollisions = new AvoidCollisions(flock, 100, 25);
+     respectBoundaries = new RespectBoundaries(-300, width+300, -300, height+300, 50, 25);
+     waypoints = new IndividualWaypoints(flock, 10);
+     //velocity = _velocity;
 
-        var split= new SplitBoundaries(0, width, 0, height);
-        flock.addRule(split);
-        murmur.SplitBoundaries.outBounds.add(removeBoid);
-        steerCenter=new SteerTowardCenter(flock);
+    split= new SplitBoundaries(0, width, 0, height);
+     flock.addRule(split);
+     murmur.SplitBoundaries.outBounds.add(removeBoid);
+        
+
+
+    //RULES
+    fall= new Fall(flock,new boidz.render.canvas.ZoneBounds(new RespectBoundaries(0,width,0,height)),null);
+    fall.enabled=false;
+    flock.addRule(fall);
+    steerCenter=new SteerTowardCenter(flock);
     flock.addRule(steerCenter);
-    //flock.addRule(waypoints);
+    steerCenter.enabled=false;
+    flock.addRule(waypoints);
+    waypoints.enabled=false;
     flock.addRule(avoidCollisions);
-    //flock.addRule(respectBoundaries);
+    avoidCollisions.enabled=false;
+    flock.addRule(respectBoundaries);
+    respectBoundaries.enabled=false;
     //respectBoundaries.enabled=false;
     addBoids(flock, _numPeople, velocity, respectBoundaries.offset);
 
     canvasBoundaries = new CanvasBoundaries(respectBoundaries);
     canvasWaypoints = new CanvasIndividualWaypoints(waypoints);
     canvasFlock = new People(flock);
+    //canvasFlock = new CanvasFlock(flock);
     
-   // Walk.outBounds.add(walk.back);
+    // Walk.outBounds.add(walk.back);
     zoneBounds= new ZoneBounds(new RespectBoundaries(20+Math.random()*800, 30+Math.random()*600, 30+Math.random()*300, 40+Math.random()*600, 50, 25));
 
     zone= new SteerTowardZone(flock,zoneBounds);
    // flock.addRule(zone);
    // display.addRenderable(new boidz.render.canvas.TargetZone(zone.points));
-   // display.addRenderable(canvasBoundaries);
+    display.addRenderable(canvasBoundaries);
     #if debug display.addRenderable(canvasWaypoints);#end
     display.addRenderable(canvasFlock);
     
@@ -137,41 +149,44 @@ public var steerCenter:SteerTowardCenter;
       waypoints.addGoal(e.clientX, e.clientY);
     }, false);
 
-    
-
-    var benchmarks = [],
-        frames = [],
-        renderings = [],
-        residue = 0.0,
+    var residue = 0.0,
         step    = flock.step * 1000,
+        renderings = [];
+  #if ui
+    var benchmarks = [],
+        frames = [],      
         execution = null,
         rendering = null,
         frameRate = null,
-
-        start = Timer.time();
+  #end
+      var start = Timer.time();
 
     thx.Timer.frame(function(delta) {
       delta += residue;
       while(delta - step >= 0) {
 
-        var time = Timer.time();
         flock.update();
+
+        #if ui
+        var time = Timer.time();
         benchmarks.splice(1, 10);
         benchmarks.push(Timer.time() - time);
-        
+        #end 
 
         delta -= step;
       }
+
       residue = delta;
       var before = Timer.time();
       display.render();
       renderings.splice(1, 10);
       renderings.push(Timer.time() - before);
-
+      #if ui
       var n = Timer.time();
       frames.splice(1, 10);
       frames.push(n - start);
       start = n;
+      #end
     });
 
 
@@ -199,20 +214,25 @@ public var steerCenter:SteerTowardCenter;
     var ui= new UI(this);
     DS.dispatch();
  #end
-    #if scenario 
-    var scenario= new TimedScenario(this,30000
+    //#if scenario 
+     timedScenario= new TimedScenario(this,clientID,21600
       );
-    #end
+    //#end
     //new crowded.Crowd();
     //
     //
     //
-    scenario= new Scenario(this);
+    scenario= new Scenario(this,clientID);
      wait(dims.clientID);
-     
+     trace( "all OK");
      // if( dims.clientID==0)
      // display.addRenderable(walk);
       
+  }
+
+
+  public function reset(){
+    addBoids(flock,100,1,0);
   }
 
 
@@ -224,7 +244,7 @@ public var steerCenter:SteerTowardCenter;
   function wait(state:Int){
 
     socket.SocketManager.walkSignal.add(function(dir,sprite:murmur.Sprite){
-      changeAnyColor();
+      #if debug changeAnyColor();#end 
       trace('state=$state spriteState=${sprite.state}');
       display.removeRenderable(walk);
       walk.enabled=false;
@@ -281,14 +301,18 @@ public var steerCenter:SteerTowardCenter;
       scenario.act(val);
 
   }
-  function changeAnyColor(){
+  public function changeAnyColor(){
     changeColor("#"+StringTools.hex(
         Std.int(Math.random()
         * 0xFFFFFF ))
       );
   }
-  function changeColor(color){
-    js.Browser.document.body.style.backgroundColor=color;
+  public function changeColor(color:String){
+    #if debug
+    var rgb:Rgb=color;
+    var lightcolor= rgb.lighter(.95);
+    js.Browser.document.body.style.backgroundColor=lightcolor.toHex();
+    #end
   }
 
   /*___________end sockets________*/
@@ -347,5 +371,36 @@ public var steerCenter:SteerTowardCenter;
     canvas.height = height;
     Browser.document.body.appendChild(canvas);
     return canvas;
+  }
+
+  function getDebugContainer(){
+    var container=Browser.document.createDivElement();
+    Browser.document.body.appendChild(container);
+    return container;
+  }
+
+   //pausing onspaceBAr
+  static function pause(){
+    velocityfunc(paused);
+    if( paused==0)paused=1
+      else
+      paused=0; 
+  }
+  public function toggleDebug(){
+    debugRender.toggle();
+  }
+  //listening spaceBar
+    static function spaceKeydown(callback:Void->Void){
+     document.addEventListener("keydown", function(e) {
+
+      if (e.keyCode == 13) {
+
+       callback();
+      }
+      }, false);
+    }
+  //reload every ...
+  static  function timed(){
+     js.Browser.location.reload();
   }
 }

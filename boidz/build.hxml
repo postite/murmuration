@@ -4,6 +4,7 @@
 -cp boidz
 #-cp /
 -main murmur.Canvas
+#-main murmur.Demo
 #-main Paf
 -lib js-kit
 -lib hxnodejs
@@ -17,12 +18,13 @@
 -lib thx.stream.dom
 -lib thx.unit
 #-lib postite
--D benchmark
--D network-sandbox
--D source-map-content
+#-D benchmark
+#-D network-sandbox
+#-D source-map-content
 -D hxnodejs_no_version_warning
 #-D nico
-#-debug
+#-dce no
+-debug
 #-resource people/n&b1.png@pip
 #-cmd open -a safari  boidz/bin/index.html
 #

@@ -26,6 +26,12 @@ _$Api_Color_$Impl_$.$name = function(c) {
 };
 var Api = function() { };
 Api.__name__ = ["Api"];
+var Config = function() {
+};
+Config.__name__ = ["Config"];
+Config.prototype = {
+	__class__: Config
+};
 var DateTools = function() { };
 DateTools.__name__ = ["DateTools"];
 DateTools.getMonthDays = function(d) {
@@ -822,6 +828,49 @@ boidz_render_canvas_CanvasRender.prototype = {
 	}
 	,__class__: boidz_render_canvas_CanvasRender
 };
+var boidz_render_canvas_DebugRender = function(container) {
+	this.container = container;
+	container.id = "debug";
+	this.client = window.document.createElement("H1");
+	this.action = window.document.createElement("p");
+	this.peoples = window.document.createElement("h2");
+	this.container.appendChild(this.client);
+	this.container.appendChild(this.action);
+	this.container.appendChild(this.peoples);
+};
+boidz_render_canvas_DebugRender.__name__ = ["boidz","render","canvas","DebugRender"];
+boidz_render_canvas_DebugRender.__interfaces__ = [boidz_IRender];
+boidz_render_canvas_DebugRender.prototype = {
+	container: null
+	,clientID: null
+	,actionID: null
+	,peopleID: null
+	,client: null
+	,action: null
+	,peoples: null
+	,toggle: function() {
+		this.container.style.display = this.container.style.display == "none"?"block":"none";
+	}
+	,set_clientID: function(c) {
+		this.client.innerText = Std.string("client" + c);
+		return this.clientID = c;
+	}
+	,set_actionID: function(c) {
+		this.action.innerText = c;
+		return this.actionID = c;
+	}
+	,set_peopleID: function(c) {
+		this.peoples.innerText = c == null?"null":"" + c;
+		return this.peopleID = c;
+	}
+	,clear: function() {
+	}
+	,beforeEach: function() {
+	}
+	,afterEach: function() {
+	}
+	,__class__: boidz_render_canvas_DebugRender
+};
 var boidz_render_canvas_ZoneBounds = function(boundaries) {
 	this.color = "#BBBBBB";
 	this.enabled = true;
@@ -1062,6 +1111,30 @@ boidz_rules_RespectBoundaries.prototype = {
 		}
 	}
 	,__class__: boidz_rules_RespectBoundaries
+};
+var boidz_rules_SteerAway = function(x,y,maxSteer) {
+	this.enabled = true;
+	if(null == maxSteer) {
+		maxSteer = 5.0;
+	}
+	this.x = x;
+	this.y = y;
+	this.maxSteer = maxSteer;
+};
+boidz_rules_SteerAway.__name__ = ["boidz","rules","SteerAway"];
+boidz_rules_SteerAway.__interfaces__ = [boidz_IFlockRule];
+boidz_rules_SteerAway.prototype = {
+	x: null
+	,y: null
+	,maxSteer: null
+	,enabled: null
+	,before: function() {
+		return true;
+	}
+	,modify: function(b) {
+		b.d = b.d + boidz_util_Steer.away(b,this,this.maxSteer);
+	}
+	,__class__: boidz_rules_SteerAway
 };
 var boidz_rules_SteerTowardCenter = function(flock,maxSteer) {
 	this.enabled = true;
@@ -2169,8 +2242,12 @@ msignal_Signal.prototype = {
 		if(!this.slots.nonEmpty) {
 			return true;
 		}
-		if(this.slots.find(listener) == null) {
+		var existingSlot = this.slots.find(listener);
+		if(existingSlot == null) {
 			return true;
+		}
+		if(existingSlot.once != once) {
+			throw new js__$Boot_HaxeError("You cannot addOnce() then add() the same listener without removing the relationship first.");
 		}
 		return false;
 	}
@@ -2284,6 +2361,9 @@ msignal_Slot.prototype = {
 		this.signal.remove(this.listener);
 	}
 	,set_listener: function(value) {
+		if(value == null) {
+			throw new js__$Boot_HaxeError("listener cannot be null");
+		}
 		return this.listener = value;
 	}
 	,__class__: msignal_Slot
@@ -2372,8 +2452,13 @@ msignal_Slot2.prototype = $extend(msignal_Slot.prototype,{
 var msignal_SlotList = function(head,tail) {
 	this.nonEmpty = false;
 	if(head == null && tail == null) {
+		if(msignal_SlotList.NIL != null) {
+			throw new js__$Boot_HaxeError("Parameters head and tail are null. Use the NIL element instead.");
+		}
 		this.nonEmpty = false;
-	} else if(head != null) {
+	} else if(head == null) {
+		throw new js__$Boot_HaxeError("Parameter head cannot be null.");
+	} else {
 		this.head = head;
 		this.tail = tail == null?msignal_SlotList.NIL:tail;
 		this.nonEmpty = true;
@@ -2501,6 +2586,9 @@ var murmur_Canvas = function() {
 	new socket_SocketManager().connected.addOnce($bind(this,this.execute));
 };
 murmur_Canvas.__name__ = ["murmur","Canvas"];
+murmur_Canvas.main = function() {
+	new murmur_Canvas();
+};
 murmur_Canvas.pause = function() {
 	murmur_Canvas.velocityfunc(murmur_Canvas.paused);
 	if(murmur_Canvas.paused == 0) {
@@ -2510,7 +2598,7 @@ murmur_Canvas.pause = function() {
 	}
 };
 murmur_Canvas.spaceKeydown = function(callback) {
-	murmur_Canvas.document.addEventListener("keydown",function(e) {
+	window.document.addEventListener("keydown",function(e) {
 		if(e.keyCode == 13) {
 			callback();
 		}
@@ -2519,16 +2607,15 @@ murmur_Canvas.spaceKeydown = function(callback) {
 murmur_Canvas.timed = function() {
 	window.location.reload();
 };
-murmur_Canvas.main = function() {
-	new murmur_Canvas();
-};
 murmur_Canvas.prototype = {
-	scenario: null
+	timedScenario: null
+	,scenario: null
 	,walk: null
 	,width: null
 	,height: null
 	,clientID: null
 	,velocity: null
+	,fall: null
 	,randomVelocity: null
 	,flock: null
 	,canvas: null
@@ -2543,30 +2630,51 @@ murmur_Canvas.prototype = {
 	,zoneBounds: null
 	,zone: null
 	,steerCenter: null
+	,split: null
+	,debugRender: null
 	,DS: null
 	,execute: function(dims) {
 		var _gthis = this;
 		this.width = dims.width;
 		this.height = dims.height;
 		this.clientID = dims.clientID;
-		murmur_Canvas.spaceKeydown(murmur_Canvas.pause);
+		murmur_Canvas.spaceKeydown($bind(this,this.toggleDebug));
 		this.DS = murmur_DoneSignal.getInstance();
 		this.flock = new boidz_Flock();
 		this.canvas = this.getCanvas();
 		this.render = new boidz_render_canvas_CanvasRender(this.canvas);
+		this.debugRender = new boidz_render_canvas_DebugRender(this.getDebugContainer());
+		this.debugRender.set_clientID(dims.clientID);
 		this.display = new boidz_Display(this.render);
+		var debugDisplay = new boidz_Display(this.debugRender);
+		debugDisplay.render();
+		this.DS.add(function(s) {
+			_gthis.debugRender.set_actionID(s);
+			_gthis.debugRender.set_peopleID(_gthis.flock.boids.length);
+			debugDisplay.render();
+		});
 		var this1 = 25;
-		this.avoidCollisions = new boidz_rules_AvoidCollisions(this.flock,3,this1);
+		this.avoidCollisions = new boidz_rules_AvoidCollisions(this.flock,100,this1);
 		var tmp = this.width + 300;
 		var tmp1 = this.height + 300;
 		var this2 = 25;
 		this.respectBoundaries = new boidz_rules_RespectBoundaries(-300,tmp,-300,tmp1,50,this2);
 		this.waypoints = new boidz_rules_IndividualWaypoints(this.flock,10);
-		this.flock.addRule(new murmur_SplitBoundaries(0,this.width,0,this.height));
+		this.split = new murmur_SplitBoundaries(0,this.width,0,this.height);
+		this.flock.addRule(this.split);
 		murmur_SplitBoundaries.outBounds.add($bind(this,this.removeBoid));
+		this.fall = new murmur_Fall(this.flock,new boidz_render_canvas_ZoneBounds(new boidz_rules_RespectBoundaries(0,this.width,0,this.height)),null);
+		this.fall.enabled = false;
+		this.flock.addRule(this.fall);
 		this.steerCenter = new boidz_rules_SteerTowardCenter(this.flock);
 		this.flock.addRule(this.steerCenter);
+		this.steerCenter.enabled = false;
+		this.flock.addRule(this.waypoints);
+		this.waypoints.enabled = false;
 		this.flock.addRule(this.avoidCollisions);
+		this.avoidCollisions.enabled = false;
+		this.flock.addRule(this.respectBoundaries);
+		this.respectBoundaries.enabled = false;
 		this.addBoids(this.flock,murmur_Canvas._numPeople,this.velocity,this.respectBoundaries.offset);
 		this.canvasBoundaries = new boidz_render_canvas_CanvasBoundaries(this.respectBoundaries);
 		this.canvasWaypoints = new boidz_render_canvas_CanvasIndividualWaypoints(this.waypoints);
@@ -2578,23 +2686,21 @@ murmur_Canvas.prototype = {
 		var this3 = 25;
 		this.zoneBounds = new boidz_render_canvas_ZoneBounds(new boidz_rules_RespectBoundaries(tmp2,tmp3,tmp4,tmp5,50,this3));
 		this.zone = new boidz_rules_SteerTowardZone(this.flock,this.zoneBounds);
+		this.display.addRenderable(this.canvasBoundaries);
+		this.display.addRenderable(this.canvasWaypoints);
 		this.display.addRenderable(this.canvasFlock);
+		this.display.addRenderable(this.zoneBounds);
 		this.canvas.addEventListener("click",function(e) {
 			_gthis.waypoints.addGoal(e.clientX,e.clientY);
 		},false);
-		var benchmarks = [];
-		var frames = [];
-		var renderings = [];
 		var residue = 0.0;
 		var step = this.flock.step * 1000;
-		var start = performance.now();
+		var renderings = [];
+		performance.now();
 		thx_Timer.frame(function(delta) {
 			delta += residue;
 			while(delta - step >= 0) {
-				var time = performance.now();
 				_gthis.flock.update();
-				benchmarks.splice(1,10);
-				benchmarks.push(performance.now() - time);
 				delta -= step;
 			}
 			residue = delta;
@@ -2602,13 +2708,14 @@ murmur_Canvas.prototype = {
 			_gthis.display.render();
 			renderings.splice(1,10);
 			renderings.push(performance.now() - before);
-			var n = performance.now();
-			frames.splice(1,10);
-			frames.push(n - start);
-			start = n;
 		});
-		this.scenario = new murmur_Scenario(this);
+		this.timedScenario = new murmur_TimedScenario(this,this.clientID,21600);
+		this.scenario = new murmur_Scenario(this,this.clientID);
 		this.wait(dims.clientID);
+		console.log("all OK");
+	}
+	,reset: function() {
+		this.addBoids(this.flock,100,1,0);
 	}
 	,wait: function(state) {
 		var _gthis = this;
@@ -2666,7 +2773,7 @@ murmur_Canvas.prototype = {
 		this.changeColor("#" + StringTools.hex(Math.random() * 16777215 | 0));
 	}
 	,changeColor: function(color) {
-		window.document.body.style.backgroundColor = color;
+		window.document.body.style.backgroundColor = thx_color__$Rgb_Rgb_$Impl_$.toHex(thx_color__$Rgb_Rgb_$Impl_$.lighter(thx_color__$Rgb_Rgb_$Impl_$.fromString(color),.95));
 	}
 	,addBoids: function(flock,howMany,velocity,offset) {
 		Math.min(this.width,this.height);
@@ -2706,10 +2813,18 @@ murmur_Canvas.prototype = {
 		window.document.body.appendChild(canvas);
 		return canvas;
 	}
+	,getDebugContainer: function() {
+		var container = window.document.createElement("div");
+		window.document.body.appendChild(container);
+		return container;
+	}
+	,toggleDebug: function() {
+		this.debugRender.toggle();
+	}
 	,__class__: murmur_Canvas
 };
 var murmur_DoneSignal = function() {
-	msignal_Signal0.call(this);
+	msignal_Signal1.call(this,String);
 };
 murmur_DoneSignal.__name__ = ["murmur","DoneSignal"];
 murmur_DoneSignal.getInstance = function() {
@@ -2718,10 +2833,107 @@ murmur_DoneSignal.getInstance = function() {
 	}
 	return murmur_DoneSignal.instance = new murmur_DoneSignal();
 };
-murmur_DoneSignal.__super__ = msignal_Signal0;
-murmur_DoneSignal.prototype = $extend(msignal_Signal0.prototype,{
+murmur_DoneSignal.__super__ = msignal_Signal1;
+murmur_DoneSignal.prototype = $extend(msignal_Signal1.prototype,{
 	__class__: murmur_DoneSignal
 });
+var socket_signal_WalkOut = function() {
+	msignal_Signal2.call(this,String,Dynamic);
+};
+socket_signal_WalkOut.__name__ = ["socket","signal","WalkOut"];
+socket_signal_WalkOut.getInstance = function() {
+	if(socket_signal_WalkOut._instance == null) {
+		socket_signal_WalkOut._instance = new socket_signal_WalkOut();
+	}
+	return socket_signal_WalkOut._instance;
+};
+socket_signal_WalkOut.__super__ = msignal_Signal2;
+socket_signal_WalkOut.prototype = $extend(msignal_Signal2.prototype,{
+	__class__: socket_signal_WalkOut
+});
+var murmur_End = function(state) {
+	this.enabled = true;
+	this.image = new Image();
+	this.image.src = "/anim/end.png";
+};
+murmur_End.__name__ = ["murmur","End"];
+murmur_End.__interfaces__ = [boidz_IRenderable];
+murmur_End.prototype = {
+	enabled: null
+	,image: null
+	,render: function(render) {
+		render.ctx.drawImage(this.image,0,0,this.image.width,this.image.height,0,0,this.image.width,this.image.height);
+	}
+	,__class__: murmur_End
+};
+var murmur_Fall = function(flock,zone,maxSteer) {
+	this.no = false;
+	this.run = true;
+	this.go = true;
+	this.count = 0;
+	this.done = new haxe_ds_ObjectMap();
+	this.points = [];
+	this.map = new haxe_ds_ObjectMap();
+	this.enabled = true;
+	if(null == maxSteer) {
+		var this1 = 10;
+		maxSteer = this1;
+	}
+	this.flock = flock;
+	this.zone = zone;
+	var _g = 0;
+	var _g1 = flock.boids;
+	while(_g < _g1.length) {
+		var b = _g1[_g];
+		++_g;
+		var p = { x : zone.minx + Math.random() * zone.maxx, y : zone.miny + Math.random() * zone.maxy};
+		this.points.push(p);
+		this.map.set(b,p);
+	}
+	this.signal = new msignal_Signal0();
+};
+murmur_Fall.__name__ = ["murmur","Fall"];
+murmur_Fall.__interfaces__ = [boidz_IFlockRule];
+murmur_Fall.prototype = {
+	flock: null
+	,goal: null
+	,enabled: null
+	,maxSteer: null
+	,signal: null
+	,zone: null
+	,map: null
+	,points: null
+	,before: function() {
+		return true;
+	}
+	,done: null
+	,count: null
+	,go: null
+	,run: null
+	,no: null
+	,modify: function(b) {
+		var this1 = b.d;
+		var tmp = { x : b.x, y : this.zone.maxy + 100};
+		var this2 = 2;
+		b.d = this1 + boidz_util_Steer.toward(b,tmp,this2);
+		if(b.y > this.zone.maxy) {
+			HxOverrides.remove(this.flock.boids,b);
+		}
+		if(this.flock.boids.length == 0) {
+			this.signal.dispatch();
+		}
+	}
+	,doit: function() {
+		this.no = true;
+	}
+	,gof: function(b) {
+		var _gthis = this;
+		haxe_Timer.delay(function() {
+			_gthis.run = false;
+		},3000);
+	}
+	,__class__: murmur_Fall
+};
 var murmur_MurmurTools = function() {
 };
 murmur_MurmurTools.__name__ = ["murmur","MurmurTools"];
@@ -2753,8 +2965,8 @@ murmur_MurmurTools.prototype = {
 var murmur_People = function(flock,boidColor,crownColor,trailColor) {
 	this.pos = 0;
 	this.trailLength = 20;
-	this.renderTrail = true;
-	this.renderCentroid = false;
+	this.renderTrail = false;
+	this.renderCentroid = true;
 	this.enabled = true;
 	this.boidColor = null == boidColor?"#000000":thx_color__$Rgba_Rgba_$Impl_$.toString(boidColor);
 	this.crownColor = null == crownColor?"rgba(255,255,255,100)":thx_color__$Rgba_Rgba_$Impl_$.toString(crownColor);
@@ -2798,7 +3010,6 @@ murmur_People.prototype = {
 	,pos: null
 	,render: function(render) {
 		var ctx = render.ctx;
-		ctx.imageSmoothingEnabled = true;
 		if(this.renderTrail) {
 			this.pos++;
 			if(this.pos >= this.trailLength) {
@@ -2879,36 +3090,74 @@ murmur_PeopleImage.prototype = {
 	}
 	,__class__: murmur_PeopleImage
 };
-var murmur_Scenario = function(can) {
+var murmur_Scenario = function(can,clientID) {
 	this.counter = 0;
-	this.scenarios = [];
 	this.randomVelocity = false;
+	this.veryHiSpeed = 1.2;
+	this.moreSpeed = .8;
+	this.midSpeed = .7;
+	this.lowSpeed = .6;
+	this.hiSpeed = 1;
 	this.can = can;
-	this.scenarios.push($bind(this,this.scene1));
-	this.scenarios.push($bind(this,this.scene2));
-	this.scenarios.push($bind(this,this.scene3));
-	this.scenarios.push($bind(this,this.scene4));
-	this.scenarios.push($bind(this,this.scene5));
+	this.clientID = clientID;
 };
 murmur_Scenario.__name__ = ["murmur","Scenario"];
 murmur_Scenario.prototype = {
-	can: null
+	hiSpeed: null
+	,lowSpeed: null
+	,midSpeed: null
+	,moreSpeed: null
+	,veryHiSpeed: null
+	,delaySign: null
+	,can: null
 	,randomVelocity: null
 	,delay: null
-	,scenarios: null
 	,counter: null
+	,clientID: null
+	,zoom: null
+	,away: null
 	,addWalk: function() {
-		this.can.walk.enabled = true;
-		if(this.can.clientID == 0) {
-			this.can.display.addRenderable(this.can.walk);
-		}
+		var _gthis = this;
+		thx_Timer.delay(function() {
+			_gthis.can.DS.dispatch("end walk");
+			_gthis.removeWalk();
+		},30000);
+		this.can.display.addRenderable(this.can.canvasFlock);
+		this.can.canvasFlock.enabled = false;
+		this.zoom = new murmur_Zoom(this.can.flock);
+		var this1 = 300;
+		this.away = new boidz_rules_SteerAway(500,500,this1);
+		this.can.flock.addRule(this.away);
+		this.zoom.signal.add(function() {
+			_gthis.can.walk.enabled = true;
+			if(_gthis.can.clientID == 0) {
+				_gthis.can.display.addRenderable(_gthis.can.walk);
+			}
+			_gthis.zoom.enabled = false;
+			_gthis.can.display.addRenderable(_gthis.zoom);
+		});
+		this.can.velocity = this.hiSpeed;
+		this.can.updateVelocity();
+		this.can.display.addRenderable(this.zoom);
 	}
 	,removeWalk: function() {
+		this.away.enabled = false;
+		this.can.canvasFlock.enabled = true;
+		this.zoom.enabled = false;
+		this.can.display.addRenderable(this.zoom);
 		this.can.walk.enabled = false;
 		this.can.display.addRenderable(this.can.walk);
+		this.can.timedScenario.wakeup();
+		this.can.respectBoundaries.enabled = true;
+		this.can.respectBoundaries.maxSteer = 60;
+		this.can.respectBoundaries.offset = 300;
+		this.can.display.addRenderable(this.can.canvasFlock);
 	}
 	,act: function(value) {
-		console.log("Sacenario Act " + value);
+		this.can.DS.dispatch(value);
+		if(this.can.timedScenario.enabled) {
+			this.can.timedScenario.kill();
+		}
 		switch(value) {
 		case "nowalk":
 			this.removeWalk();
@@ -2922,49 +3171,192 @@ murmur_Scenario.prototype = {
 			Reflect.field(this,value).apply(this,[]);
 		}
 	}
+	,togDebug: function() {
+		this.can.toggleDebug();
+	}
+	,reload: function() {
+		window.location.reload();
+	}
+	,contain: function() {
+		this.can.split.enabled = false;
+		this.can.respectBoundaries.enabled = true;
+		this.can.respectBoundaries.maxSteer = 60;
+		this.can.respectBoundaries.offset = 300;
+		if(this.clientID == 0) {
+			this.delaygrowCrowd(250);
+			this.can.velocity = this.midSpeed;
+			this.can.updateVelocity();
+		} else {
+			this.delayreduceCrowd(30);
+		}
+	}
+	,invade: function() {
+		var _gthis = this;
+		thx_Timer.delay(function() {
+			_gthis.can.DS.dispatch("end invade");
+			_gthis.can.waypoints.goals = [];
+			_gthis.can.waypoints.enabled = false;
+			_gthis.can.velocity = _gthis.lowSpeed;
+			_gthis.can.updateVelocity();
+		},30000);
+		this.can.avoidCollisions.enabled = false;
+		this.can.split.enabled = true;
+		this.can.respectBoundaries.enabled = false;
+		this.can.respectBoundaries.maxSteer = 60;
+		this.can.respectBoundaries.offset = 300;
+		if(this.clientID == 0) {
+			this.can.waypoints.addGoal(3000,300);
+			this.can.waypoints.enabled = true;
+			this.can.DS.dispatch("end invade");
+			this.can.velocity = this.veryHiSpeed;
+			this.can.updateVelocity();
+		} else {
+			this.can.avoidCollisions.enabled = true;
+		}
+	}
+	,fall: function() {
+		var _gthis = this;
+		this.can.velocity = this.veryHiSpeed;
+		this.can.updateVelocity();
+		this.can.avoidCollisions.enabled = false;
+		this.can.fall.enabled = true;
+		this.can.fall.signal.add(function() {
+			_gthis.can.display.addRenderable(new murmur_End(0));
+		});
+		this.can.split.enabled = false;
+	}
 	,scene1: function() {
-		this.can.velocity = 2;
+		this.can.velocity = this.hiSpeed;
 		this.can.updateVelocity();
 		this.can.waypoints.goals = [];
-		this.can.avoidCollisions.enabled = false;
+		this.can.avoidCollisions.enabled = true;
 		this.can.avoidCollisions.set_radius(80);
-		this.can.DS.dispatch();
+		this.can.steerCenter.enabled = false;
+	}
+	,towardCenter: function(b) {
+		if(b == null) {
+			b = true;
+		}
+		var _gthis = this;
+		console.log("tow" + (b == null?"null":"" + b));
+		thx_Timer.delay(function() {
+			_gthis.can.DS.dispatch("end towardCenter");
+			_gthis.can.steerCenter.enabled = false;
+		},3000);
+		this.can.DS.dispatch("toward center b" + (b == null?"null":"" + b));
+		this.can.velocity = this.lowSpeed;
+		this.can.updateVelocity();
+		this.can.steerCenter.enabled = b;
+		console.log("afterTow");
+	}
+	,cancelEffect: function(m) {
+		var promise = thx_promise__$Promise_Promise_$Impl_$.delay(thx_promise__$Promise_Promise_$Impl_$.value(m),3000);
+		var f = $bind(this,this.cancel);
+		thx_promise__$Promise_Promise_$Impl_$.success(promise,function(a) {
+			f(a,false);
+		});
+	}
+	,cancel: function(a,b) {
+		a(b);
 	}
 	,scene2: function() {
-		this.can.velocity = .6;
+		this.can.velocity = this.lowSpeed;
 		this.can.updateVelocity();
 		this.can.steerCenter.enabled = false;
 		this.can.avoidCollisions.enabled = true;
 		this.can.avoidCollisions.set_radius(80);
-		this.can.DS.dispatch();
 	}
 	,scene3: function() {
-		this.can.velocity = .7;
+		this.can.velocity = this.midSpeed;
 		this.can.updateVelocity();
-		this.can.DS.dispatch();
 	}
 	,scene4: function() {
-		this.can.velocity = .6;
+		this.can.velocity = this.midSpeed;
 		this.can.updateVelocity();
 		this.can.avoidCollisions.enabled = false;
 		this.can.waypoints.addGoal(Math.random() * this.can.width,Math.random() * this.can.height);
-		this.can.DS.dispatch();
+		this.can.waypoints.enabled = true;
 	}
 	,scene5: function() {
-		this.can.velocity = .8;
+		this.can.velocity = this.midSpeed;
 		this.can.updateVelocity();
-		this.can.DS.dispatch();
 	}
-	,removeorAdd: function() {
+	,respectBoundaries: function(b) {
+		this.can.respectBoundaries.enabled = b;
+		this.can.respectBoundaries.maxSteer = 60;
+		this.can.respectBoundaries.offset = 300;
+	}
+	,split: function(b) {
+		this.can.split.enabled = b;
+	}
+	,resetWP: function() {
+		this.can.waypoints.goals = [];
+	}
+	,centrer: function(b) {
+		this.can.steerCenter.enabled = b;
+	}
+	,collision: function(b,radius) {
+		this.can.avoidCollisions.enabled = b;
+		if(radius != null) {
+			this.can.avoidCollisions.set_radius(radius);
+		}
+	}
+	,addRenderable: function(r) {
+		this.can.display.addRenderable(r);
+	}
+	,removeRenderable: function(r) {
+		this.can.display.addRenderable(r);
+	}
+	,setVelocity: function(v) {
+		this.can.velocity = v;
+		this.can.updateVelocity();
+	}
+	,removeorAdd: function(limit) {
+		if(limit == null) {
+			limit = 200;
+		}
+		console.log("removeorAdd");
 		var num = Std.random(10);
 		var rem = Math.random() < 0.5;
 		console.log("num=" + num + " rem=" + (rem == null?"null":"" + rem));
 		if(rem) {
-			if(num < this.can.flock.boids.length) {
+			if(num < this.can.flock.boids.length && this.can.flock.boids.length > limit) {
 				this.can.flock.boids.splice(0,num);
 			}
-		} else {
+		} else if(this.can.flock.boids.length > limit) {
 			this.can.addBoids(this.can.flock,num,this.can.velocity,this.can.respectBoundaries.offset);
+		}
+	}
+	,delaygrowCrowd: function(num) {
+		var _gthis = this;
+		var count = 0;
+		var tim = new haxe_Timer(1000);
+		tim.run = function() {
+			_gthis.can.DS.dispatch("delaygrowCrowd");
+			if(count < num) {
+				_gthis.can.addBoids(_gthis.can.flock,Std.random(5),_gthis.can.velocity,_gthis.can.respectBoundaries.offset);
+				count += 3;
+			}
+		};
+	}
+	,delayreduceCrowd: function(limit) {
+		var _gthis = this;
+		var tim = new haxe_Timer(1000);
+		tim.run = function() {
+			_gthis.can.DS.dispatch("delayreduceCrowd");
+			if(_gthis.can.flock.boids.length > limit) {
+				_gthis.reduceCrowd(2);
+			} else {
+				tim.stop();
+			}
+		};
+	}
+	,growCrowd: function(num) {
+		this.can.addBoids(this.can.flock,num,this.can.velocity,this.can.respectBoundaries.offset);
+	}
+	,reduceCrowd: function(num) {
+		if(num < this.can.flock.boids.length) {
+			this.can.flock.boids.splice(0,num);
 		}
 	}
 	,__class__: murmur_Scenario
@@ -3085,19 +3477,78 @@ murmur_Sprite.prototype = {
 	}
 	,__class__: murmur_Sprite
 };
-var socket_signal_WalkOut = function() {
-	msignal_Signal2.call(this,String,Dynamic);
+var murmur_TimedScenario = function(can,clientId,delay) {
+	this.enabled = true;
+	this.scenarios = [];
+	murmur_Scenario.call(this,can,clientId);
+	this.execute();
+	this.delay = delay;
+	this.timer = new haxe_Timer(delay);
+	this.timer.run = $bind(this,this.doScene);
 };
-socket_signal_WalkOut.__name__ = ["socket","signal","WalkOut"];
-socket_signal_WalkOut.getInstance = function() {
-	if(socket_signal_WalkOut._instance == null) {
-		socket_signal_WalkOut._instance = new socket_signal_WalkOut();
+murmur_TimedScenario.__name__ = ["murmur","TimedScenario"];
+murmur_TimedScenario.__super__ = murmur_Scenario;
+murmur_TimedScenario.prototype = $extend(murmur_Scenario.prototype,{
+	scenarios: null
+	,enabled: null
+	,timer: null
+	,execute: function() {
+		this.scenarios.push($bind(this,this._scene1));
+		this.scenarios.push($bind(this,this._scene2));
+		this.scenarios.push($bind(this,this._scene3));
+		this.scenarios.push($bind(this,this._scene4));
+		this.scenarios.push($bind(this,this._scene5));
 	}
-	return socket_signal_WalkOut._instance;
-};
-socket_signal_WalkOut.__super__ = msignal_Signal2;
-socket_signal_WalkOut.prototype = $extend(msignal_Signal2.prototype,{
-	__class__: socket_signal_WalkOut
+	,doScene: function() {
+		if(this.enabled) {
+			this.can.changeAnyColor();
+			var coun = Math.abs(this.counter++ % this.scenarios.length) | 0;
+			console.log(coun);
+			this.removeorAdd();
+			this.scenarios[coun]();
+		}
+	}
+	,_scene1: function() {
+		this.can.velocity = .5;
+		this.can.updateVelocity();
+		this.can.waypoints.goals = [];
+		this.can.avoidCollisions.enabled = false;
+		this.can.DS.dispatch("_scene1");
+	}
+	,_scene2: function() {
+		this.can.velocity = .6;
+		this.can.updateVelocity();
+		this.can.avoidCollisions.enabled = true;
+		this.can.avoidCollisions.set_radius(80);
+		this.can.DS.dispatch("_scene2");
+	}
+	,_scene3: function() {
+		this.can.velocity = .7;
+		this.can.updateVelocity();
+		this.can.DS.dispatch("_scene3");
+	}
+	,_scene4: function() {
+		this.can.velocity = .6;
+		this.can.updateVelocity();
+		this.can.avoidCollisions.enabled = false;
+		this.can.waypoints.addGoal(Math.random() * this.can.width,Math.random() * this.can.height);
+		this.can.DS.dispatch("_scene4");
+	}
+	,_scene5: function() {
+		this.can.velocity = this.moreSpeed;
+		this.can.updateVelocity();
+		this.can.DS.dispatch("_scene5");
+	}
+	,kill: function() {
+		this.enabled = false;
+		this.timer.stop();
+	}
+	,wakeup: function() {
+		this.enabled = true;
+		this.counter = 0;
+		this.timer.run = $bind(this,this.doScene);
+	}
+	,__class__: murmur_TimedScenario
 });
 var murmur_Walk = function(state) {
 	this.enabled = true;
@@ -3134,6 +3585,90 @@ murmur_Walk.prototype = {
 		}
 	}
 	,__class__: murmur_Walk
+};
+var murmur_Zoom = function(flock,boidColor,crownColor,trailColor) {
+	this.zoomFactor = 1.0;
+	this.pos = 0;
+	this.trailLength = 20;
+	this.renderTrail = false;
+	this.renderCentroid = true;
+	this.enabled = true;
+	this.boidColor = null == boidColor?"#000000":thx_color__$Rgba_Rgba_$Impl_$.toString(boidColor);
+	this.crownColor = null == crownColor?"rgba(255,255,255,100)":thx_color__$Rgba_Rgba_$Impl_$.toString(crownColor);
+	this.trailColor = null == trailColor?thx_color__$Rgba_Rgba_$Impl_$.toString(thx_color__$Rgb_Rgb_$Impl_$.withAlpha(thx_color__$Rgb_Rgb_$Impl_$.fromString(this.boidColor),20)):thx_color__$Rgba_Rgba_$Impl_$.toString(trailColor);
+	this.flock = flock;
+	this.map = new haxe_ds_ObjectMap();
+	this.signal = new msignal_Signal0();
+};
+murmur_Zoom.__name__ = ["murmur","Zoom"];
+murmur_Zoom.__interfaces__ = [boidz_IRenderable];
+murmur_Zoom.prototype = {
+	signal: null
+	,flock: null
+	,enabled: null
+	,renderCentroid: null
+	,renderTrail: null
+	,trailLength: null
+	,boidColor: null
+	,crownColor: null
+	,trailColor: null
+	,map: null
+	,getTrail: function(b) {
+		var c = this.map.h[b.__id__];
+		if(c == null) {
+			var _g = [];
+			var _g2 = 0;
+			var _g1 = this.trailLength;
+			while(_g2 < _g1) {
+				++_g2;
+				_g.push({ x : b.x, y : b.y});
+			}
+			c = _g;
+			this.map.set(b,_g);
+		}
+		while(c.length < this.trailLength) c.push({ x : b.x, y : b.y});
+		if(c.length > this.trailLength) {
+			c.splice(this.trailLength,c.length - this.trailLength);
+		}
+		c[this.pos].x = b.x;
+		c[this.pos].y = b.y;
+		return c;
+	}
+	,pos: null
+	,zoomFactor: null
+	,_newH: null
+	,_newW: null
+	,render: function(render) {
+		var ctx = render.ctx;
+		this.flock.boids.sort(function(a,b) {
+			return Reflect.compare(a.y,b.y);
+		});
+		var _g = 0;
+		var _g1 = this.flock.boids;
+		while(_g < _g1.length) {
+			var b1 = _g1[_g];
+			++_g;
+			var im = b1.image;
+			var yFactor = b1.y / ctx.canvas.height + 0.5;
+			this.zoomFactor = this.zoomFactor + 0.1;
+			var wratio = im.width / im.height;
+			var newH = 300 * yFactor;
+			if(this._newH < 800) {
+				this._newH = newH + this.zoomFactor;
+				this._newW = this._newH * wratio;
+			} else {
+				this.signal.dispatch();
+			}
+			ctx.drawImage(im,b1.x - this._newW / 2,b1.y - this._newH / 2,this._newW,this._newH);
+		}
+		if(this.renderCentroid) {
+			ctx.beginPath();
+			ctx.fillStyle = "#cc3300";
+			ctx.arc(this.flock.x,this.flock.y,4,0,2 * Math.PI,false);
+			ctx.fill();
+		}
+	}
+	,__class__: murmur_Zoom
 };
 var socket_SocketManager = function() {
 	this.dims = { width : 0, height : 0, clientID : 0};
@@ -3172,7 +3707,7 @@ socket_SocketManager.prototype = {
 	,connect: function() {
 		var _gthis = this;
 		this._messages = [];
-		this._socket = io.connect("http://192.168.1.34:3700");
+		this._socket = io.connect(Config.adress);
 		this._socket.on("message",function(args) {
 			if(args.data != null) {
 				socket_SocketManager.emitSignal.dispatch(args.dir,args.data);
@@ -3192,7 +3727,6 @@ socket_SocketManager.prototype = {
 			_gthis.clientId = data.clients;
 			console.log("clientId=" + _gthis.clientId);
 			_gthis.dims.clientID = _gthis.clientId;
-			_gthis.displayClient();
 			_gthis.connected.dispatch(_gthis.dims);
 		});
 	}
@@ -7966,6 +8500,56 @@ thx__$ReadonlyArray_ReadonlyArray_$Impl_$.pop = function(this1) {
 };
 thx__$ReadonlyArray_ReadonlyArray_$Impl_$.iterator = function(this1) {
 	return HxOverrides.iter(this1);
+};
+var thx__$Result_Result_$Impl_$ = {};
+thx__$Result_Result_$Impl_$.__name__ = ["thx","_Result","Result_Impl_"];
+thx__$Result_Result_$Impl_$.success = function(value) {
+	return thx_Either.Right(value);
+};
+thx__$Result_Result_$Impl_$.failure = function(error) {
+	return thx_Either.Left(error);
+};
+thx__$Result_Result_$Impl_$.optionValue = function(this1) {
+	if(this1[1] == 1) {
+		return haxe_ds_Option.Some(this1[2]);
+	} else {
+		return haxe_ds_Option.None;
+	}
+};
+thx__$Result_Result_$Impl_$.optionError = function(this1) {
+	if(this1[1] == 0) {
+		return haxe_ds_Option.Some(this1[2]);
+	} else {
+		return haxe_ds_Option.None;
+	}
+};
+thx__$Result_Result_$Impl_$.value = function(this1) {
+	if(this1[1] == 1) {
+		return this1[2];
+	} else {
+		return null;
+	}
+};
+thx__$Result_Result_$Impl_$.error = function(this1) {
+	if(this1[1] == 0) {
+		return this1[2];
+	} else {
+		return null;
+	}
+};
+thx__$Result_Result_$Impl_$.get_isSuccess = function(this1) {
+	if(this1[1] == 1) {
+		return true;
+	} else {
+		return false;
+	}
+};
+thx__$Result_Result_$Impl_$.get_isFailure = function(this1) {
+	if(this1[1] == 0) {
+		return true;
+	} else {
+		return false;
+	}
 };
 var thx__$Semigroup_Semigroup_$Impl_$ = {};
 thx__$Semigroup_Semigroup_$Impl_$.__name__ = ["thx","_Semigroup","Semigroup_Impl_"];
@@ -13307,6 +13891,30 @@ thx_error_NullArgument.__super__ = thx_Error;
 thx_error_NullArgument.prototype = $extend(thx_Error.prototype,{
 	__class__: thx_error_NullArgument
 });
+var thx_fp_Functions = function() { };
+thx_fp_Functions.__name__ = ["thx","fp","Functions"];
+thx_fp_Functions["const"] = function(b) {
+	return function(a) {
+		return b;
+	};
+};
+thx_fp_Functions.flip = function(f) {
+	return function(b) {
+		return function(a) {
+			return (f(a))(b);
+		};
+	};
+};
+thx_fp_Functions.flip2 = function(f) {
+	return function(b,a) {
+		return f(a,b);
+	};
+};
+thx_fp_Functions.flip3 = function(f) {
+	return function(b,a,c) {
+		return f(a,b,c);
+	};
+};
 var thx_fp__$Map_Map_$Impl_$ = {};
 thx_fp__$Map_Map_$Impl_$.__name__ = ["thx","fp","_Map","Map_Impl_"];
 thx_fp__$Map_Map_$Impl_$.empty = function() {
@@ -13627,6 +14235,1024 @@ thx_fp_MapImpl.Tip = ["Tip",0];
 thx_fp_MapImpl.Tip.__enum__ = thx_fp_MapImpl;
 thx_fp_MapImpl.Bin = function(size,key,value,lhs,rhs) { var $x = ["Bin",1,size,key,value,lhs,rhs]; $x.__enum__ = thx_fp_MapImpl; return $x; };
 thx_fp_MapImpl.__empty_constructs__ = [thx_fp_MapImpl.Tip];
+var thx_promise_Future = function() {
+	this.handlers = [];
+	this.state = haxe_ds_Option.None;
+};
+thx_promise_Future.__name__ = ["thx","promise","Future"];
+thx_promise_Future.sequence = function(arr) {
+	return thx_promise_Future.create(function(callback) {
+		var acc = [];
+		var poll = null;
+		poll = function(index) {
+			if(index == arr.length) {
+				callback(acc);
+				return;
+			}
+			arr[index].then(function(v) {
+				acc[index] = v;
+				poll(index + 1);
+			});
+		};
+		poll(0);
+	});
+};
+thx_promise_Future.afterAll = function(arr) {
+	return thx_promise_Future.sequence(arr).nil();
+};
+thx_promise_Future.all = function(arr) {
+	return thx_promise_Future.sequence(arr);
+};
+thx_promise_Future.create = function(handler) {
+	var future = new thx_promise_Future();
+	handler($bind(future,future.setState));
+	return future;
+};
+thx_promise_Future.flatten = function(future) {
+	return thx_promise_Future.create(function(callback) {
+		future.then(function(future1) {
+			future1.then(callback);
+		});
+	});
+};
+thx_promise_Future.value = function(v) {
+	return thx_promise_Future.create(function(callback) {
+		callback(v);
+	});
+};
+thx_promise_Future.prototype = {
+	handlers: null
+	,state: null
+	,delay: function(delayms) {
+		if(null == delayms) {
+			return this.flatMap(function(v) {
+				return thx_promise_Timer.immediateValue(v);
+			});
+		} else {
+			return this.flatMap(function(v1) {
+				return thx_promise_Timer.delayValue(v1,delayms);
+			});
+		}
+	}
+	,hasValue: function() {
+		return thx_Options.toBool(this.state);
+	}
+	,map: function(handler) {
+		var _gthis = this;
+		return thx_promise_Future.create(function(callback) {
+			_gthis.then(function(v) {
+				callback(handler(v));
+			});
+		});
+	}
+	,mapAsync: function(handler) {
+		var _gthis = this;
+		return thx_promise_Future.create(function(callback) {
+			_gthis.then(function(result) {
+				handler(result,callback);
+			});
+		});
+	}
+	,mapPromise: function(handler) {
+		var _gthis = this;
+		return thx_promise__$Promise_Promise_$Impl_$.create(function(resolve,reject) {
+			_gthis.then(function(result) {
+				thx_promise__$Promise_Promise_$Impl_$.failure(thx_promise__$Promise_Promise_$Impl_$.success(handler(result),resolve),reject);
+			});
+		});
+	}
+	,nil: function() {
+		return this.map(function(_) {
+			return thx_Nil.nil;
+		});
+	}
+	,mapFuture: function(handler) {
+		return this.flatMap(handler);
+	}
+	,flatMap: function(handler) {
+		var _gthis = this;
+		return thx_promise_Future.create(function(callback) {
+			_gthis.then(function(v) {
+				handler(v).then(callback);
+			});
+		});
+	}
+	,then: function(handler) {
+		this.handlers.push(handler);
+		this.update();
+		return this;
+	}
+	,toString: function() {
+		return "Future";
+	}
+	,setState: function(newstate) {
+		var _g = this.state;
+		switch(_g[1]) {
+		case 0:
+			throw new thx_Error("future was already \"" + Std.string(_g[2]) + "\", can't apply the new state \"" + Std.string(newstate) + "\"",null,{ fileName : "Future.hx", lineNumber : 121, className : "thx.promise.Future", methodName : "setState"});
+			break;
+		case 1:
+			this.state = haxe_ds_Option.Some(newstate);
+			break;
+		}
+		this.update();
+		return this;
+	}
+	,update: function() {
+		var _g = this.state;
+		switch(_g[1]) {
+		case 0:
+			var result = _g[2];
+			var index = -1;
+			while(++index < this.handlers.length) this.handlers[index](result);
+			this.handlers = [];
+			break;
+		case 1:
+			break;
+		}
+	}
+	,__class__: thx_promise_Future
+};
+var thx_promise_Futures = function() { };
+thx_promise_Futures.__name__ = ["thx","promise","Futures"];
+thx_promise_Futures.join = function(p1,p2) {
+	return thx_promise_Future.create(function(callback) {
+		var counter = 0;
+		var v1 = null;
+		var v2 = null;
+		var complete = function() {
+			if(counter < 2) {
+				return;
+			}
+			callback({ _0 : v1, _1 : v2});
+		};
+		p1.then(function(v) {
+			++counter;
+			v1 = v;
+			complete();
+		});
+		p2.then(function(v3) {
+			++counter;
+			v2 = v3;
+			complete();
+		});
+	});
+};
+thx_promise_Futures.log = function(future,prefix) {
+	if(prefix == null) {
+		prefix = "";
+	}
+	return future.then(function(r) {
+		console.log("" + prefix + " VALUE: " + Std.string(r));
+	});
+};
+var thx_promise_FutureTuple6 = function() { };
+thx_promise_FutureTuple6.__name__ = ["thx","promise","FutureTuple6"];
+thx_promise_FutureTuple6.mapTuple = function(future,callback) {
+	return future.map(function(t) {
+		return callback(t._0,t._1,t._2,t._3,t._4,t._5);
+	});
+};
+thx_promise_FutureTuple6.mapTupleAsync = function(future,callback) {
+	return future.mapAsync(function(t,cb) {
+		callback(t._0,t._1,t._2,t._3,t._4,t._5,cb);
+		return;
+	});
+};
+thx_promise_FutureTuple6.mapTupleFuture = function(future,callback) {
+	return future.flatMap(function(t) {
+		return callback(t._0,t._1,t._2,t._3,t._4,t._5);
+	});
+};
+thx_promise_FutureTuple6.tuple = function(future,callback) {
+	return future.then(function(t) {
+		callback(t._0,t._1,t._2,t._3,t._4,t._5);
+	});
+};
+var thx_promise_FutureTuple5 = function() { };
+thx_promise_FutureTuple5.__name__ = ["thx","promise","FutureTuple5"];
+thx_promise_FutureTuple5.join = function(p1,p2) {
+	return thx_promise_Future.create(function(callback) {
+		thx_promise_Futures.join(p1,p2).then(function(t) {
+			var this1 = t._0;
+			callback({ _0 : this1._0, _1 : this1._1, _2 : this1._2, _3 : this1._3, _4 : this1._4, _5 : t._1});
+		});
+	});
+};
+thx_promise_FutureTuple5.mapTuple = function(future,callback) {
+	return future.map(function(t) {
+		return callback(t._0,t._1,t._2,t._3,t._4);
+	});
+};
+thx_promise_FutureTuple5.mapTupleAsync = function(future,callback) {
+	return future.mapAsync(function(t,cb) {
+		callback(t._0,t._1,t._2,t._3,t._4,cb);
+		return;
+	});
+};
+thx_promise_FutureTuple5.mapTupleFuture = function(future,callback) {
+	return future.flatMap(function(t) {
+		return callback(t._0,t._1,t._2,t._3,t._4);
+	});
+};
+thx_promise_FutureTuple5.tuple = function(future,callback) {
+	return future.then(function(t) {
+		callback(t._0,t._1,t._2,t._3,t._4);
+	});
+};
+var thx_promise_FutureTuple4 = function() { };
+thx_promise_FutureTuple4.__name__ = ["thx","promise","FutureTuple4"];
+thx_promise_FutureTuple4.join = function(p1,p2) {
+	return thx_promise_Future.create(function(callback) {
+		thx_promise_Futures.join(p1,p2).then(function(t) {
+			var this1 = t._0;
+			callback({ _0 : this1._0, _1 : this1._1, _2 : this1._2, _3 : this1._3, _4 : t._1});
+		});
+	});
+};
+thx_promise_FutureTuple4.mapTuple = function(future,callback) {
+	return future.map(function(t) {
+		return callback(t._0,t._1,t._2,t._3);
+	});
+};
+thx_promise_FutureTuple4.mapTupleAsync = function(future,callback) {
+	return future.mapAsync(function(t,cb) {
+		callback(t._0,t._1,t._2,t._3,cb);
+		return;
+	});
+};
+thx_promise_FutureTuple4.mapTupleFuture = function(future,callback) {
+	return future.flatMap(function(t) {
+		return callback(t._0,t._1,t._2,t._3);
+	});
+};
+thx_promise_FutureTuple4.tuple = function(future,callback) {
+	return future.then(function(t) {
+		callback(t._0,t._1,t._2,t._3);
+	});
+};
+var thx_promise_FutureTuple3 = function() { };
+thx_promise_FutureTuple3.__name__ = ["thx","promise","FutureTuple3"];
+thx_promise_FutureTuple3.join = function(p1,p2) {
+	return thx_promise_Future.create(function(callback) {
+		thx_promise_Futures.join(p1,p2).then(function(t) {
+			var this1 = t._0;
+			callback({ _0 : this1._0, _1 : this1._1, _2 : this1._2, _3 : t._1});
+		});
+	});
+};
+thx_promise_FutureTuple3.mapTuple = function(future,callback) {
+	return future.map(function(t) {
+		return callback(t._0,t._1,t._2);
+	});
+};
+thx_promise_FutureTuple3.mapTupleAsync = function(future,callback) {
+	return future.mapAsync(function(t,cb) {
+		callback(t._0,t._1,t._2,cb);
+		return;
+	});
+};
+thx_promise_FutureTuple3.mapTupleFuture = function(future,callback) {
+	return future.flatMap(function(t) {
+		return callback(t._0,t._1,t._2);
+	});
+};
+thx_promise_FutureTuple3.tuple = function(future,callback) {
+	return future.then(function(t) {
+		callback(t._0,t._1,t._2);
+	});
+};
+var thx_promise_FutureTuple2 = function() { };
+thx_promise_FutureTuple2.__name__ = ["thx","promise","FutureTuple2"];
+thx_promise_FutureTuple2.join = function(p1,p2) {
+	return thx_promise_Future.create(function(callback) {
+		thx_promise_Futures.join(p1,p2).then(function(t) {
+			var this1 = t._0;
+			callback({ _0 : this1._0, _1 : this1._1, _2 : t._1});
+		});
+	});
+};
+thx_promise_FutureTuple2.mapTuple = function(future,callback) {
+	return future.map(function(t) {
+		return callback(t._0,t._1);
+	});
+};
+thx_promise_FutureTuple2.mapTupleAsync = function(future,callback) {
+	return future.mapAsync(function(t,cb) {
+		callback(t._0,t._1,cb);
+		return;
+	});
+};
+thx_promise_FutureTuple2.mapTupleFuture = function(future,callback) {
+	return future.flatMap(function(t) {
+		return callback(t._0,t._1);
+	});
+};
+thx_promise_FutureTuple2.tuple = function(future,callback) {
+	return future.then(function(t) {
+		callback(t._0,t._1);
+	});
+};
+var thx_promise_FutureNil = function() { };
+thx_promise_FutureNil.__name__ = ["thx","promise","FutureNil"];
+thx_promise_FutureNil.join = function(p1,p2) {
+	return thx_promise_Future.create(function(callback) {
+		thx_promise_Futures.join(p1,p2).then(function(t) {
+			callback(t._1);
+		});
+	});
+};
+thx_promise_FutureNil.nil = function(p) {
+	return thx_promise_Future.create(function(callback) {
+		p.then(function(_) {
+			callback(thx_Nil.nil);
+		});
+	});
+};
+var thx_promise__$Promise_Promise_$Impl_$ = {};
+thx_promise__$Promise_Promise_$Impl_$.__name__ = ["thx","promise","_Promise","Promise_Impl_"];
+thx_promise__$Promise_Promise_$Impl_$._new = function(future) {
+	return future;
+};
+thx_promise__$Promise_Promise_$Impl_$.fromFuture = function(future) {
+	return future.map(function(v) {
+		return thx_Either.Right(v);
+	});
+};
+thx_promise__$Promise_Promise_$Impl_$.get_nil = function() {
+	return thx_promise__$Promise_Promise_$Impl_$.value(thx_Nil.nil);
+};
+thx_promise__$Promise_Promise_$Impl_$.all = function(arr) {
+	if(arr.length == 0) {
+		return thx_promise__$Promise_Promise_$Impl_$.value([]);
+	} else {
+		return thx_promise__$Promise_Promise_$Impl_$.create(function(resolve,reject) {
+			var results = [];
+			var counter = 0;
+			var hasError = false;
+			var _g1 = 0;
+			var _g = arr.length;
+			while(_g1 < _g) {
+				var i = [_g1++];
+				thx_promise__$Promise_Promise_$Impl_$.either(arr[i[0]],(function(i1) {
+					return function(v) {
+						if(!hasError) {
+							results[i1[0]] = v;
+							++counter;
+							if(counter == arr.length) {
+								resolve(results);
+							}
+						}
+					};
+				})(i),(function() {
+					return function(err) {
+						if(!hasError) {
+							hasError = true;
+							reject(err);
+						}
+					};
+				})());
+			}
+		});
+	}
+};
+thx_promise__$Promise_Promise_$Impl_$.afterAll = function(arr) {
+	return thx_promise__$Promise_Promise_$Impl_$.map(thx_promise__$Promise_Promise_$Impl_$.sequence(arr),function(a) {
+		return thx_Nil.nil;
+	});
+};
+thx_promise__$Promise_Promise_$Impl_$.sequence = function(arr) {
+	var tmp = thx_promise__$Promise_Promise_$Impl_$.value([]);
+	return thx_Arrays.reduce(arr,function(acc,p) {
+		return thx_promise__$Promise_Promise_$Impl_$.flatMapEither(acc,function(arr1) {
+			return thx_promise__$Promise_Promise_$Impl_$.map(p,function(t) {
+				return arr1.concat([t]);
+			});
+		},function(err) {
+			return thx_promise__$Promise_Promise_$Impl_$.error(err);
+		});
+	},tmp);
+};
+thx_promise__$Promise_Promise_$Impl_$.allSequence = function(arr) {
+	return thx_promise__$Promise_Promise_$Impl_$.sequence(arr);
+};
+thx_promise__$Promise_Promise_$Impl_$.create = function(callback) {
+	return thx_promise_Future.create(function(cb) {
+		try {
+			callback(function(v) {
+				cb(thx_Either.Right(v));
+			},function(e) {
+				cb(thx_Either.Left(e));
+			});
+		} catch( e1 ) {
+			haxe_CallStack.lastException = e1;
+			if (e1 instanceof js__$Boot_HaxeError) e1 = e1.val;
+			cb(thx_Either.Left(thx_Error.fromDynamic(e1,{ fileName : "Promise.hx", lineNumber : 90, className : "thx.promise._Promise.Promise_Impl_", methodName : "create"})));
+		}
+	});
+};
+thx_promise__$Promise_Promise_$Impl_$.createUnsafe = function(callback) {
+	return thx_promise_Future.create(function(cb) {
+		callback(function(v) {
+			cb(thx_Either.Right(v));
+		},function(e) {
+			cb(thx_Either.Left(e));
+		});
+	});
+};
+thx_promise__$Promise_Promise_$Impl_$.createFulfill = function(callback) {
+	return thx_promise_Future.create(function(cb) {
+		try {
+			callback(cb);
+		} catch( e ) {
+			haxe_CallStack.lastException = e;
+			if (e instanceof js__$Boot_HaxeError) e = e.val;
+			cb(thx_Either.Left(thx_Error.fromDynamic(e,{ fileName : "Promise.hx", lineNumber : 107, className : "thx.promise._Promise.Promise_Impl_", methodName : "createFulfill"})));
+		}
+	});
+};
+thx_promise__$Promise_Promise_$Impl_$.fail = function(message,pos) {
+	return thx_promise__$Promise_Promise_$Impl_$.error(new thx_Error(message,null,pos));
+};
+thx_promise__$Promise_Promise_$Impl_$.error = function(err) {
+	return thx_promise__$Promise_Promise_$Impl_$.create(function(_,reject) {
+		reject(err);
+	});
+};
+thx_promise__$Promise_Promise_$Impl_$.value = function(v) {
+	return thx_promise__$Promise_Promise_$Impl_$.create(function(resolve,_) {
+		resolve(v);
+	});
+};
+thx_promise__$Promise_Promise_$Impl_$.always = function(this1,handler) {
+	return thx_promise_Future.create(function(cb) {
+		this1.then(function(v) {
+			try {
+				handler();
+				cb(v);
+			} catch( e ) {
+				haxe_CallStack.lastException = e;
+				if (e instanceof js__$Boot_HaxeError) e = e.val;
+				cb(thx_Either.Left(thx_Error.fromDynamic(e,{ fileName : "Promise.hx", lineNumber : 127, className : "thx.promise._Promise.Promise_Impl_", methodName : "always"})));
+			}
+		});
+	});
+};
+thx_promise__$Promise_Promise_$Impl_$.either = function(this1,success,failure) {
+	return thx_promise__$Promise_Promise_$Impl_$.createUnsafe(function(resolve,reject) {
+		this1.then(function(r) {
+			try {
+				switch(r[1]) {
+				case 0:
+					var e = r[2];
+					failure(e);
+					reject(e);
+					break;
+				case 1:
+					var v = r[2];
+					success(v);
+					resolve(v);
+					break;
+				}
+			} catch( e1 ) {
+				haxe_CallStack.lastException = e1;
+				if (e1 instanceof js__$Boot_HaxeError) e1 = e1.val;
+				reject(thx_Error.fromDynamic(e1,{ fileName : "Promise.hx", lineNumber : 146, className : "thx.promise._Promise.Promise_Impl_", methodName : "either"}));
+			}
+		});
+	});
+};
+thx_promise__$Promise_Promise_$Impl_$.delay = function(this1,delayms) {
+	var delayms1 = delayms;
+	return null == delayms1?this1.flatMap(function(v) {
+		return thx_promise_Timer.immediateValue(v);
+	}):this1.flatMap(function(v1) {
+		return thx_promise_Timer.delayValue(v1,delayms1);
+	});
+};
+thx_promise__$Promise_Promise_$Impl_$.isFailure = function(this1) {
+	var _g = this1.state;
+	switch(_g[1]) {
+	case 0:
+		if(_g[2][1] == 1) {
+			return false;
+		} else {
+			return true;
+		}
+		break;
+	case 1:
+		return false;
+	}
+};
+thx_promise__$Promise_Promise_$Impl_$.isResolved = function(this1) {
+	var _g = this1.state;
+	switch(_g[1]) {
+	case 0:
+		if(_g[2][1] == 0) {
+			return false;
+		} else {
+			return true;
+		}
+		break;
+	case 1:
+		return false;
+	}
+};
+thx_promise__$Promise_Promise_$Impl_$.isPending = function(this1) {
+	switch(this1.state[1]) {
+	case 0:
+		return false;
+	case 1:
+		return true;
+	}
+};
+thx_promise__$Promise_Promise_$Impl_$.failure = function(this1,failure) {
+	return thx_promise__$Promise_Promise_$Impl_$.either(this1,function(_) {
+	},failure);
+};
+thx_promise__$Promise_Promise_$Impl_$.mapAlways = function(this1,handler) {
+	return thx_promise__$Promise_Promise_$Impl_$.map(this1,function(_) {
+		return handler();
+	});
+};
+thx_promise__$Promise_Promise_$Impl_$.mapAlwaysAsyncFuture = function(this1,handler) {
+	return this1.mapAsync(function(_,cb) {
+		handler(cb);
+		return;
+	});
+};
+thx_promise__$Promise_Promise_$Impl_$.mapAlwaysFuture = function(this1,handler) {
+	return this1.flatMap(function(_) {
+		return handler();
+	});
+};
+thx_promise__$Promise_Promise_$Impl_$.mapEither = function(this1,success,failure) {
+	return thx_promise__$Promise_Promise_$Impl_$.flatMapEither(this1,function(v) {
+		return thx_promise__$Promise_Promise_$Impl_$.value(success(v));
+	},function(e) {
+		return thx_promise__$Promise_Promise_$Impl_$.value(failure(e));
+	});
+};
+thx_promise__$Promise_Promise_$Impl_$.mapEitherFuture = function(this1,success,failure) {
+	return thx_promise__$Promise_Promise_$Impl_$.flatMapEitherFuture(this1,function(v) {
+		return thx_promise_Future.value(success(v));
+	},function(e) {
+		return thx_promise_Future.value(failure(e));
+	});
+};
+thx_promise__$Promise_Promise_$Impl_$.flatMapEitherFuture = function(this1,success,failure) {
+	return this1.flatMap(function(result) {
+		switch(result[1]) {
+		case 0:
+			var e = result[2];
+			return failure(e);
+		case 1:
+			var v = result[2];
+			return success(v);
+		}
+	});
+};
+thx_promise__$Promise_Promise_$Impl_$.flatMapEither = function(this1,success,failure) {
+	return thx_promise__$Promise_Promise_$Impl_$.createUnsafe(function(resolve,reject) {
+		this1.then(function(result) {
+			switch(result[1]) {
+			case 0:
+				var e = result[2];
+				try {
+					thx_promise__$Promise_Promise_$Impl_$.either(failure(e),resolve,reject);
+				} catch( e1 ) {
+					haxe_CallStack.lastException = e1;
+					if (e1 instanceof js__$Boot_HaxeError) e1 = e1.val;
+					reject(thx_Error.fromDynamic(e1,{ fileName : "Promise.hx", lineNumber : 210, className : "thx.promise._Promise.Promise_Impl_", methodName : "flatMapEither"}));
+				}
+				break;
+			case 1:
+				var v = result[2];
+				try {
+					thx_promise__$Promise_Promise_$Impl_$.either(success(v),resolve,reject);
+				} catch( e2 ) {
+					haxe_CallStack.lastException = e2;
+					if (e2 instanceof js__$Boot_HaxeError) e2 = e2.val;
+					reject(thx_Error.fromDynamic(e2,{ fileName : "Promise.hx", lineNumber : 209, className : "thx.promise._Promise.Promise_Impl_", methodName : "flatMapEither"}));
+				}
+				break;
+			}
+		});
+	});
+};
+thx_promise__$Promise_Promise_$Impl_$.mapFailure = function(this1,failure) {
+	return thx_promise__$Promise_Promise_$Impl_$.mapEitherFuture(this1,function(v) {
+		return v;
+	},failure);
+};
+thx_promise__$Promise_Promise_$Impl_$.mapFailureFuture = function(this1,failure) {
+	return thx_promise__$Promise_Promise_$Impl_$.flatMapEitherFuture(this1,function(v) {
+		return thx_promise_Future.value(v);
+	},failure);
+};
+thx_promise__$Promise_Promise_$Impl_$.mapFailurePromise = function(this1,failure) {
+	return thx_promise__$Promise_Promise_$Impl_$.recover(this1,failure);
+};
+thx_promise__$Promise_Promise_$Impl_$.recover = function(this1,failure) {
+	return thx_promise__$Promise_Promise_$Impl_$.flatMapEither(this1,function(v) {
+		return thx_promise__$Promise_Promise_$Impl_$.value(v);
+	},failure);
+};
+thx_promise__$Promise_Promise_$Impl_$.recoverAsFuture = function(this1,failure) {
+	return thx_promise__$Promise_Promise_$Impl_$.mapEitherFuture(this1,function(v) {
+		return v;
+	},failure);
+};
+thx_promise__$Promise_Promise_$Impl_$.map = function(this1,success) {
+	return thx_promise__$Promise_Promise_$Impl_$.flatMapEither(this1,function(v) {
+		return thx_promise__$Promise_Promise_$Impl_$.value(success(v));
+	},function(err) {
+		return thx_promise__$Promise_Promise_$Impl_$.error(err);
+	});
+};
+thx_promise__$Promise_Promise_$Impl_$.ap = function(this1,pf) {
+	return thx_promise__$Promise_Promise_$Impl_$.flatMapEither(this1,function(t) {
+		var _e = pf;
+		return (function(success) {
+			return thx_promise__$Promise_Promise_$Impl_$.map(_e,success);
+		})(function(_) {
+			return _(t);
+		});
+	},function(err) {
+		return thx_promise__$Promise_Promise_$Impl_$.error(err);
+	});
+};
+thx_promise__$Promise_Promise_$Impl_$.mapSuccess = function(this1,success) {
+	return thx_promise__$Promise_Promise_$Impl_$.map(this1,success);
+};
+thx_promise__$Promise_Promise_$Impl_$.flatMap = function(this1,success) {
+	return thx_promise__$Promise_Promise_$Impl_$.flatMapEither(this1,success,function(err) {
+		return thx_promise__$Promise_Promise_$Impl_$.error(err);
+	});
+};
+thx_promise__$Promise_Promise_$Impl_$.append = function(this1,success) {
+	return thx_promise__$Promise_Promise_$Impl_$.flatMapEither(this1,function(_) {
+		return success();
+	},function(err) {
+		return thx_promise__$Promise_Promise_$Impl_$.error(err);
+	});
+};
+thx_promise__$Promise_Promise_$Impl_$.andThen = function(this1,next) {
+	return thx_promise__$Promise_Promise_$Impl_$.flatMapEither(this1,function(_) {
+		return next();
+	},function(err) {
+		return thx_promise__$Promise_Promise_$Impl_$.error(err);
+	});
+};
+thx_promise__$Promise_Promise_$Impl_$.foreachM = function(this1,f) {
+	return thx_promise__$Promise_Promise_$Impl_$.flatMapEither(this1,function(t) {
+		var tmp = f(t);
+		var b = t;
+		return thx_promise__$Promise_Promise_$Impl_$.map(tmp,function(a) {
+			return b;
+		});
+	},function(err) {
+		return thx_promise__$Promise_Promise_$Impl_$.error(err);
+	});
+};
+thx_promise__$Promise_Promise_$Impl_$.mapSuccessPromise = function(this1,success) {
+	return thx_promise__$Promise_Promise_$Impl_$.flatMapEither(this1,success,function(err) {
+		return thx_promise__$Promise_Promise_$Impl_$.error(err);
+	});
+};
+thx_promise__$Promise_Promise_$Impl_$.mapNull = function(this1,handler) {
+	return thx_promise__$Promise_Promise_$Impl_$.recoverNull(this1,handler);
+};
+thx_promise__$Promise_Promise_$Impl_$.recoverNull = function(this1,handler) {
+	return thx_promise__$Promise_Promise_$Impl_$.flatMapEither(this1,function(v) {
+		if(null == v) {
+			return handler();
+		} else {
+			return thx_promise__$Promise_Promise_$Impl_$.value(v);
+		}
+	},function(err) {
+		return thx_promise__$Promise_Promise_$Impl_$.error(err);
+	});
+};
+thx_promise__$Promise_Promise_$Impl_$.success = function(this1,success) {
+	return thx_promise__$Promise_Promise_$Impl_$.either(this1,success,function(_) {
+	});
+};
+thx_promise__$Promise_Promise_$Impl_$.throwFailure = function(this1) {
+	return this1.then(function(r) {
+		if(r[1] == 0) {
+			var err = r[2];
+			throw err;
+		}
+	});
+};
+thx_promise__$Promise_Promise_$Impl_$.toString = function(this1) {
+	return "Promise";
+};
+thx_promise__$Promise_Promise_$Impl_$.toFuture = function(this1) {
+	return this1;
+};
+var thx_promise_Promises = function() { };
+thx_promise_Promises.__name__ = ["thx","promise","Promises"];
+thx_promise_Promises.par = function(f,p1,p2) {
+	return thx_promise__$Promise_Promise_$Impl_$.create(function(resolve,reject) {
+		var hasError = false;
+		var counter = 0;
+		var v1 = null;
+		var v2 = null;
+		var complete = function() {
+			if(counter < 2) {
+				return;
+			}
+			resolve(f(v1,v2));
+		};
+		var handleError = function(error) {
+			if(hasError) {
+				return;
+			}
+			hasError = true;
+			reject(error);
+		};
+		thx_promise__$Promise_Promise_$Impl_$.either(p1,function(v) {
+			if(hasError) {
+				return;
+			}
+			++counter;
+			v1 = v;
+			complete();
+		},handleError);
+		thx_promise__$Promise_Promise_$Impl_$.either(p2,function(v3) {
+			if(hasError) {
+				return;
+			}
+			++counter;
+			v2 = v3;
+			complete();
+		},handleError);
+	});
+};
+thx_promise_Promises.par3 = function(f,p1,p2,p3) {
+	var f1 = f;
+	var tmp = thx_promise_Promises.par(function(a,b) {
+		return function(c) {
+			return f1(a,b,c);
+		};
+	},p1,p2);
+	return thx_promise_Promises.par(function(f2,g) {
+		return f2(g);
+	},tmp,p3);
+};
+thx_promise_Promises.par4 = function(f,p1,p2,p3,p4) {
+	var f1 = f;
+	var tmp = thx_promise_Promises.par3(function(a,b,c) {
+		return function(d) {
+			return f1(a,b,c,d);
+		};
+	},p1,p2,p3);
+	return thx_promise_Promises.par(function(f2,g) {
+		return f2(g);
+	},tmp,p4);
+};
+thx_promise_Promises.par5 = function(f,p1,p2,p3,p4,p5) {
+	var f1 = f;
+	var tmp = thx_promise_Promises.par4(function(a,b,c,d) {
+		return function(e) {
+			return f1(a,b,c,d,e);
+		};
+	},p1,p2,p3,p4);
+	return thx_promise_Promises.par(function(f2,g) {
+		return f2(g);
+	},tmp,p5);
+};
+thx_promise_Promises.par6 = function(f,p1,p2,p3,p4,p5,p6) {
+	var f1 = f;
+	var tmp = thx_promise_Promises.par5(function(a,b,c,d,e) {
+		return function(f0) {
+			return f1(a,b,c,d,e,f0);
+		};
+	},p1,p2,p3,p4,p5);
+	return thx_promise_Promises.par(function(f2,g) {
+		return f2(g);
+	},tmp,p6);
+};
+thx_promise_Promises.join = function(p1,p2) {
+	return thx_promise_Promises.par(thx__$Tuple_Tuple2_$Impl_$.of,p1,p2);
+};
+thx_promise_Promises.join2 = function(p1,p2) {
+	return thx_promise_Promises.par(thx__$Tuple_Tuple2_$Impl_$.of,p1,p2);
+};
+thx_promise_Promises.join3 = function(p1,p2,p3) {
+	return thx_promise_Promises.par3(thx__$Tuple_Tuple3_$Impl_$.of,p1,p2,p3);
+};
+thx_promise_Promises.join4 = function(p1,p2,p3,p4) {
+	return thx_promise_Promises.par4(thx__$Tuple_Tuple4_$Impl_$.of,p1,p2,p3,p4);
+};
+thx_promise_Promises.join5 = function(p1,p2,p3,p4,p5) {
+	return thx_promise_Promises.par5(thx__$Tuple_Tuple5_$Impl_$.of,p1,p2,p3,p4,p5);
+};
+thx_promise_Promises.join6 = function(p1,p2,p3,p4,p5,p6) {
+	return thx_promise_Promises.par6(thx__$Tuple_Tuple6_$Impl_$.of,p1,p2,p3,p4,p5,p6);
+};
+thx_promise_Promises.log = function(promise,prefix) {
+	if(prefix == null) {
+		prefix = "";
+	}
+	return thx_promise__$Promise_Promise_$Impl_$.either(promise,function(r) {
+		console.log("" + prefix + " SUCCESS: " + Std.string(r));
+	},function(e) {
+		console.log("" + prefix + " ERROR: " + e.toString());
+	});
+};
+var thx_promise_PromiseTuple6 = function() { };
+thx_promise_PromiseTuple6.__name__ = ["thx","promise","PromiseTuple6"];
+thx_promise_PromiseTuple6.mapTuplePromise = function(promise,success) {
+	return thx_promise__$Promise_Promise_$Impl_$.flatMapEither(promise,function(t) {
+		return success(t._0,t._1,t._2,t._3,t._4,t._5);
+	},function(err) {
+		return thx_promise__$Promise_Promise_$Impl_$.error(err);
+	});
+};
+thx_promise_PromiseTuple6.mapTuple = function(promise,success) {
+	return thx_promise__$Promise_Promise_$Impl_$.map(promise,function(t) {
+		return success(t._0,t._1,t._2,t._3,t._4,t._5);
+	});
+};
+thx_promise_PromiseTuple6.tuple = function(promise,success,failure) {
+	return thx_promise__$Promise_Promise_$Impl_$.either(promise,function(t) {
+		success(t._0,t._1,t._2,t._3,t._4,t._5);
+	},null == failure?function(_) {
+	}:failure);
+};
+var thx_promise_PromiseTuple5 = function() { };
+thx_promise_PromiseTuple5.__name__ = ["thx","promise","PromiseTuple5"];
+thx_promise_PromiseTuple5.join = function(p1,p2) {
+	return thx_promise_Promises.par(function(f,g) {
+		return { _0 : f._0, _1 : f._1, _2 : f._2, _3 : f._3, _4 : f._4, _5 : g};
+	},p1,p2);
+};
+thx_promise_PromiseTuple5.mapTuplePromise = function(promise,success) {
+	return thx_promise__$Promise_Promise_$Impl_$.flatMapEither(promise,function(t) {
+		return success(t._0,t._1,t._2,t._3,t._4);
+	},function(err) {
+		return thx_promise__$Promise_Promise_$Impl_$.error(err);
+	});
+};
+thx_promise_PromiseTuple5.mapTuple = function(promise,success) {
+	return thx_promise__$Promise_Promise_$Impl_$.map(promise,function(t) {
+		return success(t._0,t._1,t._2,t._3,t._4);
+	});
+};
+thx_promise_PromiseTuple5.tuple = function(promise,success,failure) {
+	return thx_promise__$Promise_Promise_$Impl_$.either(promise,function(t) {
+		success(t._0,t._1,t._2,t._3,t._4);
+	},null == failure?function(_) {
+	}:failure);
+};
+var thx_promise_PromiseTuple4 = function() { };
+thx_promise_PromiseTuple4.__name__ = ["thx","promise","PromiseTuple4"];
+thx_promise_PromiseTuple4.join = function(p1,p2) {
+	return thx_promise_Promises.par(function(f,g) {
+		return { _0 : f._0, _1 : f._1, _2 : f._2, _3 : f._3, _4 : g};
+	},p1,p2);
+};
+thx_promise_PromiseTuple4.mapTuplePromise = function(promise,success) {
+	return thx_promise__$Promise_Promise_$Impl_$.flatMapEither(promise,function(t) {
+		return success(t._0,t._1,t._2,t._3);
+	},function(err) {
+		return thx_promise__$Promise_Promise_$Impl_$.error(err);
+	});
+};
+thx_promise_PromiseTuple4.mapTuple = function(promise,success) {
+	return thx_promise__$Promise_Promise_$Impl_$.map(promise,function(t) {
+		return success(t._0,t._1,t._2,t._3);
+	});
+};
+thx_promise_PromiseTuple4.tuple = function(promise,success,failure) {
+	return thx_promise__$Promise_Promise_$Impl_$.either(promise,function(t) {
+		success(t._0,t._1,t._2,t._3);
+	},null == failure?function(_) {
+	}:failure);
+};
+var thx_promise_PromiseTuple3 = function() { };
+thx_promise_PromiseTuple3.__name__ = ["thx","promise","PromiseTuple3"];
+thx_promise_PromiseTuple3.join = function(p1,p2) {
+	return thx_promise_Promises.par(function(f,g) {
+		return { _0 : f._0, _1 : f._1, _2 : f._2, _3 : g};
+	},p1,p2);
+};
+thx_promise_PromiseTuple3.mapTuplePromise = function(promise,success) {
+	return thx_promise__$Promise_Promise_$Impl_$.flatMapEither(promise,function(t) {
+		return success(t._0,t._1,t._2);
+	},function(err) {
+		return thx_promise__$Promise_Promise_$Impl_$.error(err);
+	});
+};
+thx_promise_PromiseTuple3.mapTuple = function(promise,success) {
+	return thx_promise__$Promise_Promise_$Impl_$.map(promise,function(t) {
+		return success(t._0,t._1,t._2);
+	});
+};
+thx_promise_PromiseTuple3.tuple = function(promise,success,failure) {
+	return thx_promise__$Promise_Promise_$Impl_$.either(promise,function(t) {
+		success(t._0,t._1,t._2);
+	},null == failure?function(_) {
+	}:failure);
+};
+var thx_promise_PromiseTuple2 = function() { };
+thx_promise_PromiseTuple2.__name__ = ["thx","promise","PromiseTuple2"];
+thx_promise_PromiseTuple2.join = function(p1,p2) {
+	return thx_promise_Promises.par(function(f,g) {
+		return { _0 : f._0, _1 : f._1, _2 : g};
+	},p1,p2);
+};
+thx_promise_PromiseTuple2.mapTuplePromise = function(promise,success) {
+	return thx_promise__$Promise_Promise_$Impl_$.flatMapEither(promise,function(t) {
+		return success(t._0,t._1);
+	},function(err) {
+		return thx_promise__$Promise_Promise_$Impl_$.error(err);
+	});
+};
+thx_promise_PromiseTuple2.mapTuple = function(promise,success) {
+	return thx_promise__$Promise_Promise_$Impl_$.map(promise,function(t) {
+		return success(t._0,t._1);
+	});
+};
+thx_promise_PromiseTuple2.tuple = function(promise,success,failure) {
+	return thx_promise__$Promise_Promise_$Impl_$.either(promise,function(t) {
+		success(t._0,t._1);
+	},null == failure?function(_) {
+	}:failure);
+};
+var thx_promise_PromiseNil = function() { };
+thx_promise_PromiseNil.__name__ = ["thx","promise","PromiseNil"];
+thx_promise_PromiseNil.join = function(p1,p2) {
+	return thx_promise_Promises.par(function(_,g) {
+		return g;
+	},p1,p2);
+};
+thx_promise_PromiseNil.nil = function(p) {
+	return thx_promise__$Promise_Promise_$Impl_$.map(p,function(a) {
+		return thx_Nil.nil;
+	});
+};
+var thx_promise_PromiseAPlus = function() { };
+thx_promise_PromiseAPlus.__name__ = ["thx","promise","PromiseAPlus"];
+thx_promise_PromiseAPlus.promise = function(p,pos) {
+	return thx_promise__$Promise_Promise_$Impl_$.create(function(resolve,reject) {
+		p.then(resolve,function(e) {
+			reject(thx_Error.fromDynamic(e,pos));
+		});
+	});
+};
+thx_promise_PromiseAPlus.aPlus = function(p) {
+	return new Promise(function(resolve,reject) {
+		thx_promise__$Promise_Promise_$Impl_$.failure(thx_promise__$Promise_Promise_$Impl_$.success(p,resolve),reject);
+	});
+};
+var thx_promise_PromiseAPlusVoid = function() { };
+thx_promise_PromiseAPlusVoid.__name__ = ["thx","promise","PromiseAPlusVoid"];
+thx_promise_PromiseAPlusVoid.promise = function(p,pos) {
+	return thx_promise__$Promise_Promise_$Impl_$.create(function(resolve,reject) {
+		p.then(function() {
+			resolve(thx_Nil.nil);
+		},function(e) {
+			reject(thx_Error.fromDynamic(e,pos));
+		});
+	});
+};
+thx_promise_PromiseAPlusVoid.aPlus = function(p) {
+	return new Promise(function(resolve,reject) {
+		thx_promise__$Promise_Promise_$Impl_$.failure(thx_promise__$Promise_Promise_$Impl_$.success(p,function() {
+			resolve(thx_Nil.nil);
+		}),reject);
+	});
+};
+var thx_promise_Timer = function() { };
+thx_promise_Timer.__name__ = ["thx","promise","Timer"];
+thx_promise_Timer.delay = function(delayms) {
+	return thx_promise_Timer.delayValue(thx_Nil.nil,delayms);
+};
+thx_promise_Timer.delayValue = function(value,delayms) {
+	return thx_promise_Future.create(function(callback) {
+		var f = callback;
+		var a1 = value;
+		thx_Timer.delay(function() {
+			f(a1);
+		},delayms);
+	});
+};
+thx_promise_Timer.immediate = function() {
+	return thx_promise_Timer.immediateValue(thx_Nil.nil);
+};
+thx_promise_Timer.immediateValue = function(value) {
+	return thx_promise_Future.create(function(callback) {
+		var f = callback;
+		var a1 = value;
+		thx_Timer.immediate(function() {
+			f(a1);
+		});
+	});
+};
 var thx_unit_angle__$BinaryDegree_BinaryDegree_$Impl_$ = {};
 thx_unit_angle__$BinaryDegree_BinaryDegree_$Impl_$.__name__ = ["thx","unit","angle","_BinaryDegree","BinaryDegree_Impl_"];
 thx_unit_angle__$BinaryDegree_BinaryDegree_$Impl_$.fromFloat = function(value) {
@@ -15640,13 +17266,14 @@ _$Api_Color_$Impl_$.ocre = "#E6D67E";
 _$Api_Color_$Impl_$.blue = "#00AAFF";
 _$Api_Color_$Impl_$.orange = "#F27C4E";
 _$Api_Color_$Impl_$.violet = "#8116C9";
+Config.adress = "http://localhost:3700";
 DateTools.DAYS_OF_MONTH = [31,28,31,30,31,30,31,31,30,31,30,31];
 haxe_crypto_Base64.CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 haxe_ds_ObjectMap.count = 0;
 js_Boot.__toStr = { }.toString;
-murmur_Canvas.document = window.document;
 murmur_Canvas.paused = 0;
-murmur_Canvas._numPeople = 50;
+murmur_Canvas._numPeople = 150;
+murmur_End.outBounds = socket_signal_WalkOut.getInstance();
 murmur_PeopleImage.count = 0;
 murmur_SplitBoundaries.outBounds = socket_signal_SplitOut.getInstance();
 murmur_Walk.outBounds = socket_signal_WalkOut.getInstance();
@@ -15911,3 +17538,5 @@ thx_unit_angle__$Turn_Turn_$Impl_$.dividerTurn = 1.;
 thx_unit_angle__$Turn_Turn_$Impl_$.symbol = "τ";
 murmur_Canvas.main();
 })(typeof window != "undefined" ? window : typeof global != "undefined" ? global : typeof self != "undefined" ? self : this);
+
+//# sourceMappingURL=canvas.js.map

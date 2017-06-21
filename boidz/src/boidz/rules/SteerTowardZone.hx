@@ -40,11 +40,11 @@ class SteerTowardZone implements IFlockRule {
   var run=true;
   var no=false;
    public function modify(b:Boid){
-    if(no)return ;
+    if(no|| map.get(b)==null)return ;
     if( count> 10) doit();
 
 
-    if(go)
+    if(go )
     b.d += Steer.toward(b, map.get(b), maxSteer);
 
    

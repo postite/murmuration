@@ -1,10 +1,10 @@
 package murmur;
 import msignal.Signal;
 
-class DoneSignal extends Signal1<String> {
+class DoneSignal extends Signal2<String,String> {
 	
 	public function new (){
-		super(String);
+		super(String,String);
 	}
 	static var instance:DoneSignal;
 	public static function getInstance():DoneSignal{

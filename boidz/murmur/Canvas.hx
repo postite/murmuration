@@ -14,11 +14,12 @@ import thx.Timer;
 import murmur.MurmurTools;
 import murmur.People;
 import js.Browser.*;
+import murmur.scenarios.*;
 class Canvas{
 
   /// dimensions
-  public var timedScenario:murmur.TimedScenario;
-  var scenario:Scenario;
+  
+  public var scenario:Scenario;
   public var walk:Walk;
   public var width  = #if nico 1600 #else 1440 #end;
   public var height = 900;
@@ -26,7 +27,7 @@ class Canvas{
 
   //storing velocityfunction
   static var velocityfunc;
-  
+  var DS:murmur.DoneSignal;
   
 
   static var paused = 0;
@@ -35,7 +36,7 @@ class Canvas{
   public var velocity=0.9;
   static var _numPeople=150;
   public var fall:Fall;
-  public var randomVelocity:Bool=false;
+  public var randomVelocity:Bool=true;
   public var flock:Flock;
   public var canvas:js.html.CanvasElement;
   public var render:boidz.render.canvas.CanvasRender;
@@ -50,10 +51,10 @@ class Canvas{
   public var zone:boidz.rules.SteerTowardZone;
   public var steerCenter:SteerTowardCenter;
   public var split:murmur.SplitBoundaries;
-  var debugRender :boidz.render.canvas.DebugRender;
+  public var debugRender:boidz.render.canvas.DebugRender;
   
   // signal for Timed Scenario
-  public var DS:murmur.DoneSignal;
+  
 
 
 
@@ -94,9 +95,10 @@ class Canvas{
      display = new Display(render);
      var debugDisplay= new Display(debugRender);
      debugDisplay.render();
-     DS.add(function(s:String){
-      debugRender.actionID=s;
+     DS.add(function(scenario:String,val:String){
+      debugRender.actionID=val;
       debugRender.peopleID=flock.boids.length;
+      debugRender.scenarioID=scenario;
       debugDisplay.render();
     });
     // display.addRenderable(new CanvasBoundaries()
@@ -212,21 +214,20 @@ class Canvas{
     //   cast rendering,
     //   cast frameRate);
     var ui= new UI(this);
-    DS.dispatch();
+    
  #end
-    //#if scenario 
-     timedScenario= new TimedScenario(this,clientID,21600
-      );
-    //#end
-    //new crowded.Crowd();
+    
+      
+    
+    
     //
     //
     //
     scenario= new Scenario(this,clientID);
+    scenario.init();
      wait(dims.clientID);
      trace( "all OK");
-     // if( dims.clientID==0)
-     // display.addRenderable(walk);
+   
       
   }
 
@@ -348,12 +349,15 @@ class Canvas{
         flock.boids.push(b);
         //trace( 'w=${i.width} h=${i.height}');
       }
+
+      debugRender.peopleID=flock.boids.length;
     
 
   }
 
   function removeBoid(dir:String,b:Boid){
     flock.boids.remove(b);
+    debugRender.peopleID=flock.boids.length;
   }
 
   /*________________*/
@@ -361,8 +365,9 @@ class Canvas{
   // realTime velocity update
   public function updateVelocity() {
       for(boid in flock.boids)
-        boid.v = velocity * (randomVelocity ? Math.random() : velocity);
+        boid.v = velocity * (randomVelocity ? Math.random()*2 : velocity);
   }
+
 
    // just find the canvas on htmlPage
    function getCanvas() {

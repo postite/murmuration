@@ -110,7 +110,11 @@ class People implements IRenderable<CanvasRender> {
     ctx.globalAlpha = opacity;
    
     var wratio=im.width/im.height;
+    #if petit
+    var newH=100*yFactor;
+    #else
     var newH=300*yFactor;
+    #end
     var newW=newH*wratio;
     //try{
    ctx.drawImage(im,b.x-(newW/2),b.y-(newH/2),newW,newH);

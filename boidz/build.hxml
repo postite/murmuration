@@ -22,6 +22,7 @@
 #-D network-sandbox
 #-D source-map-content
 -D hxnodejs_no_version_warning
+#-D petit
 #-D nico
 #-dce no
 -debug

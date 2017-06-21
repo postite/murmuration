@@ -1487,6 +1487,166 @@ haxe__$Int32_Int32_$Impl_$.__name__ = ["haxe","_Int32","Int32_Impl_"];
 haxe__$Int32_Int32_$Impl_$.mul = function(a,b) {
 	return a * (b & 65535) + (a * (b >>> 16) << 16 | 0) | 0;
 };
+haxe__$Int32_Int32_$Impl_$.ucompare = function(a,b) {
+	if(a < 0) {
+		if(b < 0) {
+			return ~b - ~a | 0;
+		} else {
+			return 1;
+		}
+	}
+	if(b < 0) {
+		return -1;
+	} else {
+		return a - b | 0;
+	}
+};
+var haxe__$Int64_Int64_$Impl_$ = {};
+haxe__$Int64_Int64_$Impl_$.__name__ = ["haxe","_Int64","Int64_Impl_"];
+haxe__$Int64_Int64_$Impl_$.toString = function(this1) {
+	var i = this1;
+	var b = new haxe__$Int64__$_$_$Int64(0,0);
+	if(i.high == b.high && i.low == b.low) {
+		return "0";
+	}
+	var str = "";
+	var neg = false;
+	if(i.high < 0) {
+		neg = true;
+	}
+	var ten = new haxe__$Int64__$_$_$Int64(0,10);
+	while(true) {
+		var b1 = new haxe__$Int64__$_$_$Int64(0,0);
+		if(!(i.high != b1.high || i.low != b1.low)) {
+			break;
+		}
+		var r = haxe__$Int64_Int64_$Impl_$.divMod(i,ten);
+		if(r.modulus.high < 0) {
+			var x = r.modulus;
+			var high = ~x.high;
+			var low = -x.low;
+			if(low == 0) {
+				++high;
+				high = high | 0;
+			}
+			str = new haxe__$Int64__$_$_$Int64(high,low).low + str;
+			var x1 = r.quotient;
+			var high1 = ~x1.high;
+			var low1 = -x1.low;
+			if(low1 == 0) {
+				++high1;
+				high1 = high1 | 0;
+			}
+			i = new haxe__$Int64__$_$_$Int64(high1,low1);
+		} else {
+			str = r.modulus.low + str;
+			i = r.quotient;
+		}
+	}
+	if(neg) {
+		str = "-" + str;
+	}
+	return str;
+};
+haxe__$Int64_Int64_$Impl_$.divMod = function(dividend,divisor) {
+	if(divisor.high == 0) {
+		switch(divisor.low) {
+		case 0:
+			throw new js__$Boot_HaxeError("divide by zero");
+			break;
+		case 1:
+			return { quotient : new haxe__$Int64__$_$_$Int64(dividend.high,dividend.low), modulus : new haxe__$Int64__$_$_$Int64(0,0)};
+		}
+	}
+	var divSign = dividend.high < 0 != divisor.high < 0;
+	var modulus;
+	if(dividend.high < 0) {
+		var high = ~dividend.high;
+		var low = -dividend.low;
+		if(low == 0) {
+			++high;
+			high = high | 0;
+		}
+		modulus = new haxe__$Int64__$_$_$Int64(high,low);
+	} else {
+		modulus = new haxe__$Int64__$_$_$Int64(dividend.high,dividend.low);
+	}
+	if(divisor.high < 0) {
+		var high1 = ~divisor.high;
+		var low1 = -divisor.low;
+		if(low1 == 0) {
+			++high1;
+			high1 = high1 | 0;
+		}
+		divisor = new haxe__$Int64__$_$_$Int64(high1,low1);
+	} else {
+		divisor = divisor;
+	}
+	var quotient = new haxe__$Int64__$_$_$Int64(0,0);
+	var mask = new haxe__$Int64__$_$_$Int64(0,1);
+	while(!(divisor.high < 0)) {
+		var v = haxe__$Int32_Int32_$Impl_$.ucompare(divisor.high,modulus.high);
+		var cmp = v != 0?v:haxe__$Int32_Int32_$Impl_$.ucompare(divisor.low,modulus.low);
+		divisor = new haxe__$Int64__$_$_$Int64(divisor.high << 1 | divisor.low >>> 31,divisor.low << 1);
+		mask = new haxe__$Int64__$_$_$Int64(mask.high << 1 | mask.low >>> 31,mask.low << 1);
+		if(cmp >= 0) {
+			break;
+		}
+	}
+	while(true) {
+		var b = new haxe__$Int64__$_$_$Int64(0,0);
+		if(!(mask.high != b.high || mask.low != b.low)) {
+			break;
+		}
+		var v1 = haxe__$Int32_Int32_$Impl_$.ucompare(modulus.high,divisor.high);
+		if((v1 != 0?v1:haxe__$Int32_Int32_$Impl_$.ucompare(modulus.low,divisor.low)) >= 0) {
+			quotient = new haxe__$Int64__$_$_$Int64(quotient.high | mask.high,quotient.low | mask.low);
+			var high2 = modulus.high - divisor.high | 0;
+			var low2 = modulus.low - divisor.low | 0;
+			if(haxe__$Int32_Int32_$Impl_$.ucompare(modulus.low,divisor.low) < 0) {
+				--high2;
+				high2 = high2 | 0;
+			}
+			modulus = new haxe__$Int64__$_$_$Int64(high2,low2);
+		}
+		mask = new haxe__$Int64__$_$_$Int64(mask.high >>> 1,mask.high << 31 | mask.low >>> 1);
+		divisor = new haxe__$Int64__$_$_$Int64(divisor.high >>> 1,divisor.high << 31 | divisor.low >>> 1);
+	}
+	if(divSign) {
+		var high3 = ~quotient.high;
+		var low3 = -quotient.low;
+		if(low3 == 0) {
+			++high3;
+			high3 = high3 | 0;
+		}
+		quotient = new haxe__$Int64__$_$_$Int64(high3,low3);
+	}
+	if(dividend.high < 0) {
+		var high4 = ~modulus.high;
+		var low4 = -modulus.low;
+		if(low4 == 0) {
+			++high4;
+			high4 = high4 | 0;
+		}
+		modulus = new haxe__$Int64__$_$_$Int64(high4,low4);
+	}
+	return { quotient : quotient, modulus : modulus};
+};
+var haxe__$Int64__$_$_$Int64 = function(high,low) {
+	this.high = high;
+	this.low = low;
+};
+haxe__$Int64__$_$_$Int64.__name__ = ["haxe","_Int64","___Int64"];
+haxe__$Int64__$_$_$Int64.prototype = {
+	high: null
+	,low: null
+	,__class__: haxe__$Int64__$_$_$Int64
+};
+var haxe_Log = function() { };
+haxe_Log.__name__ = ["haxe","Log"];
+haxe_Log.trace = function(v,infos) {
+	js_Boot.__trace(v,infos);
+};
 var haxe_Timer = function(time_ms) {
 	var me = this;
 	this.id = setInterval(function() {
@@ -1525,6 +1685,58 @@ haxe_Utf8.compare = function(a,b) {
 	} else {
 		return -1;
 	}
+};
+var haxe_io_Bytes = function(data) {
+	this.length = data.byteLength;
+	this.b = new Uint8Array(data);
+	this.b.bufferValue = data;
+	data.hxBytes = this;
+	data.bytes = this.b;
+};
+haxe_io_Bytes.__name__ = ["haxe","io","Bytes"];
+haxe_io_Bytes.alloc = function(length) {
+	return new haxe_io_Bytes(new ArrayBuffer(length));
+};
+haxe_io_Bytes.ofString = function(s) {
+	var a = [];
+	var i = 0;
+	while(i < s.length) {
+		var c = s.charCodeAt(i++);
+		if(55296 <= c && c <= 56319) {
+			c = c - 55232 << 10 | s.charCodeAt(i++) & 1023;
+		}
+		if(c <= 127) {
+			a.push(c);
+		} else if(c <= 2047) {
+			a.push(192 | c >> 6);
+			a.push(128 | c & 63);
+		} else if(c <= 65535) {
+			a.push(224 | c >> 12);
+			a.push(128 | c >> 6 & 63);
+			a.push(128 | c & 63);
+		} else {
+			a.push(240 | c >> 18);
+			a.push(128 | c >> 12 & 63);
+			a.push(128 | c >> 6 & 63);
+			a.push(128 | c & 63);
+		}
+	}
+	return new haxe_io_Bytes(new Uint8Array(a).buffer);
+};
+haxe_io_Bytes.ofData = function(b) {
+	var hb = b.hxBytes;
+	if(hb != null) {
+		return hb;
+	}
+	return new haxe_io_Bytes(b);
+};
+haxe_io_Bytes.fastGet = function(b,pos) {
+	return b.bytes[pos];
+};
+haxe_io_Bytes.prototype = {
+	length: null
+	,b: null
+	,__class__: haxe_io_Bytes
 };
 var haxe_crypto_Base64 = function() { };
 haxe_crypto_Base64.__name__ = ["haxe","crypto","Base64"];
@@ -1997,6 +2209,35 @@ js__$Boot_HaxeError.prototype = $extend(Error.prototype,{
 });
 var js_Boot = function() { };
 js_Boot.__name__ = ["js","Boot"];
+js_Boot.__unhtml = function(s) {
+	return s.split("&").join("&amp;").split("<").join("&lt;").split(">").join("&gt;");
+};
+js_Boot.__trace = function(v,i) {
+	var msg = i != null?i.fileName + ":" + i.lineNumber + ": ":"";
+	msg += js_Boot.__string_rec(v,"");
+	if(i != null && i.customParams != null) {
+		var _g = 0;
+		var _g1 = i.customParams;
+		while(_g < _g1.length) {
+			var v1 = _g1[_g];
+			++_g;
+			msg += "," + js_Boot.__string_rec(v1,"");
+		}
+	}
+	var d;
+	var tmp;
+	if(typeof(document) != "undefined") {
+		d = document.getElementById("haxe:trace");
+		tmp = d != null;
+	} else {
+		tmp = false;
+	}
+	if(tmp) {
+		d.innerHTML += js_Boot.__unhtml(msg) + "<br/>";
+	} else if(typeof console != "undefined" && console.log != null) {
+		console.log(msg);
+	}
+};
 js_Boot.getClass = function(o) {
 	if((o instanceof Array) && o.__enum__ == null) {
 		return Array;
@@ -2168,6 +2409,13 @@ js_Boot.__instanceof = function(o,cl) {
 			return true;
 		}
 		return o.__enum__ == cl;
+	}
+};
+js_Boot.__cast = function(o,t) {
+	if(js_Boot.__instanceof(o,t)) {
+		return o;
+	} else {
+		throw new js__$Boot_HaxeError("Cannot cast " + Std.string(o) + " to " + Std.string(t));
 	}
 };
 js_Boot.__nativeClassName = function(o) {
@@ -2721,7 +2969,7 @@ murmur_Canvas.prototype = {
 		this.scenario = new murmur_scenarios_Scenario(this,this.clientID);
 		this.scenario.init();
 		this.wait(dims.clientID);
-		console.log("all OK");
+		haxe_Log.trace("all OK",{ fileName : "Canvas.hx", lineNumber : 229, className : "murmur.Canvas", methodName : "execute"});
 	}
 	,reset: function() {
 		this.addBoids(this.flock,100,1,0);
@@ -2730,7 +2978,7 @@ murmur_Canvas.prototype = {
 		var _gthis = this;
 		socket_SocketManager.walkSignal.add(function(dir,sprite) {
 			_gthis.changeAnyColor();
-			console.log("state=" + state + " spriteState=" + sprite.state);
+			haxe_Log.trace("state=" + state + " spriteState=" + sprite.state,{ fileName : "Canvas.hx", lineNumber : 249, className : "murmur.Canvas", methodName : "wait"});
 			_gthis.display.removeRenderable(_gthis.walk);
 			_gthis.walk.enabled = false;
 			if(state != sprite.state) {
@@ -2762,7 +3010,7 @@ murmur_Canvas.prototype = {
 			}
 		});
 		socket_SocketManager.ctrlSignal.add(function(type,value) {
-			console.log("new ctrl Signal");
+			haxe_Log.trace("new ctrl Signal",{ fileName : "Canvas.hx", lineNumber : 289, className : "murmur.Canvas", methodName : "wait"});
 			switch(type) {
 			case "action":
 				_gthis.doAct(value);
@@ -2775,7 +3023,7 @@ murmur_Canvas.prototype = {
 		});
 	}
 	,doAct: function(val) {
-		console.log("doAct " + val);
+		haxe_Log.trace("doAct " + val,{ fileName : "Canvas.hx", lineNumber : 301, className : "murmur.Canvas", methodName : "doAct"});
 		this.scenario.act(val);
 	}
 	,changeAnyColor: function() {
@@ -3072,7 +3320,7 @@ murmur_People.prototype = {
 			var yFactor = b2.y / ctx.canvas.height + 0.5;
 			ctx.globalAlpha = yFactor;
 			var wratio = im.width / im.height;
-			var newH = 300 * yFactor;
+			var newH = 100 * yFactor;
 			var newW = newH * wratio;
 			ctx.drawImage(im,b2.x - newW / 2,b2.y - newH / 2,newW,newH);
 		}
@@ -3130,7 +3378,7 @@ var murmur_SplitBoundaries = function(minx,maxx,miny,maxy,offset,maxSteer) {
 	this.maxy = maxy;
 	this.offset = offset;
 	this.maxSteer = maxSteer;
-	console.log("new split");
+	haxe_Log.trace("new split",{ fileName : "SplitBoundaries.hx", lineNumber : 31, className : "murmur.SplitBoundaries", methodName : "new"});
 };
 murmur_SplitBoundaries.__name__ = ["murmur","SplitBoundaries"];
 murmur_SplitBoundaries.__interfaces__ = [boidz_IFlockRule];
@@ -3337,16 +3585,10 @@ murmur_Zoom.prototype = {
 	}
 	,__class__: murmur_Zoom
 };
-var murmur_scenarios_IScenario = function() { };
-murmur_scenarios_IScenario.__name__ = ["murmur","scenarios","IScenario"];
-murmur_scenarios_IScenario.prototype = {
-	enabled: null
-	,wakeup: null
-	,kill: null
-	,__class__: murmur_scenarios_IScenario
-};
 var murmur_scenarios_Scenario = function(can,clientID) {
+	this.scenariosCount = 0;
 	this.counter = 0;
+	this.scenarios = [];
 	this.randomVelocity = false;
 	this.veryHiSpeed = 1.2;
 	this.moreSpeed = .8;
@@ -3367,18 +3609,47 @@ murmur_scenarios_Scenario.prototype = {
 	,can: null
 	,randomVelocity: null
 	,delay: null
+	,scenarios: null
 	,counter: null
 	,clientID: null
+	,scenariosCount: null
 	,zoom: null
 	,away: null
 	,init: function() {
 		murmur_scenarios_Scenario.DS = murmur_DoneSignal.getInstance();
-		murmur_scenarios_Scenario.currentScenario = new murmur_scenarios_Slam(this.can,this.clientID,21600);
+		this.initScenarios();
+		this.chainingScenarios();
 		this.dispatch("init");
 		var this1 = 300;
 		this.away = new boidz_rules_SteerAway(500,500,this1);
 		this.can.flock.addRule(this.away);
 		this.away.enabled = false;
+	}
+	,chainingScenarios: function() {
+		var _gthis = this;
+		haxe_Log.trace("chainig " + this.scenariosCount,{ fileName : "Scenario.hx", lineNumber : 56, className : "murmur.scenarios.Scenario", methodName : "chainingScenarios"});
+		murmur_scenarios_Scenario.currentScenario = this.scenarios[this.scenariosCount];
+		if(murmur_scenarios_Scenario.currentScenario.elapsed == null) {
+			murmur_scenarios_Scenario.currentScenario.execute();
+		} else {
+			murmur_scenarios_Scenario.currentScenario.wakeup();
+		}
+		murmur_scenarios_Scenario.currentScenario.fini.add(function() {
+			haxe_Log.trace("fini" + _gthis.scenariosCount,{ fileName : "Scenario.hx", lineNumber : 63, className : "murmur.scenarios.Scenario", methodName : "chainingScenarios"});
+			murmur_scenarios_Scenario.currentScenario.kill();
+			_gthis.chainingScenarios();
+			_gthis.dispatch("switch");
+		});
+		if(this.scenariosCount == this.scenarios.length - 1) {
+			this.scenariosCount = 0;
+		} else {
+			this.scenariosCount = this.scenariosCount + 1;
+		}
+	}
+	,initScenarios: function() {
+		this.scenarios.push(new murmur_scenarios_TimedScenario(this.can,this.clientID,12000,60000));
+		this.scenarios.push(new murmur_scenarios_DessinAlone(this.can,this.clientID,3333,10000));
+		this.scenarios.push(new murmur_scenarios_Slam(this.can,this.clientID,17500,70000));
 	}
 	,addWalk: function() {
 		var _gthis = this;
@@ -3428,7 +3699,7 @@ murmur_scenarios_Scenario.prototype = {
 			this.addWalk();
 			break;
 		default:
-			console.log(value);
+			haxe_Log.trace(value,{ fileName : "Scenario.hx", lineNumber : 145, className : "murmur.scenarios.Scenario", methodName : "act"});
 			Reflect.field(this,value).apply(this,[]);
 		}
 	}
@@ -3509,7 +3780,7 @@ murmur_scenarios_Scenario.prototype = {
 			b = true;
 		}
 		var _gthis = this;
-		console.log("tow" + (b == null?"null":"" + b));
+		haxe_Log.trace("tow" + (b == null?"null":"" + b),{ fileName : "Scenario.hx", lineNumber : 244, className : "murmur.scenarios.Scenario", methodName : "towardCenter"});
 		thx_Timer.delay(function() {
 			_gthis.dispatch("end towardCenter");
 			_gthis.can.steerCenter.enabled = false;
@@ -3518,7 +3789,7 @@ murmur_scenarios_Scenario.prototype = {
 		this.can.velocity = this.lowSpeed;
 		this.can.updateVelocity();
 		this.can.steerCenter.enabled = b;
-		console.log("afterTow");
+		haxe_Log.trace("afterTow",{ fileName : "Scenario.hx", lineNumber : 255, className : "murmur.scenarios.Scenario", methodName : "towardCenter"});
 	}
 	,scene2: function() {
 		this.can.velocity = this.lowSpeed;
@@ -3576,10 +3847,10 @@ murmur_scenarios_Scenario.prototype = {
 		if(limit == null) {
 			limit = 200;
 		}
-		console.log("removeorAdd");
+		haxe_Log.trace("removeorAdd",{ fileName : "Scenario.hx", lineNumber : 349, className : "murmur.scenarios.Scenario", methodName : "removeorAdd"});
 		var num = Std.random(10);
 		var rem = Math.random() < 0.5;
-		console.log("num=" + num + " rem=" + (rem == null?"null":"" + rem));
+		haxe_Log.trace("num=" + num + " rem=" + (rem == null?"null":"" + rem),{ fileName : "Scenario.hx", lineNumber : 353, className : "murmur.scenarios.Scenario", methodName : "removeorAdd"});
 		if(rem) {
 			if(num < this.can.flock.boids.length && this.can.flock.boids.length > limit) {
 				this.can.flock.boids.splice(0,num);
@@ -3623,41 +3894,74 @@ murmur_scenarios_Scenario.prototype = {
 		this.can.debugRender.set_peopleID(this.can.flock.boids.length);
 	}
 	,dispatch: function(action) {
+		var mins = thx_bigint_Decimals.fromFloat(murmur_scenarios_Scenario.currentScenario.elapsed).multiply(thx_unit_time__$Millisecond_Millisecond_$Impl_$.ofUnit).divide(thx_unit_time__$Millisecond_Millisecond_$Impl_$.dividerMinute).trim(null);
 		var o = murmur_scenarios_Scenario.currentScenario;
-		murmur_scenarios_Scenario.DS.dispatch(Type.getClassName(o == null?null:js_Boot.getClass(o)).split(".")[2],action);
+		murmur_scenarios_Scenario.DS.dispatch(Type.getClassName(o == null?null:js_Boot.getClass(o)).split(".")[2] + "/" + ("" + mins.toString() + "min"),action);
 	}
 	,__class__: murmur_scenarios_Scenario
 };
+var murmur_scenarios_IScenario = function() { };
+murmur_scenarios_IScenario.__name__ = ["murmur","scenarios","IScenario"];
+murmur_scenarios_IScenario.prototype = {
+	elapsed: null
+	,enabled: null
+	,fini: null
+	,wakeup: null
+	,execute: null
+	,kill: null
+	,__class__: murmur_scenarios_IScenario
+};
 var murmur_scenarios_TimedScenario = function(can,clientId,delay,maxTime) {
 	this.enabled = true;
-	this.scenarios = [];
+	this.scenes = [];
 	murmur_scenarios_Scenario.call(this,can,clientId);
-	this.execute();
+	this.maxTime = maxTime;
 	this.delay = delay;
-	this.timer = new haxe_Timer(delay);
-	this.timer.run = $bind(this,this.doScene);
+	this.fini = new msignal_Signal0();
 };
 murmur_scenarios_TimedScenario.__name__ = ["murmur","scenarios","TimedScenario"];
 murmur_scenarios_TimedScenario.__interfaces__ = [murmur_scenarios_IScenario];
 murmur_scenarios_TimedScenario.__super__ = murmur_scenarios_Scenario;
 murmur_scenarios_TimedScenario.prototype = $extend(murmur_scenarios_Scenario.prototype,{
-	scenarios: null
+	fini: null
+	,elapsed: null
+	,scenes: null
 	,enabled: null
+	,maxTime: null
 	,timer: null
+	,chrono: function() {
+		var _gthis = this;
+		var start = performance.now();
+		this.fini.add(thx_Timer.frame(function(delta) {
+			_gthis.elapsed = performance.now() - start;
+			if(_gthis.elapsed > _gthis.maxTime) {
+				haxe_Log.trace("fini",{ fileName : "TimedScenario.hx", lineNumber : 42, className : "murmur.scenarios.TimedScenario", methodName : "chrono"});
+				_gthis.fini.dispatch();
+			}
+			thx_bigint_Decimals.fromFloat(_gthis.elapsed / 1000).multiply(thx_unit_time__$Second_Second_$Impl_$.ofUnit).divide(thx_unit_time__$Second_Second_$Impl_$.dividerMinute).trim(null);
+		}));
+	}
 	,execute: function() {
-		this.scenarios.push($bind(this,this._scene1));
-		this.scenarios.push($bind(this,this._scene2));
-		this.scenarios.push($bind(this,this._scene3));
-		this.scenarios.push($bind(this,this._scene4));
-		this.scenarios.push($bind(this,this._scene5));
+		this.chrono();
+		this.timer = new haxe_Timer(this.delay);
+		this.timer.run = $bind(this,this.doScene);
+		this.pushScenes();
+		this.dispatch("execute");
+	}
+	,pushScenes: function() {
+		this.scenes.push($bind(this,this._scene1));
+		this.scenes.push($bind(this,this._scene2));
+		this.scenes.push($bind(this,this._scene3));
+		this.scenes.push($bind(this,this._scene4));
+		this.scenes.push($bind(this,this._scene5));
 	}
 	,doScene: function() {
 		if(this.enabled) {
 			this.can.changeAnyColor();
-			var coun = Math.abs(this.counter++ % this.scenarios.length) | 0;
-			console.log(coun);
+			var coun = Math.abs(this.counter++ % this.scenes.length) | 0;
+			haxe_Log.trace(coun,{ fileName : "TimedScenario.hx", lineNumber : 74, className : "murmur.scenarios.TimedScenario", methodName : "doScene"});
 			this.removeorAdd();
-			this.scenarios[coun]();
+			this.scenes[coun]();
 		}
 	}
 	,_scene1: function() {
@@ -3711,22 +4015,69 @@ murmur_scenarios_TimedScenario.prototype = $extend(murmur_scenarios_Scenario.pro
 	,wakeup: function() {
 		this.enabled = true;
 		this.counter = 0;
+		this.chrono();
+		this.timer = new haxe_Timer(this.delay);
 		this.timer.run = $bind(this,this.doScene);
 	}
 	,__class__: murmur_scenarios_TimedScenario
 });
+var murmur_scenarios_DessinAlone = function(can,clientId,delay,maxTime) {
+	murmur_scenarios_TimedScenario.call(this,can,clientId,delay,maxTime);
+};
+murmur_scenarios_DessinAlone.__name__ = ["murmur","scenarios","DessinAlone"];
+murmur_scenarios_DessinAlone.__interfaces__ = [murmur_scenarios_IScenario];
+murmur_scenarios_DessinAlone.__super__ = murmur_scenarios_TimedScenario;
+murmur_scenarios_DessinAlone.prototype = $extend(murmur_scenarios_TimedScenario.prototype,{
+	pushScenes: function() {
+		this.scenes.push($bind(this,this.loin));
+		this.scenes.push($bind(this,this.zoned));
+		this.scenes.push($bind(this,this.morezoned));
+	}
+	,zaway: null
+	,loin: function() {
+		this.can.split.enabled = true;
+		this.zaway = new boidz_rules_SteerAway(500,500);
+		this.can.velocity = this.lowSpeed;
+		this.can.updateVelocity();
+		this.can.flock.addRule(this.zaway);
+		this.zaway.enabled = true;
+		this.dispatch("loin");
+	}
+	,zoned: function() {
+		this.zaway.enabled = false;
+		var zone = null;
+		if(this.clientID == 0) {
+			zone = new boidz_rules_RespectBoundaries(this.can.width / 3,this.can.width,this.can.height / 3,this.can.height);
+		} else {
+			zone = new boidz_rules_RespectBoundaries(0,this.can.width / 3,this.can.height / 3,this.can.height);
+		}
+		this.toZone = new boidz_rules_SteerTowardZone(this.can.flock,new boidz_render_canvas_ZoneBounds(zone));
+		this.can.flock.addRule(this.toZone);
+		this.dispatch("zoned");
+	}
+	,morezoned: function() {
+		this.dispatch("morezoned");
+	}
+	,kill: function() {
+		this.enabled = false;
+		this.can.velocity = this.lowSpeed;
+		this.can.updateVelocity();
+		this.timer.stop();
+	}
+	,__class__: murmur_scenarios_DessinAlone
+});
 var murmur_scenarios_Slam = function(can,clientId,delay,maxTime) {
-	murmur_scenarios_TimedScenario.call(this,can,clientId,20000,70000);
+	murmur_scenarios_TimedScenario.call(this,can,clientId,delay,maxTime);
 };
 murmur_scenarios_Slam.__name__ = ["murmur","scenarios","Slam"];
 murmur_scenarios_Slam.__interfaces__ = [murmur_scenarios_IScenario];
 murmur_scenarios_Slam.__super__ = murmur_scenarios_TimedScenario;
 murmur_scenarios_Slam.prototype = $extend(murmur_scenarios_TimedScenario.prototype,{
-	execute: function() {
-		this.scenarios.push($bind(this,this.prepareSplit));
-		this.scenarios.push($bind(this,this.varie));
-		this.scenarios.push($bind(this,this.isole));
-		this.scenarios.push($bind(this,this.disperse));
+	pushScenes: function() {
+		this.scenes.push($bind(this,this.prepareSplit));
+		this.scenes.push($bind(this,this.varie));
+		this.scenes.push($bind(this,this.isole));
+		this.scenes.push($bind(this,this.disperse));
 	}
 	,prepareSplit: function() {
 		this.contain();
@@ -3757,6 +4108,7 @@ murmur_scenarios_Slam.prototype = $extend(murmur_scenarios_TimedScenario.prototy
 		}
 	}
 	,kill: function() {
+		this.enabled = false;
 		this.can.split.enabled = true;
 		this.timer.stop();
 	}
@@ -3786,11 +4138,11 @@ socket_SocketManager.prototype = {
 	,_socket: null
 	,dims: null
 	,sendControl: function(type,value) {
-		console.log("sendControl");
+		haxe_Log.trace("sendControl",{ fileName : "SocketManager.hx", lineNumber : 35, className : "socket.SocketManager", methodName : "sendControl"});
 		this._socket.emit("ctrl",{ type : type, value : value});
 	}
 	,sendWalk: function(dir,sprite) {
-		console.log("sendWalk");
+		haxe_Log.trace("sendWalk",{ fileName : "SocketManager.hx", lineNumber : 40, className : "socket.SocketManager", methodName : "sendWalk"});
 		this._socket.emit("walk",{ dir : dir, sprite : sprite});
 	}
 	,sendMessage: function(dir,boid) {
@@ -3804,20 +4156,20 @@ socket_SocketManager.prototype = {
 			if(args.data != null) {
 				socket_SocketManager.emitSignal.dispatch(args.dir,args.data);
 			} else {
-				console.log("There is a problem: " + Std.string(args.data));
+				haxe_Log.trace("There is a problem: " + Std.string(args.data),{ fileName : "SocketManager.hx", lineNumber : 67, className : "socket.SocketManager", methodName : "connect"});
 			}
 		});
 		this._socket.on("walking",function(args1) {
-			console.log("yo walk");
+			haxe_Log.trace("yo walk",{ fileName : "SocketManager.hx", lineNumber : 71, className : "socket.SocketManager", methodName : "connect"});
 			socket_SocketManager.walkSignal.dispatch(args1.dir,args1.sprite);
 		});
 		this._socket.on("control",function(args2) {
-			console.log("yo control");
+			haxe_Log.trace("yo control",{ fileName : "SocketManager.hx", lineNumber : 75, className : "socket.SocketManager", methodName : "connect"});
 			socket_SocketManager.ctrlSignal.dispatch(args2.type,args2.value);
 		});
 		this._socket.on("clientConnect",function(data) {
 			_gthis.clientId = data.clients;
-			console.log("clientId=" + _gthis.clientId);
+			haxe_Log.trace("clientId=" + _gthis.clientId,{ fileName : "SocketManager.hx", lineNumber : 81, className : "socket.SocketManager", methodName : "connect"});
 			_gthis.dims.clientID = _gthis.clientId;
 			_gthis.connected.dispatch(_gthis.dims);
 		});
@@ -5039,6 +5391,1108 @@ thx_ArrayStrings.max = function(arr) {
 thx_ArrayStrings.min = function(arr) {
 	return thx_Options.getOrElse(thx_Arrays.minBy(arr,thx_Strings.order),null);
 };
+var thx_IAssertBehavior = function() { };
+thx_IAssertBehavior.__name__ = ["thx","IAssertBehavior"];
+thx_IAssertBehavior.prototype = {
+	success: null
+	,fail: null
+	,warn: null
+	,__class__: thx_IAssertBehavior
+};
+var thx_DefaultAssertBehavior = function() {
+};
+thx_DefaultAssertBehavior.__name__ = ["thx","DefaultAssertBehavior"];
+thx_DefaultAssertBehavior.__interfaces__ = [thx_IAssertBehavior];
+thx_DefaultAssertBehavior.prototype = {
+	success: function(pos) {
+	}
+	,warn: function(message,pos) {
+		haxe_Log.trace(message,pos);
+	}
+	,fail: function(message,pos) {
+		throw new thx_error_AssertError(message,pos);
+	}
+	,__class__: thx_DefaultAssertBehavior
+};
+var thx_Assert = function() { };
+thx_Assert.__name__ = ["thx","Assert"];
+thx_Assert.contains = function(possibilities,value,msg,pos) {
+	if(thx_Arrays.contains(possibilities,value)) {
+		thx_Assert.pass(msg,pos);
+	} else {
+		thx_Assert.fail(msg == null?"value " + Std.string(value) + " not found in the expected possibilities " + Std.string(possibilities):msg,pos);
+	}
+};
+thx_Assert.equals = function(expected,value,msg,pos) {
+	if(msg == null) {
+		msg = "expected " + Std.string(expected) + " but it is " + Std.string(value);
+	}
+	thx_Assert.isTrue(expected == value,msg,pos);
+};
+thx_Assert.excludes = function(match,values,msg,pos) {
+	if(!thx_Arrays.contains(values,match)) {
+		thx_Assert.pass(msg,pos);
+	} else {
+		thx_Assert.fail(msg == null?"values " + Std.string(values) + " do contain " + Std.string(match):msg,pos);
+	}
+};
+thx_Assert.fail = function(msg,pos) {
+	if(msg == null) {
+		msg = "failure expected";
+	}
+	thx_Assert.isTrue(false,msg,pos);
+};
+thx_Assert.isContainedIn = function(match,values,msg,pos) {
+	if(thx_Arrays.contains(values,match)) {
+		thx_Assert.pass(msg,pos);
+	} else {
+		thx_Assert.fail(msg == null?"values " + Std.string(values) + " do not contain " + Std.string(match):msg,pos);
+	}
+};
+thx_Assert.isFalse = function(value,msg,pos) {
+	if(null == msg) {
+		msg = "expected false";
+	}
+	thx_Assert.isTrue(value == false,msg,pos);
+};
+thx_Assert["is"] = function(value,type,msg,pos) {
+	if(msg == null) {
+		msg = "expected type " + (js_Boot.__instanceof(type,ValueType)?thx_Types.toString(type):js_Boot.__instanceof(type,Class)?Type.getClassName(type):js_Boot.__instanceof(type,Enum)?Type.getEnumName(type):thx_Types.toString(Type["typeof"](type))) + " but it is " + thx_Types.toString(Type["typeof"](value));
+	}
+	thx_Assert.isTrue(js_Boot.__instanceof(value,type),msg,pos);
+};
+thx_Assert.isNull = function(value,msg,pos) {
+	if(msg == null) {
+		msg = "expected null but it is " + Std.string(value);
+	}
+	thx_Assert.isTrue(value == null,msg,pos);
+};
+thx_Assert.isTrue = function(cond,msg,pos) {
+	if(cond) {
+		thx_Assert.behavior.success(pos);
+	} else {
+		thx_Assert.behavior.fail(msg,pos);
+	}
+};
+thx_Assert.matches = function(pattern,value,msg,pos) {
+	if(msg == null) {
+		msg = "the value " + Std.string(value) + " does not match the provided pattern";
+	}
+	thx_Assert.isTrue(pattern.match(value),msg,pos);
+};
+thx_Assert.nearEquals = function(expected,value,approx,msg,pos) {
+	if(msg == null) {
+		msg = "expected " + expected + " but it is " + value;
+	}
+	thx_Assert.isTrue(thx_Floats.nearEquals(expected,value,approx),msg,pos);
+	return;
+};
+thx_Assert.notEquals = function(expected,value,msg,pos) {
+	if(msg == null) {
+		msg = "expected " + Std.string(expected) + " and test value " + Std.string(value) + " should be different";
+	}
+	thx_Assert.isFalse(expected == value,msg,pos);
+};
+thx_Assert.notNull = function(value,msg,pos) {
+	if(null == msg) {
+		msg = "expected not null";
+	}
+	thx_Assert.isTrue(value != null,msg,pos);
+};
+thx_Assert.pass = function(msg,pos) {
+	if(msg == null) {
+		msg = "pass expected";
+	}
+	thx_Assert.isTrue(true,msg,pos);
+};
+thx_Assert.raises = function(method,type,msgNotThrown,msgWrongType,pos) {
+	try {
+		method();
+		if(null == msgNotThrown) {
+			msgNotThrown = "exception of type " + (null == type?"Dynamic":js_Boot.__instanceof(type,ValueType)?thx_Types.toString(type):js_Boot.__instanceof(type,Class)?Type.getClassName(type):js_Boot.__instanceof(type,Enum)?Type.getEnumName(type):thx_Types.toString(Type["typeof"](type))) + " not raised";
+		}
+		thx_Assert.fail(msgNotThrown,pos);
+	} catch( ex ) {
+		haxe_CallStack.lastException = ex;
+		if (ex instanceof js__$Boot_HaxeError) ex = ex.val;
+		if(null == type) {
+			thx_Assert.pass(null,pos);
+		} else {
+			if(null == msgWrongType) {
+				msgWrongType = "expected throw of type " + (js_Boot.__instanceof(type,ValueType)?thx_Types.toString(type):js_Boot.__instanceof(type,Class)?Type.getClassName(type):js_Boot.__instanceof(type,Enum)?Type.getEnumName(type):thx_Types.toString(Type["typeof"](type))) + " but it is " + Std.string(ex);
+			}
+			thx_Assert.isTrue(js_Boot.__instanceof(ex,type),msgWrongType,pos);
+		}
+	}
+};
+thx_Assert.same = function(expected,value,recursive,msg,pos) {
+	if(recursive == null) {
+		recursive = true;
+	}
+	var status = { recursive : recursive, path : "", error : null};
+	if(thx_Assert.sameAs(expected,value,status)) {
+		thx_Assert.pass(msg,pos);
+	} else {
+		thx_Assert.fail(msg == null?status.error:msg,pos);
+	}
+};
+thx_Assert.stringContains = function(match,value,msg,pos) {
+	if(value != null && value.indexOf(match) >= 0) {
+		thx_Assert.pass(msg,pos);
+	} else {
+		thx_Assert.fail(msg == null?"value " + thx_Strings.quote(value) + " does not contain " + thx_Strings.quote(match):msg,pos);
+	}
+};
+thx_Assert.stringSequence = function(sequence,value,msg,pos) {
+	if(null == value) {
+		thx_Assert.fail(msg == null?"null argument value":msg,pos);
+		return;
+	}
+	var p = 0;
+	var _g = 0;
+	while(_g < sequence.length) {
+		var s = sequence[_g];
+		++_g;
+		var p2 = value.indexOf(s,p);
+		if(p2 < 0) {
+			if(msg == null) {
+				msg = "expected " + thx_Strings.quote(s) + " after ";
+				if(p > 0) {
+					msg += " " + thx_Strings.quote(thx_Strings.ellipsis(value,30));
+				} else {
+					msg += " begin";
+				}
+			}
+			thx_Assert.fail(msg,pos);
+			return;
+		}
+		p = p2 + s.length;
+	}
+	thx_Assert.pass(msg,pos);
+};
+thx_Assert.warn = function(msg,pos) {
+	thx_Assert.behavior.warn(msg,pos);
+};
+thx_Assert.sameAs = function(expected,value,status) {
+	var withPath = function(msg) {
+		return msg + (thx_Strings.isEmpty(status.path)?"":" at " + status.path);
+	};
+	if(!thx_Types.sameType(expected,value)) {
+		status.error = withPath("expected type " + thx_Types.toString(Type["typeof"](expected)) + " but it is " + thx_Types.toString(Type["typeof"](value)));
+		return false;
+	}
+	var _g = Type["typeof"](expected);
+	switch(_g[1]) {
+	case 0:case 1:case 3:
+		if(expected != value) {
+			status.error = withPath("expected " + Std.string(expected) + " but it is " + Std.string(value));
+			return false;
+		}
+		return true;
+	case 2:
+		if(!thx_Floats.nearEquals(expected,value)) {
+			status.error = withPath("expected " + Std.string(expected) + " but it is " + Std.string(value));
+			return false;
+		}
+		return true;
+	case 4:
+		if(status.recursive || status.path == "") {
+			var tfields = Reflect.fields(value);
+			var fields = Reflect.fields(expected);
+			var path = status.path;
+			var _g1 = 0;
+			while(_g1 < fields.length) {
+				var field = fields[_g1];
+				++_g1;
+				HxOverrides.remove(tfields,field);
+				status.path = path == ""?field:"" + path + "." + field;
+				if(!Object.prototype.hasOwnProperty.call(value,field)) {
+					status.error = withPath("expected field " + status.path + " does not exist in " + Std.string(value));
+					return false;
+				}
+				var e = Reflect.field(expected,field);
+				if(Reflect.isFunction(e)) {
+					continue;
+				}
+				if(!thx_Assert.sameAs(e,Reflect.field(value,field),status)) {
+					return false;
+				}
+			}
+			if(tfields.length > 0) {
+				status.error = withPath("the tested object has extra field(s) (" + tfields.join(", ") + ") not included in the expected ones");
+				return false;
+			}
+		}
+		if(thx_Iterators.isIterator(expected)) {
+			if(!thx_Iterators.isIterator(value)) {
+				status.error = withPath("expected an Iterable");
+				return false;
+			}
+			if(status.recursive || status.path == "") {
+				var evalues = thx_Iterators.toArray(expected);
+				var vvalues = thx_Iterators.toArray(value);
+				if(evalues.length != vvalues.length) {
+					status.error = withPath("expected " + evalues.length + " values in Iterator but they are " + vvalues.length);
+					return false;
+				}
+				var path1 = status.path;
+				var _g11 = 0;
+				var _g2 = evalues.length;
+				while(_g11 < _g2) {
+					var i = _g11++;
+					status.path = path1 == ""?"iterator[" + i + "]":path1 + ("[" + i + "]");
+					if(!thx_Assert.sameAs(evalues[i],vvalues[i],status)) {
+						status.error = withPath("expected " + Std.string(expected) + " but it is " + Std.string(value));
+						return false;
+					}
+				}
+			}
+			return true;
+		}
+		if(thx_Iterables.isIterable(expected)) {
+			if(!thx_Iterables.isIterable(value)) {
+				status.error = withPath("expected an Iterator");
+				return false;
+			}
+			if(status.recursive || status.path == "") {
+				var evalues1 = thx_Iterators.toArray($iterator(expected)());
+				var vvalues1 = thx_Iterators.toArray($iterator(value)());
+				if(evalues1.length != vvalues1.length) {
+					status.error = withPath("expected " + evalues1.length + " values in Iterable but they are " + vvalues1.length);
+					return false;
+				}
+				var path2 = status.path;
+				var _g12 = 0;
+				var _g3 = evalues1.length;
+				while(_g12 < _g3) {
+					var i1 = _g12++;
+					status.path = path2 == ""?"iterable[" + i1 + "]":path2 + ("[" + i1 + "]");
+					if(!thx_Assert.sameAs(evalues1[i1],vvalues1[i1],status)) {
+						return false;
+					}
+				}
+			}
+			return true;
+		}
+		return true;
+	case 5:
+		if(!Reflect.compareMethods(expected,value)) {
+			status.error = withPath("expected same function reference");
+			return false;
+		}
+		return true;
+	case 6:
+		var c = _g[2];
+		if(typeof(expected) == "string") {
+			if(expected == value) {
+				return true;
+			} else {
+				status.error = withPath("expected " + thx_Strings.quote(expected) + " but it is " + thx_Strings.quote(value));
+				return false;
+			}
+		}
+		if((expected instanceof Array) && expected.__enum__ == null) {
+			if(status.recursive || status.path == "") {
+				if(expected.length != value.length) {
+					status.error = withPath("expected " + Std.string(expected.length) + " elements but they are " + Std.string(value.length));
+					return false;
+				}
+				var path3 = status.path;
+				var _g13 = 0;
+				var _g4 = expected.length;
+				while(_g13 < _g4) {
+					var i2 = _g13++;
+					status.path = path3 == ""?"array[" + i2 + "]":path3 + ("[" + i2 + "]");
+					if(!thx_Assert.sameAs(expected[i2],value[i2],status)) {
+						status.error = withPath("expected " + Std.string(expected[i2]) + " but it is " + Std.string(value[i2]));
+						return false;
+					}
+				}
+			}
+			return true;
+		}
+		if(js_Boot.__instanceof(expected,Date)) {
+			if(expected.getTime() != value.getTime()) {
+				status.error = withPath("expected " + Std.string(expected) + " but it is " + Std.string(value));
+				return false;
+			}
+			return true;
+		}
+		if(js_Boot.__instanceof(expected,haxe_io_Bytes)) {
+			if(status.recursive || status.path == "") {
+				var ebytes = expected;
+				var vbytes = value;
+				if(ebytes.length != vbytes.length) {
+					return false;
+				}
+				var _g14 = 0;
+				var _g5 = ebytes.length;
+				while(_g14 < _g5) {
+					var i3 = _g14++;
+					if(ebytes.b[i3] != vbytes.b[i3]) {
+						status.error = withPath("expected byte " + ebytes.b[i3] + " but it is " + vbytes.b[i3]);
+						return false;
+					}
+				}
+			}
+			return true;
+		}
+		if(js_Boot.__instanceof(expected,haxe_IMap)) {
+			if(status.recursive || status.path == "") {
+				var map = js_Boot.__cast(expected , haxe_IMap);
+				var vmap = js_Boot.__cast(value , haxe_IMap);
+				var _g6 = [];
+				var tmp = map.keys();
+				while(tmp.hasNext()) _g6.push(tmp.next());
+				var keys = _g6;
+				var _g15 = [];
+				var tmp1 = vmap.keys();
+				while(tmp1.hasNext()) _g15.push(tmp1.next());
+				var vkeys = _g15;
+				if(keys.length != vkeys.length) {
+					status.error = withPath("expected " + keys.length + " keys but they are " + vkeys.length);
+					return false;
+				}
+				var path4 = status.path;
+				var _g21 = 0;
+				while(_g21 < keys.length) {
+					var key = keys[_g21];
+					++_g21;
+					status.path = path4 == ""?"hash[" + Std.string(key) + "]":path4 + ("[" + Std.string(key) + "]");
+					if(!thx_Assert.sameAs(map.get(key),vmap.get(key),status)) {
+						status.error = withPath("expected " + Std.string(expected) + " but it is " + Std.string(value));
+						return false;
+					}
+				}
+			}
+			return true;
+		}
+		if(thx_Iterators.isIterator(expected)) {
+			if(status.recursive || status.path == "") {
+				var evalues2 = thx_Iterators.toArray(expected);
+				var vvalues2 = thx_Iterators.toArray(value);
+				if(evalues2.length != vvalues2.length) {
+					status.error = withPath("expected " + evalues2.length + " values in Iterator but they are " + vvalues2.length);
+					return false;
+				}
+				var path5 = status.path;
+				var _g16 = 0;
+				var _g7 = evalues2.length;
+				while(_g16 < _g7) {
+					var i4 = _g16++;
+					status.path = path5 == ""?"iterator[" + i4 + "]":path5 + ("" + path5 + "[" + i4 + "]");
+					if(!thx_Assert.sameAs(evalues2[i4],vvalues2[i4],status)) {
+						status.error = withPath("expected " + Std.string(expected) + " but it is " + Std.string(value));
+						return false;
+					}
+				}
+			}
+			return true;
+		}
+		if(thx_Iterables.isIterable(expected)) {
+			if(status.recursive || status.path == "") {
+				var evalues3 = thx_Iterators.toArray($iterator(expected)());
+				var vvalues3 = thx_Iterators.toArray($iterator(value)());
+				if(evalues3.length != vvalues3.length) {
+					status.error = withPath("expected " + evalues3.length + " values in Iterable but they are " + vvalues3.length);
+					return false;
+				}
+				var path6 = status.path;
+				var _g17 = 0;
+				var _g8 = evalues3.length;
+				while(_g17 < _g8) {
+					var i5 = _g17++;
+					status.path = path6 == ""?"iterable[" + i5 + "]":path6 + ("[" + i5 + "]");
+					if(!thx_Assert.sameAs(evalues3[i5],vvalues3[i5],status)) {
+						return false;
+					}
+				}
+			}
+			return true;
+		}
+		if(status.recursive || status.path == "") {
+			var o = expected;
+			var fields1 = Type.getInstanceFields(o == null?null:js_Boot.getClass(o));
+			var path7 = status.path;
+			var _g9 = 0;
+			while(_g9 < fields1.length) {
+				var field1 = fields1[_g9];
+				++_g9;
+				status.path = path7 == ""?field1:"" + path7 + "." + field1;
+				var e1 = Reflect.field(expected,field1);
+				if(Reflect.isFunction(e1)) {
+					continue;
+				}
+				if(!thx_Assert.sameAs(e1,Reflect.field(value,field1),status)) {
+					return false;
+				}
+			}
+		}
+		return true;
+	case 7:
+		var eexpected = Type.getEnumName(_g[2]);
+		var evalue = Type.getEnumName(Type.getEnum(value));
+		if(eexpected != evalue) {
+			status.error = withPath("expected enumeration of " + eexpected + " but it is " + evalue);
+			return false;
+		}
+		if(status.recursive || status.path == "") {
+			if(expected[1] != value[1]) {
+				status.error = withPath("expected " + expected[0] + " but it is " + value[0]);
+				return false;
+			}
+			var eparams = expected.slice(2);
+			var vparams = value.slice(2);
+			var path8 = status.path;
+			var _g18 = 0;
+			var _g10 = eparams.length;
+			while(_g18 < _g10) {
+				var i6 = _g18++;
+				status.path = path8 == ""?"enum[" + i6 + "]":path8 + ("[" + i6 + "]");
+				if(!thx_Assert.sameAs(eparams[i6],vparams[i6],status)) {
+					status.error = withPath("expected " + Std.string(expected) + " but it is " + Std.string(value));
+					return false;
+				}
+			}
+		}
+		return true;
+	case 8:
+		throw new js__$Boot_HaxeError("Unable to compare two unknown types");
+		break;
+	}
+};
+var thx_bigint_BigIntImpl = function() { };
+thx_bigint_BigIntImpl.__name__ = ["thx","bigint","BigIntImpl"];
+thx_bigint_BigIntImpl.prototype = {
+	sign: null
+	,isSmall: null
+	,abs: null
+	,add: null
+	,subtract: null
+	,divide: null
+	,multiply: null
+	,modulo: null
+	,random: null
+	,negate: null
+	,next: null
+	,prev: null
+	,pow: null
+	,shiftLeft: null
+	,shiftRight: null
+	,square: null
+	,isEven: null
+	,isOdd: null
+	,isUnit: null
+	,isZero: null
+	,compareTo: null
+	,compareToAbs: null
+	,not: null
+	,and: null
+	,or: null
+	,xor: null
+	,toFloat: null
+	,toInt: null
+	,toString: null
+	,toStringWithBase: null
+	,divMod: null
+	,__class__: thx_bigint_BigIntImpl
+};
+var thx_bigint_Small = function(value) {
+	this.sign = value < 0;
+	this.value = value;
+	this.isSmall = true;
+};
+thx_bigint_Small.__name__ = ["thx","bigint","Small"];
+thx_bigint_Small.__interfaces__ = [thx_bigint_BigIntImpl];
+thx_bigint_Small.prototype = {
+	value: null
+	,sign: null
+	,isSmall: null
+	,add: function(that) {
+		if(this.isZero()) {
+			return that;
+		}
+		if(that.isZero()) {
+			return this;
+		}
+		if(this.sign != that.sign) {
+			return this.subtract(that.negate());
+		}
+		if(that.isSmall) {
+			return this.addSmall(that);
+		} else {
+			return this.addBig(that);
+		}
+	}
+	,addSmall: function(small) {
+		if(thx_bigint_Bigs.isPrecise(this.value + small.value)) {
+			return new thx_bigint_Small(this.value + small.value);
+		} else {
+			var v = small.value;
+			var tmp = thx_bigint_Bigs.smallToArray(v < 0?-v:v);
+			var v1 = this.value;
+			return new thx_bigint_Big(thx_bigint_Bigs.addSmall(tmp,v1 < 0?-v1:v1),this.sign);
+		}
+	}
+	,addBig: function(big) {
+		var v = this.value;
+		return new thx_bigint_Big(thx_bigint_Bigs.addSmall(big.value,v < 0?-v:v),this.sign);
+	}
+	,subtract: function(that) {
+		if(this.isZero()) {
+			return that.negate();
+		}
+		if(that.isZero()) {
+			return this;
+		}
+		if(this.sign != that.sign) {
+			return this.add(that.negate());
+		}
+		if(that.isSmall) {
+			return this.subtractSmall(that);
+		} else {
+			return this.subtractBig(that);
+		}
+	}
+	,subtractSmall: function(small) {
+		return new thx_bigint_Small(this.value - small.value);
+	}
+	,subtractBig: function(big) {
+		if(big.compareToAbsSmall(this) < 0) {
+			return new thx_bigint_Small(this.value - big.toInt());
+		}
+		var v = this.value;
+		return thx_bigint_Bigs.subtractSmall(big.value,v < 0?-v:v,this.value >= 0);
+	}
+	,divide: function(that) {
+		return this.divMod(that).quotient;
+	}
+	,divMod: function(that) {
+		if(that.isZero()) {
+			throw new thx_Error("division by zero",null,{ fileName : "Small.hx", lineNumber : 77, className : "thx.bigint.Small", methodName : "divMod"});
+		}
+		if(that.isSmall) {
+			return this.divModSmall(that);
+		} else {
+			return this.divModBig(that);
+		}
+	}
+	,divModSmall: function(small) {
+		var value = this.value / small.value;
+		return { quotient : new thx_bigint_Small(value < 0.0?Math.ceil(value):Math.floor(value)), remainder : new thx_bigint_Small(this.value % small.value)};
+	}
+	,divModBig: function(big) {
+		var v = this.value;
+		return new thx_bigint_Big(thx_bigint_Bigs.smallToArray(v < 0?-v:v),this.value < 0).divModBig(big);
+	}
+	,multiply: function(that) {
+		if(that.isSmall) {
+			return this.multiplySmall(that);
+		} else {
+			return this.multiplyBig(that);
+		}
+	}
+	,multiplySmall: function(small) {
+		if(thx_bigint_Bigs.isPrecise(this.value * small.value)) {
+			return new thx_bigint_Small(this.value * small.value);
+		}
+		var v = small.value;
+		var arr = thx_bigint_Bigs.smallToArray(v < 0?-v:v);
+		var v1 = this.value;
+		var abs = v1 < 0?-v1:v1;
+		if(abs < 10000000) {
+			return new thx_bigint_Big(thx_bigint_Bigs.multiplySmall(arr,abs),this.sign != small.sign);
+		} else {
+			return new thx_bigint_Big(thx_bigint_Bigs.multiplyLong(arr,thx_bigint_Bigs.smallToArray(abs)),this.sign != small.sign);
+		}
+	}
+	,multiplyBig: function(big) {
+		var v = this.value;
+		return new thx_bigint_Big(thx_bigint_Bigs.multiplyLong(big.value,thx_bigint_Bigs.smallToArray(v < 0?-v:v)),this.sign != big.sign);
+	}
+	,modulo: function(that) {
+		return this.divMod(that).remainder;
+	}
+	,random: function() {
+		return thx_bigint_Bigs.fromInt(Math.random() * this.value | 0);
+	}
+	,abs: function() {
+		var v = this.value;
+		return new thx_bigint_Small(v < 0?-v:v);
+	}
+	,negate: function() {
+		return new thx_bigint_Small(-this.value);
+	}
+	,next: function() {
+		return this.addSmall(thx_bigint_Small.one);
+	}
+	,prev: function() {
+		return this.addSmall(thx_bigint_Small.negativeOne);
+	}
+	,pow: function(exp) {
+		if(this.isZero()) {
+			if(exp.isZero()) {
+				return thx_bigint_Small.one;
+			} else {
+				return this;
+			}
+		}
+		if(this.isUnit()) {
+			if(this.sign) {
+				if(exp.isEven()) {
+					return thx_bigint_Small.one;
+				} else {
+					return thx_bigint_Small.negativeOne;
+				}
+			} else {
+				return thx_bigint_Small.one;
+			}
+		}
+		if(exp.sign) {
+			return thx_bigint_Small.zero;
+		}
+		if(!exp.isSmall) {
+			throw new thx_Error("The exponent " + Std.string(exp) + " is too large.",null,{ fileName : "Small.hx", lineNumber : 141, className : "thx.bigint.Small", methodName : "pow"});
+		}
+		var b = exp.value;
+		if(thx_bigint_Bigs.canPower(this.value,b)) {
+			return new thx_bigint_Small(Math.pow(this.value,b) | 0);
+		}
+		var v = this.value;
+		return new thx_bigint_Big(thx_bigint_Bigs.smallToArray(v < 0?-v:v),this.sign).pow(exp);
+	}
+	,shiftLeft: function(n) {
+		if(n < 0) {
+			return this.shiftRight(-n);
+		}
+		if((n < 0?-n:n) > 10000000) {
+			return this.multiply(thx_bigint_Small.two.pow(thx_bigint_Bigs.fromInt(n)));
+		}
+		var result = this;
+		while(n >= thx_bigint_Bigs.powers2Length) {
+			result = result.multiply(thx_bigint_Bigs.bigHighestPower2);
+			n -= thx_bigint_Bigs.powers2Length - 1;
+		}
+		return result.multiply(thx_bigint_Bigs.bigPowersOfTwo[n]);
+	}
+	,shiftRight: function(n) {
+		if(n < 0) {
+			return this.shiftLeft(-n);
+		}
+		var remQuo;
+		if((n < 0?-n:n) > 10000000) {
+			remQuo = this.divMod(thx_bigint_Small.two.pow(thx_bigint_Bigs.fromInt(n)));
+			if(remQuo.remainder.sign) {
+				return remQuo.quotient.prev();
+			} else {
+				return remQuo.quotient;
+			}
+		}
+		var result = this;
+		while(n >= thx_bigint_Bigs.powers2Length) {
+			if(result.isZero()) {
+				return result;
+			}
+			remQuo = result.divMod(thx_bigint_Bigs.bigHighestPower2);
+			if(remQuo.remainder.sign) {
+				result = remQuo.quotient.prev();
+			} else {
+				result = remQuo.quotient;
+			}
+			n -= thx_bigint_Bigs.powers2Length - 1;
+		}
+		remQuo = result.divMod(thx_bigint_Bigs.bigPowersOfTwo[n]);
+		if(remQuo.remainder.sign) {
+			return remQuo.quotient.prev();
+		} else {
+			return remQuo.quotient;
+		}
+	}
+	,square: function() {
+		if(thx_bigint_Bigs.isPrecise(this.value * this.value)) {
+			return new thx_bigint_Small(this.value * this.value);
+		}
+		var v = this.value;
+		return new thx_bigint_Big(thx_bigint_Bigs.square(thx_bigint_Bigs.smallToArray(v < 0?-v:v)),false);
+	}
+	,isEven: function() {
+		return (this.value & 1) == 0;
+	}
+	,isOdd: function() {
+		return (this.value & 1) == 1;
+	}
+	,isZero: function() {
+		return this.value == 0;
+	}
+	,isUnit: function() {
+		var v = this.value;
+		return (v < 0?-v:v) == 1;
+	}
+	,compareTo: function(that) {
+		if(this.sign != that.sign) {
+			if(this.sign) {
+				return -1;
+			} else {
+				return 1;
+			}
+		}
+		if(that.isSmall) {
+			return this.compareToSmall(that);
+		} else {
+			return this.compareToBig(that);
+		}
+	}
+	,compareToSmall: function(small) {
+		return thx_Ints.compare(this.value,small.value);
+	}
+	,compareToBig: function(big) {
+		var v = this.value;
+		return thx_bigint_Bigs.compareToAbs(thx_bigint_Bigs.smallToArray(v < 0?-v:v),big.value) * (this.sign?-1:1);
+	}
+	,compareToAbs: function(that) {
+		if(that.isSmall) {
+			return this.compareToAbsSmall(that);
+		} else {
+			return this.compareToAbsBig(that);
+		}
+	}
+	,compareToAbsSmall: function(small) {
+		var v = this.value;
+		var tmp = v < 0?-v:v;
+		var v1 = small.value;
+		return thx_Ints.compare(tmp,v1 < 0?-v1:v1);
+	}
+	,compareToAbsBig: function(big) {
+		var v = this.value;
+		return thx_bigint_Bigs.compareToAbs(thx_bigint_Bigs.smallToArray(v < 0?-v:v),big.value);
+	}
+	,not: function() {
+		return this.negate().prev();
+	}
+	,and: function(that) {
+		return thx_bigint_Bigs.bitwise(this,that,function(a,b) {
+			return a & b;
+		});
+	}
+	,or: function(that) {
+		return thx_bigint_Bigs.bitwise(this,that,function(a,b) {
+			return a | b;
+		});
+	}
+	,xor: function(that) {
+		return thx_bigint_Bigs.bitwise(this,that,function(a,b) {
+			return a ^ b;
+		});
+	}
+	,toFloat: function() {
+		return this.value;
+	}
+	,toInt: function() {
+		return this.value;
+	}
+	,toString: function() {
+		return "" + this.value;
+	}
+	,toStringWithBase: function(base) {
+		return this.value.toString(base);
+	}
+	,__class__: thx_bigint_Small
+};
+var thx__$BigInt_BigInt_$Impl_$ = {};
+thx__$BigInt_BigInt_$Impl_$.__name__ = ["thx","_BigInt","BigInt_Impl_"];
+thx__$BigInt_BigInt_$Impl_$.fromInt = function(value) {
+	return thx_bigint_Bigs.fromInt(value);
+};
+thx__$BigInt_BigInt_$Impl_$.fromFloat = function(value) {
+	return thx_bigint_Bigs.fromFloat(value);
+};
+thx__$BigInt_BigInt_$Impl_$.fromInt64 = function(value) {
+	return thx_bigint_Bigs.fromInt64(value);
+};
+thx__$BigInt_BigInt_$Impl_$.fromString = function(value) {
+	return thx_bigint_Bigs.parseBase(value,10);
+};
+thx__$BigInt_BigInt_$Impl_$.fromStringWithBase = function(value,base) {
+	return thx_bigint_Bigs.parseBase(value,base);
+};
+thx__$BigInt_BigInt_$Impl_$.randomBetween = function(a,b) {
+	var low = thx__$BigInt_BigInt_$Impl_$.less(a,b)?a:b;
+	var range = (thx__$BigInt_BigInt_$Impl_$.greater(a,b)?a:b).subtract(low);
+	return low.add(range.random());
+};
+thx__$BigInt_BigInt_$Impl_$.compare = function(a,b) {
+	return a.compareTo(b);
+};
+thx__$BigInt_BigInt_$Impl_$.isZero = function(this1) {
+	return this1.isZero();
+};
+thx__$BigInt_BigInt_$Impl_$.abs = function(this1) {
+	return this1.abs();
+};
+thx__$BigInt_BigInt_$Impl_$.compareTo = function(this1,that) {
+	return this1.compareTo(that);
+};
+thx__$BigInt_BigInt_$Impl_$.compareToAbs = function(this1,that) {
+	return this1.compareToAbs(that);
+};
+thx__$BigInt_BigInt_$Impl_$.next = function(this1) {
+	return this1.next();
+};
+thx__$BigInt_BigInt_$Impl_$.prev = function(this1) {
+	return this1.prev();
+};
+thx__$BigInt_BigInt_$Impl_$.square = function(this1) {
+	return this1.square();
+};
+thx__$BigInt_BigInt_$Impl_$.pow = function(this1,exp) {
+	return this1.pow(exp);
+};
+thx__$BigInt_BigInt_$Impl_$.isEven = function(this1) {
+	return this1.isEven();
+};
+thx__$BigInt_BigInt_$Impl_$.isOdd = function(this1) {
+	return this1.isOdd();
+};
+thx__$BigInt_BigInt_$Impl_$.isNegative = function(this1) {
+	return this1.sign;
+};
+thx__$BigInt_BigInt_$Impl_$.isPositive = function(this1) {
+	return this1.compareTo(thx__$BigInt_BigInt_$Impl_$.zero) > 0;
+};
+thx__$BigInt_BigInt_$Impl_$.isUnit = function(this1) {
+	return this1.isUnit();
+};
+thx__$BigInt_BigInt_$Impl_$.isDivisibleBy = function(this1,that) {
+	if(that.isZero()) {
+		return false;
+	}
+	if(that.isUnit()) {
+		return true;
+	}
+	if(thx__$BigInt_BigInt_$Impl_$.equals(that,thx__$BigInt_BigInt_$Impl_$.two)) {
+		return this1.isEven();
+	}
+	return this1.modulo(that).isZero();
+};
+thx__$BigInt_BigInt_$Impl_$.isPrime = function(this1) {
+	var n = this1.abs();
+	var nPrev = n.prev();
+	if(n.isUnit()) {
+		return false;
+	}
+	if(thx__$BigInt_BigInt_$Impl_$.equals(n,thx_bigint_Bigs.fromInt(2)) || thx__$BigInt_BigInt_$Impl_$.equals(n,thx_bigint_Bigs.fromInt(3)) || thx__$BigInt_BigInt_$Impl_$.equals(n,thx_bigint_Bigs.fromInt(5))) {
+		return true;
+	}
+	if(n.isEven() || thx__$BigInt_BigInt_$Impl_$.isDivisibleBy(n,thx_bigint_Bigs.fromInt(3)) || thx__$BigInt_BigInt_$Impl_$.isDivisibleBy(n,thx_bigint_Bigs.fromInt(5))) {
+		return false;
+	}
+	if(thx__$BigInt_BigInt_$Impl_$.less(n,thx_bigint_Bigs.fromInt(25))) {
+		return true;
+	}
+	var a = [2,3,5,7,11,13,17,19];
+	var b = nPrev;
+	var d;
+	var t;
+	var x;
+	while(b.isEven()) b = b.divide(thx_bigint_Bigs.fromInt(2));
+	var _g1 = 0;
+	var _g = a.length;
+	while(_g1 < _g) {
+		x = thx__$BigInt_BigInt_$Impl_$.modPow(thx_bigint_Bigs.fromInt(a[_g1++]),b,n);
+		if(thx__$BigInt_BigInt_$Impl_$.equals(x,thx__$BigInt_BigInt_$Impl_$.one) || thx__$BigInt_BigInt_$Impl_$.equals(x,nPrev)) {
+			continue;
+		}
+		t = true;
+		d = b;
+		while(t && thx__$BigInt_BigInt_$Impl_$.less(d,nPrev)) {
+			x = x.square().modulo(n);
+			if(thx__$BigInt_BigInt_$Impl_$.equals(x,nPrev)) {
+				t = false;
+			}
+			d = d.multiply(thx_bigint_Bigs.fromInt(2));
+		}
+		if(t) {
+			return false;
+		}
+	}
+	return false;
+};
+thx__$BigInt_BigInt_$Impl_$.modPow = function(this1,exp,mod) {
+	if(mod.isZero()) {
+		throw new thx_Error("Cannot take modPow with modulus 0",null,{ fileName : "BigInt.hx", lineNumber : 126, className : "thx._BigInt.BigInt_Impl_", methodName : "modPow"});
+	}
+	var r = thx_bigint_Small.one;
+	var base = this1.modulo(mod);
+	if(base.isZero()) {
+		return thx_bigint_Small.zero;
+	}
+	while(exp.compareTo(thx__$BigInt_BigInt_$Impl_$.zero) > 0) {
+		if(exp.isOdd()) {
+			r = r.multiply(base).modulo(mod);
+		}
+		exp = exp.divide(thx_bigint_Small.two);
+		base = base.square().modulo(mod);
+	}
+	return r;
+};
+thx__$BigInt_BigInt_$Impl_$.euclideanModPow = function(this1,exp,mod) {
+	var x = thx__$BigInt_BigInt_$Impl_$.modPow(this1,exp,mod);
+	if(x.sign) {
+		return x.add(mod);
+	} else {
+		return x;
+	}
+};
+thx__$BigInt_BigInt_$Impl_$.max = function(this1,that) {
+	if(thx__$BigInt_BigInt_$Impl_$.greater(this1,that)) {
+		return this1;
+	} else {
+		return that;
+	}
+};
+thx__$BigInt_BigInt_$Impl_$.min = function(this1,that) {
+	if(thx__$BigInt_BigInt_$Impl_$.less(this1,that)) {
+		return this1;
+	} else {
+		return that;
+	}
+};
+thx__$BigInt_BigInt_$Impl_$.gcd = function(this1,that) {
+	var a = this1.abs();
+	var b = that.abs();
+	if(thx__$BigInt_BigInt_$Impl_$.equals(a,b) || a.isZero()) {
+		return b;
+	}
+	if(b.isZero()) {
+		return a;
+	}
+	if(a.isEven()) {
+		if(b.isOdd()) {
+			return thx__$BigInt_BigInt_$Impl_$.gcd(a.divide(thx_bigint_Small.two),b);
+		}
+		return thx__$BigInt_BigInt_$Impl_$.gcd(a.divide(thx_bigint_Small.two),b.divide(thx_bigint_Small.two)).multiply(thx_bigint_Small.two);
+	}
+	if(b.isEven()) {
+		return thx__$BigInt_BigInt_$Impl_$.gcd(a,b.divide(thx_bigint_Small.two));
+	}
+	if(thx__$BigInt_BigInt_$Impl_$.greater(a,b)) {
+		return thx__$BigInt_BigInt_$Impl_$.gcd(a.subtract(b).divide(thx_bigint_Small.two),b);
+	}
+	return thx__$BigInt_BigInt_$Impl_$.gcd(b.subtract(a).divide(thx_bigint_Small.two),a);
+};
+thx__$BigInt_BigInt_$Impl_$.lcm = function(this1,that) {
+	var a = this1.abs();
+	var b = that.abs();
+	return a.multiply(b).divide(thx__$BigInt_BigInt_$Impl_$.gcd(a,b));
+};
+thx__$BigInt_BigInt_$Impl_$.greaterThan = function(this1,that) {
+	return this1.compareTo(that) > 0;
+};
+thx__$BigInt_BigInt_$Impl_$.greater = function(self,that) {
+	return self.compareTo(that) > 0;
+};
+thx__$BigInt_BigInt_$Impl_$.greaterEqualsTo = function(this1,that) {
+	return this1.compareTo(that) >= 0;
+};
+thx__$BigInt_BigInt_$Impl_$.greaterEquals = function(self,that) {
+	return self.compareTo(that) >= 0;
+};
+thx__$BigInt_BigInt_$Impl_$.lessThan = function(this1,that) {
+	return this1.compareTo(that) < 0;
+};
+thx__$BigInt_BigInt_$Impl_$.less = function(self,that) {
+	return self.compareTo(that) < 0;
+};
+thx__$BigInt_BigInt_$Impl_$.lessEqualsTo = function(this1,that) {
+	return this1.compareTo(that) <= 0;
+};
+thx__$BigInt_BigInt_$Impl_$.lessEquals = function(self,that) {
+	return self.compareTo(that) <= 0;
+};
+thx__$BigInt_BigInt_$Impl_$.equalsTo = function(this1,that) {
+	return this1.compareTo(that) == 0;
+};
+thx__$BigInt_BigInt_$Impl_$.equals = function(self,that) {
+	return self.compareTo(that) == 0;
+};
+thx__$BigInt_BigInt_$Impl_$.notEqualsTo = function(this1,that) {
+	return this1.compareTo(that) != 0;
+};
+thx__$BigInt_BigInt_$Impl_$.notEquals = function(self,that) {
+	return self.compareTo(that) != 0;
+};
+thx__$BigInt_BigInt_$Impl_$.add = function(this1,that) {
+	return this1.add(that);
+};
+thx__$BigInt_BigInt_$Impl_$.subtract = function(this1,that) {
+	return this1.subtract(that);
+};
+thx__$BigInt_BigInt_$Impl_$.preIncrement = function(this1) {
+	this1 = this1.add(thx_bigint_Small.one);
+	return this1;
+};
+thx__$BigInt_BigInt_$Impl_$.postIncrement = function(this1) {
+	var v = this1;
+	this1 = this1.add(thx_bigint_Small.one);
+	return v;
+};
+thx__$BigInt_BigInt_$Impl_$.preDecrement = function(this1) {
+	this1 = this1.subtract(thx_bigint_Small.one);
+	return this1;
+};
+thx__$BigInt_BigInt_$Impl_$.postDecrement = function(this1) {
+	var v = this1;
+	this1 = this1.subtract(thx_bigint_Small.one);
+	return v;
+};
+thx__$BigInt_BigInt_$Impl_$.negate = function(this1) {
+	return this1.negate();
+};
+thx__$BigInt_BigInt_$Impl_$.multiply = function(this1,that) {
+	return this1.multiply(that);
+};
+thx__$BigInt_BigInt_$Impl_$.divide = function(this1,that) {
+	return this1.divide(that);
+};
+thx__$BigInt_BigInt_$Impl_$.modulo = function(this1,that) {
+	return this1.modulo(that);
+};
+thx__$BigInt_BigInt_$Impl_$.shiftLeft = function(this1,that) {
+	return this1.shiftLeft(that);
+};
+thx__$BigInt_BigInt_$Impl_$.shiftRight = function(this1,that) {
+	return this1.shiftRight(that);
+};
+thx__$BigInt_BigInt_$Impl_$.not = function(this1) {
+	return this1.not();
+};
+thx__$BigInt_BigInt_$Impl_$.and = function(this1,that) {
+	return this1.and(that);
+};
+thx__$BigInt_BigInt_$Impl_$.or = function(this1,that) {
+	return this1.or(that);
+};
+thx__$BigInt_BigInt_$Impl_$.xor = function(this1,that) {
+	return this1.xor(that);
+};
+thx__$BigInt_BigInt_$Impl_$.divMod = function(this1,that) {
+	return this1.divMod(that);
+};
+thx__$BigInt_BigInt_$Impl_$.toInt = function(this1) {
+	return this1.toInt();
+};
+thx__$BigInt_BigInt_$Impl_$.toFloat = function(this1) {
+	return this1.toFloat();
+};
+thx__$BigInt_BigInt_$Impl_$.toInt64 = function(this1) {
+	return thx_bigint_Bigs.toInt64(this1);
+};
+thx__$BigInt_BigInt_$Impl_$.toString = function(this1) {
+	return this1.toString();
+};
+thx__$BigInt_BigInt_$Impl_$.toStringWithBase = function(this1,base) {
+	return this1.toStringWithBase(base);
+};
 var thx_Bools = function() { };
 thx_Bools.__name__ = ["thx","Bools"];
 thx_Bools.compare = function(a,b) {
@@ -5094,6 +6548,3355 @@ thx_Bools.option = function(cond,a) {
 	} else {
 		return haxe_ds_Option.None;
 	}
+};
+var thx__$DateTime_DateTime_$Impl_$ = {};
+thx__$DateTime_DateTime_$Impl_$.__name__ = ["thx","_DateTime","DateTime_Impl_"];
+thx__$DateTime_DateTime_$Impl_$.localOffset = function() {
+	var now = thx__$DateTimeUtc_DateTimeUtc_$Impl_$.now();
+	var local = new Date(thx__$DateTimeUtc_DateTimeUtc_$Impl_$.getDatePart(now,thx__$DateTimeUtc_DateTimeUtc_$Impl_$.DATE_PART_YEAR),thx__$DateTimeUtc_DateTimeUtc_$Impl_$.getDatePart(now,thx__$DateTimeUtc_DateTimeUtc_$Impl_$.DATE_PART_MONTH) - 1,thx__$DateTimeUtc_DateTimeUtc_$Impl_$.getDatePart(now,thx__$DateTimeUtc_DateTimeUtc_$Impl_$.DATE_PART_DAY),thx__$DateTimeUtc_DateTimeUtc_$Impl_$.get_hour(now),thx__$DateTimeUtc_DateTimeUtc_$Impl_$.get_minute(now),thx__$DateTimeUtc_DateTimeUtc_$Impl_$.get_second(now));
+	var a = now;
+	var b = thx__$DateTimeUtc_DateTimeUtc_$Impl_$.unixEpochTicks;
+	var high = a.high - b.high | 0;
+	var low = a.low - b.low | 0;
+	if(haxe__$Int32_Int32_$Impl_$.ucompare(a.low,b.low) < 0) {
+		--high;
+		high = high | 0;
+	}
+	var a1 = thx_Int64s.fromFloat(Math.floor(thx_Int64s.toFloat(haxe__$Int64_Int64_$Impl_$.divMod(new haxe__$Int64__$_$_$Int64(high,low),thx__$DateTimeUtc_DateTimeUtc_$Impl_$.ticksPerMillisecondI64).quotient) / 1000) * 1000 - local.getTime());
+	var b1 = thx__$DateTimeUtc_DateTimeUtc_$Impl_$.ticksPerMillisecondI64;
+	var al = a1.low & 65535;
+	var ah = a1.low >>> 16;
+	var bl = b1.low & 65535;
+	var bh = b1.low >>> 16;
+	var p00 = haxe__$Int32_Int32_$Impl_$.mul(al,bl);
+	var p10 = haxe__$Int32_Int32_$Impl_$.mul(ah,bl);
+	var p01 = haxe__$Int32_Int32_$Impl_$.mul(al,bh);
+	var p11 = haxe__$Int32_Int32_$Impl_$.mul(ah,bh);
+	var low1 = p00;
+	var high1 = (p11 + (p01 >>> 16) | 0) + (p10 >>> 16) | 0;
+	p01 = p01 << 16;
+	low1 = p00 + p01 | 0;
+	if(haxe__$Int32_Int32_$Impl_$.ucompare(low1,p01) < 0) {
+		++high1;
+		high1 = high1 | 0;
+	}
+	p10 = p10 << 16;
+	low1 = low1 + p10 | 0;
+	if(haxe__$Int32_Int32_$Impl_$.ucompare(low1,p10) < 0) {
+		++high1;
+		high1 = high1 | 0;
+	}
+	high1 = high1 + (haxe__$Int32_Int32_$Impl_$.mul(a1.low,b1.high) + haxe__$Int32_Int32_$Impl_$.mul(a1.high,b1.low) | 0) | 0;
+	return new haxe__$Int64__$_$_$Int64(high1,low1);
+};
+thx__$DateTime_DateTime_$Impl_$.now = function() {
+	return [thx__$DateTimeUtc_DateTimeUtc_$Impl_$.now(),thx__$DateTime_DateTime_$Impl_$.localOffset()];
+};
+thx__$DateTime_DateTime_$Impl_$.nowUtc = function() {
+	return [thx__$DateTimeUtc_DateTimeUtc_$Impl_$.now(),thx__$Time_Time_$Impl_$.zero];
+};
+thx__$DateTime_DateTime_$Impl_$.fromDate = function(date) {
+	return [thx__$DateTimeUtc_DateTimeUtc_$Impl_$.fromTime(date.getTime()),thx__$DateTime_DateTime_$Impl_$.localOffset()];
+};
+thx__$DateTime_DateTime_$Impl_$.fromDateWithOffset = function(date,offset) {
+	return [thx__$DateTimeUtc_DateTimeUtc_$Impl_$.fromTime(date.getTime()),offset];
+};
+thx__$DateTime_DateTime_$Impl_$.fromTime = function(timestamp) {
+	return [thx__$DateTimeUtc_DateTimeUtc_$Impl_$.fromTime(timestamp),thx__$Time_Time_$Impl_$.zero];
+};
+thx__$DateTime_DateTime_$Impl_$.fromString = function(s) {
+	if(s == null) {
+		throw new thx_Error("null String cannot be parsed to DateTime",null,{ fileName : "DateTime.hx", lineNumber : 97, className : "thx._DateTime.DateTime_Impl_", methodName : "fromString"});
+	}
+	var pattern = new EReg("^([-])?(\\d+)[-](\\d{2})[-](\\d{2})(?:[T ](\\d{2})[:](\\d{2})[:](\\d{2})(?:\\.(\\d+))?(Z|([+-]\\d{2})[:](\\d{2}))?)?$","");
+	if(!pattern.match(s)) {
+		throw new thx_Error("unable to parse DateTime string: \"" + s + "\"",null,{ fileName : "DateTime.hx", lineNumber : 100, className : "thx._DateTime.DateTime_Impl_", methodName : "fromString"});
+	}
+	var smticks = pattern.matched(8);
+	var mticks = 0;
+	if(null != smticks) {
+		smticks = "1" + thx_Strings.rpad(smticks,"0",7).substring(0,7);
+		mticks = Std.parseInt(smticks) - 10000000;
+	}
+	var time = thx__$Time_Time_$Impl_$.zero;
+	var timepart = pattern.matched(9);
+	if(null != timepart && "Z" != timepart) {
+		var hours = pattern.matched(10);
+		if(hours.substring(0,1) == "+") {
+			hours = hours.substring(1);
+		}
+		time = thx__$Time_Time_$Impl_$.create(Std.parseInt(hours),Std.parseInt(pattern.matched(11)),0);
+	}
+	var this1 = [thx__$DateTimeUtc_DateTimeUtc_$Impl_$.create(Std.parseInt(pattern.matched(2)),Std.parseInt(pattern.matched(3)),Std.parseInt(pattern.matched(4)),Std.parseInt(pattern.matched(5)),Std.parseInt(pattern.matched(6)),Std.parseInt(pattern.matched(7)),0),time];
+	var this2 = this1[0];
+	var b = time;
+	var high = this2.high - b.high | 0;
+	var low = this2.low - b.low | 0;
+	if(haxe__$Int32_Int32_$Impl_$.ucompare(this2.low,b.low) < 0) {
+		--high;
+		high = high | 0;
+	}
+	var this3 = [thx__$DateTimeUtc_DateTimeUtc_$Impl_$.fromInt64(new haxe__$Int64__$_$_$Int64(high,low)),this1[1]];
+	var ticks = new haxe__$Int64__$_$_$Int64(mticks >> 31,mticks);
+	var this4 = this3[0];
+	var high1 = this4.high + ticks.high | 0;
+	var low1 = this4.low + ticks.low | 0;
+	if(haxe__$Int32_Int32_$Impl_$.ucompare(low1,this4.low) < 0) {
+		++high1;
+		high1 = high1 | 0;
+	}
+	var date = [thx__$DateTimeUtc_DateTimeUtc_$Impl_$.fromInt64(new haxe__$Int64__$_$_$Int64(high1,low1)),this3[1]];
+	if(pattern.matched(1) == "-") {
+		var this5 = date[0];
+		var high2 = ~this5.high;
+		var low2 = -this5.low;
+		if(low2 == 0) {
+			++high2;
+			high2 = high2 | 0;
+		}
+		return [thx__$DateTimeUtc_DateTimeUtc_$Impl_$.fromInt64(new haxe__$Int64__$_$_$Int64(high2,low2)),time];
+	}
+	return date;
+};
+thx__$DateTime_DateTime_$Impl_$.parse = function(s) {
+	try {
+		return thx_Either.Right(thx__$DateTime_DateTime_$Impl_$.fromString(s));
+	} catch( e ) {
+		haxe_CallStack.lastException = e;
+		if (e instanceof js__$Boot_HaxeError) e = e.val;
+		return thx_Either.Left(thx_Error.fromDynamic(e,{ fileName : "DateTime.hx", lineNumber : 145, className : "thx._DateTime.DateTime_Impl_", methodName : "parse"}).message);
+	}
+};
+thx__$DateTime_DateTime_$Impl_$.daysRange = function(start,end) {
+	if(thx__$DateTime_DateTime_$Impl_$.compareTo(end,start) < 0) {
+		return [];
+	}
+	var days = [];
+	while(!thx__$DateTime_DateTime_$Impl_$.sameDay(start,end)) {
+		days.push(start);
+		start = thx__$DateTime_DateTime_$Impl_$.jump(start,thx_TimePeriod.Day,1);
+	}
+	days.push(end);
+	return days;
+};
+thx__$DateTime_DateTime_$Impl_$.compare = function(a,b) {
+	return thx__$DateTime_DateTime_$Impl_$.compareTo(a,b);
+};
+thx__$DateTime_DateTime_$Impl_$.ord = function() {
+	return thx__$Ord_Ord_$Impl_$.fromIntComparison(thx__$DateTime_DateTime_$Impl_$.compare);
+};
+thx__$DateTime_DateTime_$Impl_$.create = function(year,month,day,hour,minute,second,millisecond,offset) {
+	if(millisecond == null) {
+		millisecond = 0;
+	}
+	if(second == null) {
+		second = 0;
+	}
+	if(minute == null) {
+		minute = 0;
+	}
+	if(hour == null) {
+		hour = 0;
+	}
+	var this1 = [thx__$DateTimeUtc_DateTimeUtc_$Impl_$.create(year,month,day,hour,minute,second,millisecond),offset];
+	var this2 = this1[0];
+	var b = offset;
+	var high = this2.high - b.high | 0;
+	var low = this2.low - b.low | 0;
+	if(haxe__$Int32_Int32_$Impl_$.ucompare(this2.low,b.low) < 0) {
+		--high;
+		high = high | 0;
+	}
+	return [thx__$DateTimeUtc_DateTimeUtc_$Impl_$.fromInt64(new haxe__$Int64__$_$_$Int64(high,low)),this1[1]];
+};
+thx__$DateTime_DateTime_$Impl_$._new = function(dateTime,offset) {
+	return [dateTime,offset];
+};
+thx__$DateTime_DateTime_$Impl_$.min = function(this1,other) {
+	if(thx__$DateTimeUtc_DateTimeUtc_$Impl_$.compareTo(this1[0],other[0]) <= 0) {
+		return this1;
+	} else {
+		return other;
+	}
+};
+thx__$DateTime_DateTime_$Impl_$.max = function(this1,other) {
+	if(thx__$DateTimeUtc_DateTimeUtc_$Impl_$.compareTo(this1[0],other[0]) >= 0) {
+		return this1;
+	} else {
+		return other;
+	}
+};
+thx__$DateTime_DateTime_$Impl_$.jump = function(this1,period,amount) {
+	var this2 = this1[0];
+	var this3 = this1[1];
+	var high = this2.high + this3.high | 0;
+	var low = this2.low + this3.low | 0;
+	if(haxe__$Int32_Int32_$Impl_$.ucompare(low,this2.low) < 0) {
+		++high;
+		high = high | 0;
+	}
+	var sec = thx__$DateTimeUtc_DateTimeUtc_$Impl_$.get_second(new haxe__$Int64__$_$_$Int64(high,low));
+	var this4 = this1[0];
+	var this5 = this1[1];
+	var high1 = this4.high + this5.high | 0;
+	var low1 = this4.low + this5.low | 0;
+	if(haxe__$Int32_Int32_$Impl_$.ucompare(low1,this4.low) < 0) {
+		++high1;
+		high1 = high1 | 0;
+	}
+	var min = thx__$DateTimeUtc_DateTimeUtc_$Impl_$.get_minute(new haxe__$Int64__$_$_$Int64(high1,low1));
+	var this6 = this1[0];
+	var this7 = this1[1];
+	var high2 = this6.high + this7.high | 0;
+	var low2 = this6.low + this7.low | 0;
+	if(haxe__$Int32_Int32_$Impl_$.ucompare(low2,this6.low) < 0) {
+		++high2;
+		high2 = high2 | 0;
+	}
+	var hr = thx__$DateTimeUtc_DateTimeUtc_$Impl_$.get_hour(new haxe__$Int64__$_$_$Int64(high2,low2));
+	var this8 = this1[0];
+	var this9 = this1[1];
+	var high3 = this8.high + this9.high | 0;
+	var low3 = this8.low + this9.low | 0;
+	if(haxe__$Int32_Int32_$Impl_$.ucompare(low3,this8.low) < 0) {
+		++high3;
+		high3 = high3 | 0;
+	}
+	var day = thx__$DateTimeUtc_DateTimeUtc_$Impl_$.getDatePart(new haxe__$Int64__$_$_$Int64(high3,low3),thx__$DateTimeUtc_DateTimeUtc_$Impl_$.DATE_PART_DAY);
+	var this10 = this1[0];
+	var this11 = this1[1];
+	var high4 = this10.high + this11.high | 0;
+	var low4 = this10.low + this11.low | 0;
+	if(haxe__$Int32_Int32_$Impl_$.ucompare(low4,this10.low) < 0) {
+		++high4;
+		high4 = high4 | 0;
+	}
+	var mon = thx__$DateTimeUtc_DateTimeUtc_$Impl_$.getDatePart(new haxe__$Int64__$_$_$Int64(high4,low4),thx__$DateTimeUtc_DateTimeUtc_$Impl_$.DATE_PART_MONTH);
+	var this12 = this1[0];
+	var this13 = this1[1];
+	var high5 = this12.high + this13.high | 0;
+	var low5 = this12.low + this13.low | 0;
+	if(haxe__$Int32_Int32_$Impl_$.ucompare(low5,this12.low) < 0) {
+		++high5;
+		high5 = high5 | 0;
+	}
+	var yr = thx__$DateTimeUtc_DateTimeUtc_$Impl_$.getDatePart(new haxe__$Int64__$_$_$Int64(high5,low5),thx__$DateTimeUtc_DateTimeUtc_$Impl_$.DATE_PART_YEAR);
+	switch(period[1]) {
+	case 0:
+		sec += amount;
+		break;
+	case 1:
+		min += amount;
+		break;
+	case 2:
+		hr += amount;
+		break;
+	case 3:
+		day += amount;
+		break;
+	case 4:
+		day += amount * 7;
+		break;
+	case 5:
+		mon += amount;
+		break;
+	case 6:
+		yr += amount;
+		break;
+	}
+	var this14 = this1[0];
+	var this15 = this1[1];
+	var high6 = this14.high + this15.high | 0;
+	var low6 = this14.low + this15.low | 0;
+	if(haxe__$Int32_Int32_$Impl_$.ucompare(low6,this14.low) < 0) {
+		++high6;
+		high6 = high6 | 0;
+	}
+	var millisecond = thx__$DateTimeUtc_DateTimeUtc_$Impl_$.get_millisecond(new haxe__$Int64__$_$_$Int64(high6,low6));
+	var offset = this1[1];
+	var this16 = [thx__$DateTimeUtc_DateTimeUtc_$Impl_$.create(yr,mon,day,hr,min,sec,millisecond),offset];
+	var this17 = this16[0];
+	var b = offset;
+	var high7 = this17.high - b.high | 0;
+	var low7 = this17.low - b.low | 0;
+	if(haxe__$Int32_Int32_$Impl_$.ucompare(this17.low,b.low) < 0) {
+		--high7;
+		high7 = high7 | 0;
+	}
+	return [thx__$DateTimeUtc_DateTimeUtc_$Impl_$.fromInt64(new haxe__$Int64__$_$_$Int64(high7,low7)),this16[1]];
+};
+thx__$DateTime_DateTime_$Impl_$.daysInThisMonth = function(this1) {
+	var this2 = this1[0];
+	var this3 = this1[1];
+	var high = this2.high + this3.high | 0;
+	var low = this2.low + this3.low | 0;
+	if(haxe__$Int32_Int32_$Impl_$.ucompare(low,this2.low) < 0) {
+		++high;
+		high = high | 0;
+	}
+	var tmp = thx__$DateTimeUtc_DateTimeUtc_$Impl_$.getDatePart(new haxe__$Int64__$_$_$Int64(high,low),thx__$DateTimeUtc_DateTimeUtc_$Impl_$.DATE_PART_YEAR);
+	var this4 = this1[0];
+	var this5 = this1[1];
+	var high1 = this4.high + this5.high | 0;
+	var low1 = this4.low + this5.low | 0;
+	if(haxe__$Int32_Int32_$Impl_$.ucompare(low1,this4.low) < 0) {
+		++high1;
+		high1 = high1 | 0;
+	}
+	return thx__$DateTimeUtc_DateTimeUtc_$Impl_$.daysInMonth(tmp,thx__$DateTimeUtc_DateTimeUtc_$Impl_$.getDatePart(new haxe__$Int64__$_$_$Int64(high1,low1),thx__$DateTimeUtc_DateTimeUtc_$Impl_$.DATE_PART_MONTH));
+};
+thx__$DateTime_DateTime_$Impl_$.prevYear = function(this1) {
+	return thx__$DateTime_DateTime_$Impl_$.jump(this1,thx_TimePeriod.Year,-1);
+};
+thx__$DateTime_DateTime_$Impl_$.nextYear = function(this1) {
+	return thx__$DateTime_DateTime_$Impl_$.jump(this1,thx_TimePeriod.Year,1);
+};
+thx__$DateTime_DateTime_$Impl_$.prevMonth = function(this1) {
+	return thx__$DateTime_DateTime_$Impl_$.jump(this1,thx_TimePeriod.Month,-1);
+};
+thx__$DateTime_DateTime_$Impl_$.nextMonth = function(this1) {
+	return thx__$DateTime_DateTime_$Impl_$.jump(this1,thx_TimePeriod.Month,1);
+};
+thx__$DateTime_DateTime_$Impl_$.prevWeek = function(this1) {
+	return thx__$DateTime_DateTime_$Impl_$.jump(this1,thx_TimePeriod.Week,-1);
+};
+thx__$DateTime_DateTime_$Impl_$.nextWeek = function(this1) {
+	return thx__$DateTime_DateTime_$Impl_$.jump(this1,thx_TimePeriod.Week,1);
+};
+thx__$DateTime_DateTime_$Impl_$.prevDay = function(this1) {
+	return thx__$DateTime_DateTime_$Impl_$.jump(this1,thx_TimePeriod.Day,-1);
+};
+thx__$DateTime_DateTime_$Impl_$.nextDay = function(this1) {
+	return thx__$DateTime_DateTime_$Impl_$.jump(this1,thx_TimePeriod.Day,1);
+};
+thx__$DateTime_DateTime_$Impl_$.prevHour = function(this1) {
+	return thx__$DateTime_DateTime_$Impl_$.jump(this1,thx_TimePeriod.Hour,-1);
+};
+thx__$DateTime_DateTime_$Impl_$.nextHour = function(this1) {
+	return thx__$DateTime_DateTime_$Impl_$.jump(this1,thx_TimePeriod.Hour,1);
+};
+thx__$DateTime_DateTime_$Impl_$.prevMinute = function(this1) {
+	return thx__$DateTime_DateTime_$Impl_$.jump(this1,thx_TimePeriod.Minute,-1);
+};
+thx__$DateTime_DateTime_$Impl_$.nextMinute = function(this1) {
+	return thx__$DateTime_DateTime_$Impl_$.jump(this1,thx_TimePeriod.Minute,1);
+};
+thx__$DateTime_DateTime_$Impl_$.prevSecond = function(this1) {
+	return thx__$DateTime_DateTime_$Impl_$.jump(this1,thx_TimePeriod.Second,-1);
+};
+thx__$DateTime_DateTime_$Impl_$.nextSecond = function(this1) {
+	return thx__$DateTime_DateTime_$Impl_$.jump(this1,thx_TimePeriod.Second,1);
+};
+thx__$DateTime_DateTime_$Impl_$.snapToWeekDay = function(this1,weekday,firstDayOfWk) {
+	if(firstDayOfWk == null) {
+		firstDayOfWk = 0;
+	}
+	var this2 = this1[0];
+	var this3 = this1[1];
+	var high = this2.high + this3.high | 0;
+	var low = this2.low + this3.low | 0;
+	if(haxe__$Int32_Int32_$Impl_$.ucompare(low,this2.low) < 0) {
+		++high;
+		high = high | 0;
+	}
+	var d = thx__$DateTimeUtc_DateTimeUtc_$Impl_$.get_dayOfWeek(new haxe__$Int64__$_$_$Int64(high,low));
+	var s = weekday;
+	if(s < firstDayOfWk) {
+		s += 7;
+	}
+	if(d < firstDayOfWk) {
+		d += 7;
+	}
+	return thx__$DateTime_DateTime_$Impl_$.jump(this1,thx_TimePeriod.Day,s - d);
+};
+thx__$DateTime_DateTime_$Impl_$.snapNextWeekDay = function(this1,weekday) {
+	var this2 = this1[0];
+	var this3 = this1[1];
+	var high = this2.high + this3.high | 0;
+	var low = this2.low + this3.low | 0;
+	if(haxe__$Int32_Int32_$Impl_$.ucompare(low,this2.low) < 0) {
+		++high;
+		high = high | 0;
+	}
+	var d = thx__$DateTimeUtc_DateTimeUtc_$Impl_$.get_dayOfWeek(new haxe__$Int64__$_$_$Int64(high,low));
+	var s = weekday;
+	if(s < d) {
+		s += 7;
+	}
+	return thx__$DateTime_DateTime_$Impl_$.jump(this1,thx_TimePeriod.Day,s - d);
+};
+thx__$DateTime_DateTime_$Impl_$.snapPrevWeekDay = function(this1,weekday) {
+	var this2 = this1[0];
+	var this3 = this1[1];
+	var high = this2.high + this3.high | 0;
+	var low = this2.low + this3.low | 0;
+	if(haxe__$Int32_Int32_$Impl_$.ucompare(low,this2.low) < 0) {
+		++high;
+		high = high | 0;
+	}
+	var d = thx__$DateTimeUtc_DateTimeUtc_$Impl_$.get_dayOfWeek(new haxe__$Int64__$_$_$Int64(high,low));
+	var s = weekday;
+	if(s > d) {
+		s -= 7;
+	}
+	return thx__$DateTime_DateTime_$Impl_$.jump(this1,thx_TimePeriod.Day,s - d);
+};
+thx__$DateTime_DateTime_$Impl_$.snapNext = function(this1,period) {
+	switch(period[1]) {
+	case 0:
+		var a = thx_Int64s.divCeil(this1[0],thx__$DateTimeUtc_DateTimeUtc_$Impl_$.ticksPerSecondI64);
+		var b = thx__$DateTimeUtc_DateTimeUtc_$Impl_$.ticksPerSecondI64;
+		var al = a.low & 65535;
+		var ah = a.low >>> 16;
+		var bl = b.low & 65535;
+		var bh = b.low >>> 16;
+		var p00 = haxe__$Int32_Int32_$Impl_$.mul(al,bl);
+		var p10 = haxe__$Int32_Int32_$Impl_$.mul(ah,bl);
+		var p01 = haxe__$Int32_Int32_$Impl_$.mul(al,bh);
+		var p11 = haxe__$Int32_Int32_$Impl_$.mul(ah,bh);
+		var low = p00;
+		var high = (p11 + (p01 >>> 16) | 0) + (p10 >>> 16) | 0;
+		p01 = p01 << 16;
+		low = p00 + p01 | 0;
+		if(haxe__$Int32_Int32_$Impl_$.ucompare(low,p01) < 0) {
+			++high;
+			high = high | 0;
+		}
+		p10 = p10 << 16;
+		low = low + p10 | 0;
+		if(haxe__$Int32_Int32_$Impl_$.ucompare(low,p10) < 0) {
+			++high;
+			high = high | 0;
+		}
+		high = high + (haxe__$Int32_Int32_$Impl_$.mul(a.low,b.high) + haxe__$Int32_Int32_$Impl_$.mul(a.high,b.low) | 0) | 0;
+		return [new haxe__$Int64__$_$_$Int64(high,low),this1[1]];
+	case 1:
+		var a1 = thx_Int64s.divCeil(this1[0],thx__$DateTimeUtc_DateTimeUtc_$Impl_$.ticksPerMinuteI64);
+		var b1 = thx__$DateTimeUtc_DateTimeUtc_$Impl_$.ticksPerMinuteI64;
+		var al1 = a1.low & 65535;
+		var ah1 = a1.low >>> 16;
+		var bl1 = b1.low & 65535;
+		var bh1 = b1.low >>> 16;
+		var p001 = haxe__$Int32_Int32_$Impl_$.mul(al1,bl1);
+		var p101 = haxe__$Int32_Int32_$Impl_$.mul(ah1,bl1);
+		var p011 = haxe__$Int32_Int32_$Impl_$.mul(al1,bh1);
+		var p111 = haxe__$Int32_Int32_$Impl_$.mul(ah1,bh1);
+		var low1 = p001;
+		var high1 = (p111 + (p011 >>> 16) | 0) + (p101 >>> 16) | 0;
+		p011 = p011 << 16;
+		low1 = p001 + p011 | 0;
+		if(haxe__$Int32_Int32_$Impl_$.ucompare(low1,p011) < 0) {
+			++high1;
+			high1 = high1 | 0;
+		}
+		p101 = p101 << 16;
+		low1 = low1 + p101 | 0;
+		if(haxe__$Int32_Int32_$Impl_$.ucompare(low1,p101) < 0) {
+			++high1;
+			high1 = high1 | 0;
+		}
+		high1 = high1 + (haxe__$Int32_Int32_$Impl_$.mul(a1.low,b1.high) + haxe__$Int32_Int32_$Impl_$.mul(a1.high,b1.low) | 0) | 0;
+		return [new haxe__$Int64__$_$_$Int64(high1,low1),this1[1]];
+	case 2:
+		var a2 = thx_Int64s.divCeil(this1[0],thx__$DateTimeUtc_DateTimeUtc_$Impl_$.ticksPerHourI64);
+		var b2 = thx__$DateTimeUtc_DateTimeUtc_$Impl_$.ticksPerHourI64;
+		var al2 = a2.low & 65535;
+		var ah2 = a2.low >>> 16;
+		var bl2 = b2.low & 65535;
+		var bh2 = b2.low >>> 16;
+		var p002 = haxe__$Int32_Int32_$Impl_$.mul(al2,bl2);
+		var p102 = haxe__$Int32_Int32_$Impl_$.mul(ah2,bl2);
+		var p012 = haxe__$Int32_Int32_$Impl_$.mul(al2,bh2);
+		var p112 = haxe__$Int32_Int32_$Impl_$.mul(ah2,bh2);
+		var low2 = p002;
+		var high2 = (p112 + (p012 >>> 16) | 0) + (p102 >>> 16) | 0;
+		p012 = p012 << 16;
+		low2 = p002 + p012 | 0;
+		if(haxe__$Int32_Int32_$Impl_$.ucompare(low2,p012) < 0) {
+			++high2;
+			high2 = high2 | 0;
+		}
+		p102 = p102 << 16;
+		low2 = low2 + p102 | 0;
+		if(haxe__$Int32_Int32_$Impl_$.ucompare(low2,p102) < 0) {
+			++high2;
+			high2 = high2 | 0;
+		}
+		high2 = high2 + (haxe__$Int32_Int32_$Impl_$.mul(a2.low,b2.high) + haxe__$Int32_Int32_$Impl_$.mul(a2.high,b2.low) | 0) | 0;
+		return [new haxe__$Int64__$_$_$Int64(high2,low2),this1[1]];
+	case 3:
+		var this2 = this1[0];
+		var this3 = this1[1];
+		var high3 = this2.high + this3.high | 0;
+		var low3 = this2.low + this3.low | 0;
+		if(haxe__$Int32_Int32_$Impl_$.ucompare(low3,this2.low) < 0) {
+			++high3;
+			high3 = high3 | 0;
+		}
+		var year = thx__$DateTimeUtc_DateTimeUtc_$Impl_$.getDatePart(new haxe__$Int64__$_$_$Int64(high3,low3),thx__$DateTimeUtc_DateTimeUtc_$Impl_$.DATE_PART_YEAR);
+		var this4 = this1[0];
+		var this5 = this1[1];
+		var high4 = this4.high + this5.high | 0;
+		var low4 = this4.low + this5.low | 0;
+		if(haxe__$Int32_Int32_$Impl_$.ucompare(low4,this4.low) < 0) {
+			++high4;
+			high4 = high4 | 0;
+		}
+		var month = thx__$DateTimeUtc_DateTimeUtc_$Impl_$.getDatePart(new haxe__$Int64__$_$_$Int64(high4,low4),thx__$DateTimeUtc_DateTimeUtc_$Impl_$.DATE_PART_MONTH);
+		var this6 = this1[0];
+		var this7 = this1[1];
+		var high5 = this6.high + this7.high | 0;
+		var low5 = this6.low + this7.low | 0;
+		if(haxe__$Int32_Int32_$Impl_$.ucompare(low5,this6.low) < 0) {
+			++high5;
+			high5 = high5 | 0;
+		}
+		var day = thx__$DateTimeUtc_DateTimeUtc_$Impl_$.getDatePart(new haxe__$Int64__$_$_$Int64(high5,low5),thx__$DateTimeUtc_DateTimeUtc_$Impl_$.DATE_PART_DAY) + 1;
+		var offset = this1[1];
+		var this8 = [thx__$DateTimeUtc_DateTimeUtc_$Impl_$.create(year,month,day,0,0,0,0),offset];
+		var this9 = this8[0];
+		var b3 = offset;
+		var high6 = this9.high - b3.high | 0;
+		var low6 = this9.low - b3.low | 0;
+		if(haxe__$Int32_Int32_$Impl_$.ucompare(this9.low,b3.low) < 0) {
+			--high6;
+			high6 = high6 | 0;
+		}
+		return [thx__$DateTimeUtc_DateTimeUtc_$Impl_$.fromInt64(new haxe__$Int64__$_$_$Int64(high6,low6)),this8[1]];
+	case 4:
+		var this10 = this1[0];
+		var this11 = this1[1];
+		var high7 = this10.high + this11.high | 0;
+		var low7 = this10.low + this11.low | 0;
+		if(haxe__$Int32_Int32_$Impl_$.ucompare(low7,this10.low) < 0) {
+			++high7;
+			high7 = high7 | 0;
+		}
+		var wd = thx__$DateTimeUtc_DateTimeUtc_$Impl_$.get_dayOfWeek(new haxe__$Int64__$_$_$Int64(high7,low7));
+		var this12 = this1[0];
+		var this13 = this1[1];
+		var high8 = this12.high + this13.high | 0;
+		var low8 = this12.low + this13.low | 0;
+		if(haxe__$Int32_Int32_$Impl_$.ucompare(low8,this12.low) < 0) {
+			++high8;
+			high8 = high8 | 0;
+		}
+		var year1 = thx__$DateTimeUtc_DateTimeUtc_$Impl_$.getDatePart(new haxe__$Int64__$_$_$Int64(high8,low8),thx__$DateTimeUtc_DateTimeUtc_$Impl_$.DATE_PART_YEAR);
+		var this14 = this1[0];
+		var this15 = this1[1];
+		var high9 = this14.high + this15.high | 0;
+		var low9 = this14.low + this15.low | 0;
+		if(haxe__$Int32_Int32_$Impl_$.ucompare(low9,this14.low) < 0) {
+			++high9;
+			high9 = high9 | 0;
+		}
+		var month1 = thx__$DateTimeUtc_DateTimeUtc_$Impl_$.getDatePart(new haxe__$Int64__$_$_$Int64(high9,low9),thx__$DateTimeUtc_DateTimeUtc_$Impl_$.DATE_PART_MONTH);
+		var this16 = this1[0];
+		var this17 = this1[1];
+		var high10 = this16.high + this17.high | 0;
+		var low10 = this16.low + this17.low | 0;
+		if(haxe__$Int32_Int32_$Impl_$.ucompare(low10,this16.low) < 0) {
+			++high10;
+			high10 = high10 | 0;
+		}
+		var day1 = thx__$DateTimeUtc_DateTimeUtc_$Impl_$.getDatePart(new haxe__$Int64__$_$_$Int64(high10,low10),thx__$DateTimeUtc_DateTimeUtc_$Impl_$.DATE_PART_DAY) + 7 - wd;
+		var offset1 = this1[1];
+		var this18 = [thx__$DateTimeUtc_DateTimeUtc_$Impl_$.create(year1,month1,day1,0,0,0,0),offset1];
+		var this19 = this18[0];
+		var b4 = offset1;
+		var high11 = this19.high - b4.high | 0;
+		var low11 = this19.low - b4.low | 0;
+		if(haxe__$Int32_Int32_$Impl_$.ucompare(this19.low,b4.low) < 0) {
+			--high11;
+			high11 = high11 | 0;
+		}
+		return [thx__$DateTimeUtc_DateTimeUtc_$Impl_$.fromInt64(new haxe__$Int64__$_$_$Int64(high11,low11)),this18[1]];
+	case 5:
+		var this20 = this1[0];
+		var this21 = this1[1];
+		var high12 = this20.high + this21.high | 0;
+		var low12 = this20.low + this21.low | 0;
+		if(haxe__$Int32_Int32_$Impl_$.ucompare(low12,this20.low) < 0) {
+			++high12;
+			high12 = high12 | 0;
+		}
+		var year2 = thx__$DateTimeUtc_DateTimeUtc_$Impl_$.getDatePart(new haxe__$Int64__$_$_$Int64(high12,low12),thx__$DateTimeUtc_DateTimeUtc_$Impl_$.DATE_PART_YEAR);
+		var this22 = this1[0];
+		var this23 = this1[1];
+		var high13 = this22.high + this23.high | 0;
+		var low13 = this22.low + this23.low | 0;
+		if(haxe__$Int32_Int32_$Impl_$.ucompare(low13,this22.low) < 0) {
+			++high13;
+			high13 = high13 | 0;
+		}
+		var month2 = thx__$DateTimeUtc_DateTimeUtc_$Impl_$.getDatePart(new haxe__$Int64__$_$_$Int64(high13,low13),thx__$DateTimeUtc_DateTimeUtc_$Impl_$.DATE_PART_MONTH) + 1;
+		var offset2 = this1[1];
+		var this24 = [thx__$DateTimeUtc_DateTimeUtc_$Impl_$.create(year2,month2,1,0,0,0,0),offset2];
+		var this25 = this24[0];
+		var b5 = offset2;
+		var high14 = this25.high - b5.high | 0;
+		var low14 = this25.low - b5.low | 0;
+		if(haxe__$Int32_Int32_$Impl_$.ucompare(this25.low,b5.low) < 0) {
+			--high14;
+			high14 = high14 | 0;
+		}
+		return [thx__$DateTimeUtc_DateTimeUtc_$Impl_$.fromInt64(new haxe__$Int64__$_$_$Int64(high14,low14)),this24[1]];
+	case 6:
+		var this26 = this1[0];
+		var this27 = this1[1];
+		var high15 = this26.high + this27.high | 0;
+		var low15 = this26.low + this27.low | 0;
+		if(haxe__$Int32_Int32_$Impl_$.ucompare(low15,this26.low) < 0) {
+			++high15;
+			high15 = high15 | 0;
+		}
+		var year3 = thx__$DateTimeUtc_DateTimeUtc_$Impl_$.getDatePart(new haxe__$Int64__$_$_$Int64(high15,low15),thx__$DateTimeUtc_DateTimeUtc_$Impl_$.DATE_PART_YEAR) + 1;
+		var offset3 = this1[1];
+		var this28 = [thx__$DateTimeUtc_DateTimeUtc_$Impl_$.create(year3,1,1,0,0,0,0),offset3];
+		var this29 = this28[0];
+		var b6 = offset3;
+		var high16 = this29.high - b6.high | 0;
+		var low16 = this29.low - b6.low | 0;
+		if(haxe__$Int32_Int32_$Impl_$.ucompare(this29.low,b6.low) < 0) {
+			--high16;
+			high16 = high16 | 0;
+		}
+		return [thx__$DateTimeUtc_DateTimeUtc_$Impl_$.fromInt64(new haxe__$Int64__$_$_$Int64(high16,low16)),this28[1]];
+	}
+};
+thx__$DateTime_DateTime_$Impl_$.snapPrev = function(this1,period) {
+	switch(period[1]) {
+	case 0:
+		var a = thx_Int64s.divFloor(this1[0],thx__$DateTimeUtc_DateTimeUtc_$Impl_$.ticksPerSecondI64);
+		var b = thx__$DateTimeUtc_DateTimeUtc_$Impl_$.ticksPerSecondI64;
+		var al = a.low & 65535;
+		var ah = a.low >>> 16;
+		var bl = b.low & 65535;
+		var bh = b.low >>> 16;
+		var p00 = haxe__$Int32_Int32_$Impl_$.mul(al,bl);
+		var p10 = haxe__$Int32_Int32_$Impl_$.mul(ah,bl);
+		var p01 = haxe__$Int32_Int32_$Impl_$.mul(al,bh);
+		var p11 = haxe__$Int32_Int32_$Impl_$.mul(ah,bh);
+		var low = p00;
+		var high = (p11 + (p01 >>> 16) | 0) + (p10 >>> 16) | 0;
+		p01 = p01 << 16;
+		low = p00 + p01 | 0;
+		if(haxe__$Int32_Int32_$Impl_$.ucompare(low,p01) < 0) {
+			++high;
+			high = high | 0;
+		}
+		p10 = p10 << 16;
+		low = low + p10 | 0;
+		if(haxe__$Int32_Int32_$Impl_$.ucompare(low,p10) < 0) {
+			++high;
+			high = high | 0;
+		}
+		high = high + (haxe__$Int32_Int32_$Impl_$.mul(a.low,b.high) + haxe__$Int32_Int32_$Impl_$.mul(a.high,b.low) | 0) | 0;
+		return [new haxe__$Int64__$_$_$Int64(high,low),this1[1]];
+	case 1:
+		var a1 = thx_Int64s.divFloor(this1[0],thx__$DateTimeUtc_DateTimeUtc_$Impl_$.ticksPerMinuteI64);
+		var b1 = thx__$DateTimeUtc_DateTimeUtc_$Impl_$.ticksPerMinuteI64;
+		var al1 = a1.low & 65535;
+		var ah1 = a1.low >>> 16;
+		var bl1 = b1.low & 65535;
+		var bh1 = b1.low >>> 16;
+		var p001 = haxe__$Int32_Int32_$Impl_$.mul(al1,bl1);
+		var p101 = haxe__$Int32_Int32_$Impl_$.mul(ah1,bl1);
+		var p011 = haxe__$Int32_Int32_$Impl_$.mul(al1,bh1);
+		var p111 = haxe__$Int32_Int32_$Impl_$.mul(ah1,bh1);
+		var low1 = p001;
+		var high1 = (p111 + (p011 >>> 16) | 0) + (p101 >>> 16) | 0;
+		p011 = p011 << 16;
+		low1 = p001 + p011 | 0;
+		if(haxe__$Int32_Int32_$Impl_$.ucompare(low1,p011) < 0) {
+			++high1;
+			high1 = high1 | 0;
+		}
+		p101 = p101 << 16;
+		low1 = low1 + p101 | 0;
+		if(haxe__$Int32_Int32_$Impl_$.ucompare(low1,p101) < 0) {
+			++high1;
+			high1 = high1 | 0;
+		}
+		high1 = high1 + (haxe__$Int32_Int32_$Impl_$.mul(a1.low,b1.high) + haxe__$Int32_Int32_$Impl_$.mul(a1.high,b1.low) | 0) | 0;
+		return [new haxe__$Int64__$_$_$Int64(high1,low1),this1[1]];
+	case 2:
+		var a2 = thx_Int64s.divFloor(this1[0],thx__$DateTimeUtc_DateTimeUtc_$Impl_$.ticksPerHourI64);
+		var b2 = thx__$DateTimeUtc_DateTimeUtc_$Impl_$.ticksPerHourI64;
+		var al2 = a2.low & 65535;
+		var ah2 = a2.low >>> 16;
+		var bl2 = b2.low & 65535;
+		var bh2 = b2.low >>> 16;
+		var p002 = haxe__$Int32_Int32_$Impl_$.mul(al2,bl2);
+		var p102 = haxe__$Int32_Int32_$Impl_$.mul(ah2,bl2);
+		var p012 = haxe__$Int32_Int32_$Impl_$.mul(al2,bh2);
+		var p112 = haxe__$Int32_Int32_$Impl_$.mul(ah2,bh2);
+		var low2 = p002;
+		var high2 = (p112 + (p012 >>> 16) | 0) + (p102 >>> 16) | 0;
+		p012 = p012 << 16;
+		low2 = p002 + p012 | 0;
+		if(haxe__$Int32_Int32_$Impl_$.ucompare(low2,p012) < 0) {
+			++high2;
+			high2 = high2 | 0;
+		}
+		p102 = p102 << 16;
+		low2 = low2 + p102 | 0;
+		if(haxe__$Int32_Int32_$Impl_$.ucompare(low2,p102) < 0) {
+			++high2;
+			high2 = high2 | 0;
+		}
+		high2 = high2 + (haxe__$Int32_Int32_$Impl_$.mul(a2.low,b2.high) + haxe__$Int32_Int32_$Impl_$.mul(a2.high,b2.low) | 0) | 0;
+		return [new haxe__$Int64__$_$_$Int64(high2,low2),this1[1]];
+	case 3:
+		var this2 = this1[0];
+		var this3 = this1[1];
+		var high3 = this2.high + this3.high | 0;
+		var low3 = this2.low + this3.low | 0;
+		if(haxe__$Int32_Int32_$Impl_$.ucompare(low3,this2.low) < 0) {
+			++high3;
+			high3 = high3 | 0;
+		}
+		var year = thx__$DateTimeUtc_DateTimeUtc_$Impl_$.getDatePart(new haxe__$Int64__$_$_$Int64(high3,low3),thx__$DateTimeUtc_DateTimeUtc_$Impl_$.DATE_PART_YEAR);
+		var this4 = this1[0];
+		var this5 = this1[1];
+		var high4 = this4.high + this5.high | 0;
+		var low4 = this4.low + this5.low | 0;
+		if(haxe__$Int32_Int32_$Impl_$.ucompare(low4,this4.low) < 0) {
+			++high4;
+			high4 = high4 | 0;
+		}
+		var month = thx__$DateTimeUtc_DateTimeUtc_$Impl_$.getDatePart(new haxe__$Int64__$_$_$Int64(high4,low4),thx__$DateTimeUtc_DateTimeUtc_$Impl_$.DATE_PART_MONTH);
+		var this6 = this1[0];
+		var this7 = this1[1];
+		var high5 = this6.high + this7.high | 0;
+		var low5 = this6.low + this7.low | 0;
+		if(haxe__$Int32_Int32_$Impl_$.ucompare(low5,this6.low) < 0) {
+			++high5;
+			high5 = high5 | 0;
+		}
+		var day = thx__$DateTimeUtc_DateTimeUtc_$Impl_$.getDatePart(new haxe__$Int64__$_$_$Int64(high5,low5),thx__$DateTimeUtc_DateTimeUtc_$Impl_$.DATE_PART_DAY);
+		var offset = this1[1];
+		var this8 = [thx__$DateTimeUtc_DateTimeUtc_$Impl_$.create(year,month,day,0,0,0,0),offset];
+		var this9 = this8[0];
+		var b3 = offset;
+		var high6 = this9.high - b3.high | 0;
+		var low6 = this9.low - b3.low | 0;
+		if(haxe__$Int32_Int32_$Impl_$.ucompare(this9.low,b3.low) < 0) {
+			--high6;
+			high6 = high6 | 0;
+		}
+		return [thx__$DateTimeUtc_DateTimeUtc_$Impl_$.fromInt64(new haxe__$Int64__$_$_$Int64(high6,low6)),this8[1]];
+	case 4:
+		var this10 = this1[0];
+		var this11 = this1[1];
+		var high7 = this10.high + this11.high | 0;
+		var low7 = this10.low + this11.low | 0;
+		if(haxe__$Int32_Int32_$Impl_$.ucompare(low7,this10.low) < 0) {
+			++high7;
+			high7 = high7 | 0;
+		}
+		var wd = thx__$DateTimeUtc_DateTimeUtc_$Impl_$.get_dayOfWeek(new haxe__$Int64__$_$_$Int64(high7,low7));
+		var this12 = this1[0];
+		var this13 = this1[1];
+		var high8 = this12.high + this13.high | 0;
+		var low8 = this12.low + this13.low | 0;
+		if(haxe__$Int32_Int32_$Impl_$.ucompare(low8,this12.low) < 0) {
+			++high8;
+			high8 = high8 | 0;
+		}
+		var year1 = thx__$DateTimeUtc_DateTimeUtc_$Impl_$.getDatePart(new haxe__$Int64__$_$_$Int64(high8,low8),thx__$DateTimeUtc_DateTimeUtc_$Impl_$.DATE_PART_YEAR);
+		var this14 = this1[0];
+		var this15 = this1[1];
+		var high9 = this14.high + this15.high | 0;
+		var low9 = this14.low + this15.low | 0;
+		if(haxe__$Int32_Int32_$Impl_$.ucompare(low9,this14.low) < 0) {
+			++high9;
+			high9 = high9 | 0;
+		}
+		var month1 = thx__$DateTimeUtc_DateTimeUtc_$Impl_$.getDatePart(new haxe__$Int64__$_$_$Int64(high9,low9),thx__$DateTimeUtc_DateTimeUtc_$Impl_$.DATE_PART_MONTH);
+		var this16 = this1[0];
+		var this17 = this1[1];
+		var high10 = this16.high + this17.high | 0;
+		var low10 = this16.low + this17.low | 0;
+		if(haxe__$Int32_Int32_$Impl_$.ucompare(low10,this16.low) < 0) {
+			++high10;
+			high10 = high10 | 0;
+		}
+		var day1 = thx__$DateTimeUtc_DateTimeUtc_$Impl_$.getDatePart(new haxe__$Int64__$_$_$Int64(high10,low10),thx__$DateTimeUtc_DateTimeUtc_$Impl_$.DATE_PART_DAY) - wd;
+		var offset1 = this1[1];
+		var this18 = [thx__$DateTimeUtc_DateTimeUtc_$Impl_$.create(year1,month1,day1,0,0,0,0),offset1];
+		var this19 = this18[0];
+		var b4 = offset1;
+		var high11 = this19.high - b4.high | 0;
+		var low11 = this19.low - b4.low | 0;
+		if(haxe__$Int32_Int32_$Impl_$.ucompare(this19.low,b4.low) < 0) {
+			--high11;
+			high11 = high11 | 0;
+		}
+		return [thx__$DateTimeUtc_DateTimeUtc_$Impl_$.fromInt64(new haxe__$Int64__$_$_$Int64(high11,low11)),this18[1]];
+	case 5:
+		var this20 = this1[0];
+		var this21 = this1[1];
+		var high12 = this20.high + this21.high | 0;
+		var low12 = this20.low + this21.low | 0;
+		if(haxe__$Int32_Int32_$Impl_$.ucompare(low12,this20.low) < 0) {
+			++high12;
+			high12 = high12 | 0;
+		}
+		var year2 = thx__$DateTimeUtc_DateTimeUtc_$Impl_$.getDatePart(new haxe__$Int64__$_$_$Int64(high12,low12),thx__$DateTimeUtc_DateTimeUtc_$Impl_$.DATE_PART_YEAR);
+		var this22 = this1[0];
+		var this23 = this1[1];
+		var high13 = this22.high + this23.high | 0;
+		var low13 = this22.low + this23.low | 0;
+		if(haxe__$Int32_Int32_$Impl_$.ucompare(low13,this22.low) < 0) {
+			++high13;
+			high13 = high13 | 0;
+		}
+		var month2 = thx__$DateTimeUtc_DateTimeUtc_$Impl_$.getDatePart(new haxe__$Int64__$_$_$Int64(high13,low13),thx__$DateTimeUtc_DateTimeUtc_$Impl_$.DATE_PART_MONTH);
+		var offset2 = this1[1];
+		var this24 = [thx__$DateTimeUtc_DateTimeUtc_$Impl_$.create(year2,month2,1,0,0,0,0),offset2];
+		var this25 = this24[0];
+		var b5 = offset2;
+		var high14 = this25.high - b5.high | 0;
+		var low14 = this25.low - b5.low | 0;
+		if(haxe__$Int32_Int32_$Impl_$.ucompare(this25.low,b5.low) < 0) {
+			--high14;
+			high14 = high14 | 0;
+		}
+		return [thx__$DateTimeUtc_DateTimeUtc_$Impl_$.fromInt64(new haxe__$Int64__$_$_$Int64(high14,low14)),this24[1]];
+	case 6:
+		var this26 = this1[0];
+		var this27 = this1[1];
+		var high15 = this26.high + this27.high | 0;
+		var low15 = this26.low + this27.low | 0;
+		if(haxe__$Int32_Int32_$Impl_$.ucompare(low15,this26.low) < 0) {
+			++high15;
+			high15 = high15 | 0;
+		}
+		var year3 = thx__$DateTimeUtc_DateTimeUtc_$Impl_$.getDatePart(new haxe__$Int64__$_$_$Int64(high15,low15),thx__$DateTimeUtc_DateTimeUtc_$Impl_$.DATE_PART_YEAR);
+		var offset3 = this1[1];
+		var this28 = [thx__$DateTimeUtc_DateTimeUtc_$Impl_$.create(year3,1,1,0,0,0,0),offset3];
+		var this29 = this28[0];
+		var b6 = offset3;
+		var high16 = this29.high - b6.high | 0;
+		var low16 = this29.low - b6.low | 0;
+		if(haxe__$Int32_Int32_$Impl_$.ucompare(this29.low,b6.low) < 0) {
+			--high16;
+			high16 = high16 | 0;
+		}
+		return [thx__$DateTimeUtc_DateTimeUtc_$Impl_$.fromInt64(new haxe__$Int64__$_$_$Int64(high16,low16)),this28[1]];
+	}
+};
+thx__$DateTime_DateTime_$Impl_$.snapTo = function(this1,period) {
+	switch(period[1]) {
+	case 0:
+		var a = thx_Int64s.divRound(this1[0],thx__$DateTimeUtc_DateTimeUtc_$Impl_$.ticksPerSecondI64);
+		var b = thx__$DateTimeUtc_DateTimeUtc_$Impl_$.ticksPerSecondI64;
+		var al = a.low & 65535;
+		var ah = a.low >>> 16;
+		var bl = b.low & 65535;
+		var bh = b.low >>> 16;
+		var p00 = haxe__$Int32_Int32_$Impl_$.mul(al,bl);
+		var p10 = haxe__$Int32_Int32_$Impl_$.mul(ah,bl);
+		var p01 = haxe__$Int32_Int32_$Impl_$.mul(al,bh);
+		var p11 = haxe__$Int32_Int32_$Impl_$.mul(ah,bh);
+		var low = p00;
+		var high = (p11 + (p01 >>> 16) | 0) + (p10 >>> 16) | 0;
+		p01 = p01 << 16;
+		low = p00 + p01 | 0;
+		if(haxe__$Int32_Int32_$Impl_$.ucompare(low,p01) < 0) {
+			++high;
+			high = high | 0;
+		}
+		p10 = p10 << 16;
+		low = low + p10 | 0;
+		if(haxe__$Int32_Int32_$Impl_$.ucompare(low,p10) < 0) {
+			++high;
+			high = high | 0;
+		}
+		high = high + (haxe__$Int32_Int32_$Impl_$.mul(a.low,b.high) + haxe__$Int32_Int32_$Impl_$.mul(a.high,b.low) | 0) | 0;
+		return [new haxe__$Int64__$_$_$Int64(high,low),this1[1]];
+	case 1:
+		var a1 = thx_Int64s.divRound(this1[0],thx__$DateTimeUtc_DateTimeUtc_$Impl_$.ticksPerMinuteI64);
+		var b1 = thx__$DateTimeUtc_DateTimeUtc_$Impl_$.ticksPerMinuteI64;
+		var al1 = a1.low & 65535;
+		var ah1 = a1.low >>> 16;
+		var bl1 = b1.low & 65535;
+		var bh1 = b1.low >>> 16;
+		var p001 = haxe__$Int32_Int32_$Impl_$.mul(al1,bl1);
+		var p101 = haxe__$Int32_Int32_$Impl_$.mul(ah1,bl1);
+		var p011 = haxe__$Int32_Int32_$Impl_$.mul(al1,bh1);
+		var p111 = haxe__$Int32_Int32_$Impl_$.mul(ah1,bh1);
+		var low1 = p001;
+		var high1 = (p111 + (p011 >>> 16) | 0) + (p101 >>> 16) | 0;
+		p011 = p011 << 16;
+		low1 = p001 + p011 | 0;
+		if(haxe__$Int32_Int32_$Impl_$.ucompare(low1,p011) < 0) {
+			++high1;
+			high1 = high1 | 0;
+		}
+		p101 = p101 << 16;
+		low1 = low1 + p101 | 0;
+		if(haxe__$Int32_Int32_$Impl_$.ucompare(low1,p101) < 0) {
+			++high1;
+			high1 = high1 | 0;
+		}
+		high1 = high1 + (haxe__$Int32_Int32_$Impl_$.mul(a1.low,b1.high) + haxe__$Int32_Int32_$Impl_$.mul(a1.high,b1.low) | 0) | 0;
+		return [new haxe__$Int64__$_$_$Int64(high1,low1),this1[1]];
+	case 2:
+		var a2 = thx_Int64s.divRound(this1[0],thx__$DateTimeUtc_DateTimeUtc_$Impl_$.ticksPerHourI64);
+		var b2 = thx__$DateTimeUtc_DateTimeUtc_$Impl_$.ticksPerHourI64;
+		var al2 = a2.low & 65535;
+		var ah2 = a2.low >>> 16;
+		var bl2 = b2.low & 65535;
+		var bh2 = b2.low >>> 16;
+		var p002 = haxe__$Int32_Int32_$Impl_$.mul(al2,bl2);
+		var p102 = haxe__$Int32_Int32_$Impl_$.mul(ah2,bl2);
+		var p012 = haxe__$Int32_Int32_$Impl_$.mul(al2,bh2);
+		var p112 = haxe__$Int32_Int32_$Impl_$.mul(ah2,bh2);
+		var low2 = p002;
+		var high2 = (p112 + (p012 >>> 16) | 0) + (p102 >>> 16) | 0;
+		p012 = p012 << 16;
+		low2 = p002 + p012 | 0;
+		if(haxe__$Int32_Int32_$Impl_$.ucompare(low2,p012) < 0) {
+			++high2;
+			high2 = high2 | 0;
+		}
+		p102 = p102 << 16;
+		low2 = low2 + p102 | 0;
+		if(haxe__$Int32_Int32_$Impl_$.ucompare(low2,p102) < 0) {
+			++high2;
+			high2 = high2 | 0;
+		}
+		high2 = high2 + (haxe__$Int32_Int32_$Impl_$.mul(a2.low,b2.high) + haxe__$Int32_Int32_$Impl_$.mul(a2.high,b2.low) | 0) | 0;
+		return [new haxe__$Int64__$_$_$Int64(high2,low2),this1[1]];
+	case 3:
+		var mod;
+		var this2 = this1[0];
+		var this3 = this1[1];
+		var high3 = this2.high + this3.high | 0;
+		var low3 = this2.low + this3.low | 0;
+		if(haxe__$Int32_Int32_$Impl_$.ucompare(low3,this2.low) < 0) {
+			++high3;
+			high3 = high3 | 0;
+		}
+		if(thx__$DateTimeUtc_DateTimeUtc_$Impl_$.get_hour(new haxe__$Int64__$_$_$Int64(high3,low3)) >= 12) {
+			mod = 1;
+		} else {
+			mod = 0;
+		}
+		var this4 = this1[0];
+		var this5 = this1[1];
+		var high4 = this4.high + this5.high | 0;
+		var low4 = this4.low + this5.low | 0;
+		if(haxe__$Int32_Int32_$Impl_$.ucompare(low4,this4.low) < 0) {
+			++high4;
+			high4 = high4 | 0;
+		}
+		var year = thx__$DateTimeUtc_DateTimeUtc_$Impl_$.getDatePart(new haxe__$Int64__$_$_$Int64(high4,low4),thx__$DateTimeUtc_DateTimeUtc_$Impl_$.DATE_PART_YEAR);
+		var this6 = this1[0];
+		var this7 = this1[1];
+		var high5 = this6.high + this7.high | 0;
+		var low5 = this6.low + this7.low | 0;
+		if(haxe__$Int32_Int32_$Impl_$.ucompare(low5,this6.low) < 0) {
+			++high5;
+			high5 = high5 | 0;
+		}
+		var month = thx__$DateTimeUtc_DateTimeUtc_$Impl_$.getDatePart(new haxe__$Int64__$_$_$Int64(high5,low5),thx__$DateTimeUtc_DateTimeUtc_$Impl_$.DATE_PART_MONTH);
+		var this8 = this1[0];
+		var this9 = this1[1];
+		var high6 = this8.high + this9.high | 0;
+		var low6 = this8.low + this9.low | 0;
+		if(haxe__$Int32_Int32_$Impl_$.ucompare(low6,this8.low) < 0) {
+			++high6;
+			high6 = high6 | 0;
+		}
+		var day = thx__$DateTimeUtc_DateTimeUtc_$Impl_$.getDatePart(new haxe__$Int64__$_$_$Int64(high6,low6),thx__$DateTimeUtc_DateTimeUtc_$Impl_$.DATE_PART_DAY) + mod;
+		var offset = this1[1];
+		var this10 = [thx__$DateTimeUtc_DateTimeUtc_$Impl_$.create(year,month,day,0,0,0,0),offset];
+		var this11 = this10[0];
+		var b3 = offset;
+		var high7 = this11.high - b3.high | 0;
+		var low7 = this11.low - b3.low | 0;
+		if(haxe__$Int32_Int32_$Impl_$.ucompare(this11.low,b3.low) < 0) {
+			--high7;
+			high7 = high7 | 0;
+		}
+		return [thx__$DateTimeUtc_DateTimeUtc_$Impl_$.fromInt64(new haxe__$Int64__$_$_$Int64(high7,low7)),this10[1]];
+	case 4:
+		var this12 = this1[0];
+		var this13 = this1[1];
+		var high8 = this12.high + this13.high | 0;
+		var low8 = this12.low + this13.low | 0;
+		if(haxe__$Int32_Int32_$Impl_$.ucompare(low8,this12.low) < 0) {
+			++high8;
+			high8 = high8 | 0;
+		}
+		var wd = thx__$DateTimeUtc_DateTimeUtc_$Impl_$.get_dayOfWeek(new haxe__$Int64__$_$_$Int64(high8,low8));
+		var mod1;
+		if(wd < 3) {
+			mod1 = -wd;
+		} else if(wd > 3) {
+			mod1 = 7 - wd;
+		} else {
+			var this14 = this1[0];
+			var this15 = this1[1];
+			var high9 = this14.high + this15.high | 0;
+			var low9 = this14.low + this15.low | 0;
+			if(haxe__$Int32_Int32_$Impl_$.ucompare(low9,this14.low) < 0) {
+				++high9;
+				high9 = high9 | 0;
+			}
+			if(thx__$DateTimeUtc_DateTimeUtc_$Impl_$.get_hour(new haxe__$Int64__$_$_$Int64(high9,low9)) < 12) {
+				mod1 = -wd;
+			} else {
+				mod1 = 7 - wd;
+			}
+		}
+		var this16 = this1[0];
+		var this17 = this1[1];
+		var high10 = this16.high + this17.high | 0;
+		var low10 = this16.low + this17.low | 0;
+		if(haxe__$Int32_Int32_$Impl_$.ucompare(low10,this16.low) < 0) {
+			++high10;
+			high10 = high10 | 0;
+		}
+		var year1 = thx__$DateTimeUtc_DateTimeUtc_$Impl_$.getDatePart(new haxe__$Int64__$_$_$Int64(high10,low10),thx__$DateTimeUtc_DateTimeUtc_$Impl_$.DATE_PART_YEAR);
+		var this18 = this1[0];
+		var this19 = this1[1];
+		var high11 = this18.high + this19.high | 0;
+		var low11 = this18.low + this19.low | 0;
+		if(haxe__$Int32_Int32_$Impl_$.ucompare(low11,this18.low) < 0) {
+			++high11;
+			high11 = high11 | 0;
+		}
+		var month1 = thx__$DateTimeUtc_DateTimeUtc_$Impl_$.getDatePart(new haxe__$Int64__$_$_$Int64(high11,low11),thx__$DateTimeUtc_DateTimeUtc_$Impl_$.DATE_PART_MONTH);
+		var this20 = this1[0];
+		var this21 = this1[1];
+		var high12 = this20.high + this21.high | 0;
+		var low12 = this20.low + this21.low | 0;
+		if(haxe__$Int32_Int32_$Impl_$.ucompare(low12,this20.low) < 0) {
+			++high12;
+			high12 = high12 | 0;
+		}
+		var day1 = thx__$DateTimeUtc_DateTimeUtc_$Impl_$.getDatePart(new haxe__$Int64__$_$_$Int64(high12,low12),thx__$DateTimeUtc_DateTimeUtc_$Impl_$.DATE_PART_DAY) + mod1;
+		var offset1 = this1[1];
+		var this22 = [thx__$DateTimeUtc_DateTimeUtc_$Impl_$.create(year1,month1,day1,0,0,0,0),offset1];
+		var this23 = this22[0];
+		var b4 = offset1;
+		var high13 = this23.high - b4.high | 0;
+		var low13 = this23.low - b4.low | 0;
+		if(haxe__$Int32_Int32_$Impl_$.ucompare(this23.low,b4.low) < 0) {
+			--high13;
+			high13 = high13 | 0;
+		}
+		return [thx__$DateTimeUtc_DateTimeUtc_$Impl_$.fromInt64(new haxe__$Int64__$_$_$Int64(high13,low13)),this22[1]];
+	case 5:
+		var mod2;
+		var this24 = this1[0];
+		var this25 = this1[1];
+		var high14 = this24.high + this25.high | 0;
+		var low14 = this24.low + this25.low | 0;
+		if(haxe__$Int32_Int32_$Impl_$.ucompare(low14,this24.low) < 0) {
+			++high14;
+			high14 = high14 | 0;
+		}
+		var tmp = thx__$DateTimeUtc_DateTimeUtc_$Impl_$.getDatePart(new haxe__$Int64__$_$_$Int64(high14,low14),thx__$DateTimeUtc_DateTimeUtc_$Impl_$.DATE_PART_DAY);
+		var this26 = this1[0];
+		var this27 = this1[1];
+		var high15 = this26.high + this27.high | 0;
+		var low15 = this26.low + this27.low | 0;
+		if(haxe__$Int32_Int32_$Impl_$.ucompare(low15,this26.low) < 0) {
+			++high15;
+			high15 = high15 | 0;
+		}
+		var tmp1 = thx__$DateTimeUtc_DateTimeUtc_$Impl_$.getDatePart(new haxe__$Int64__$_$_$Int64(high15,low15),thx__$DateTimeUtc_DateTimeUtc_$Impl_$.DATE_PART_YEAR);
+		var this28 = this1[0];
+		var this29 = this1[1];
+		var high16 = this28.high + this29.high | 0;
+		var low16 = this28.low + this29.low | 0;
+		if(haxe__$Int32_Int32_$Impl_$.ucompare(low16,this28.low) < 0) {
+			++high16;
+			high16 = high16 | 0;
+		}
+		if(tmp > Math.round(thx__$DateTimeUtc_DateTimeUtc_$Impl_$.daysInMonth(tmp1,thx__$DateTimeUtc_DateTimeUtc_$Impl_$.getDatePart(new haxe__$Int64__$_$_$Int64(high16,low16),thx__$DateTimeUtc_DateTimeUtc_$Impl_$.DATE_PART_MONTH)) / 2)) {
+			mod2 = 1;
+		} else {
+			mod2 = 0;
+		}
+		var this30 = this1[0];
+		var this31 = this1[1];
+		var high17 = this30.high + this31.high | 0;
+		var low17 = this30.low + this31.low | 0;
+		if(haxe__$Int32_Int32_$Impl_$.ucompare(low17,this30.low) < 0) {
+			++high17;
+			high17 = high17 | 0;
+		}
+		var year2 = thx__$DateTimeUtc_DateTimeUtc_$Impl_$.getDatePart(new haxe__$Int64__$_$_$Int64(high17,low17),thx__$DateTimeUtc_DateTimeUtc_$Impl_$.DATE_PART_YEAR);
+		var this32 = this1[0];
+		var this33 = this1[1];
+		var high18 = this32.high + this33.high | 0;
+		var low18 = this32.low + this33.low | 0;
+		if(haxe__$Int32_Int32_$Impl_$.ucompare(low18,this32.low) < 0) {
+			++high18;
+			high18 = high18 | 0;
+		}
+		var month2 = thx__$DateTimeUtc_DateTimeUtc_$Impl_$.getDatePart(new haxe__$Int64__$_$_$Int64(high18,low18),thx__$DateTimeUtc_DateTimeUtc_$Impl_$.DATE_PART_MONTH) + mod2;
+		var offset2 = this1[1];
+		var this34 = [thx__$DateTimeUtc_DateTimeUtc_$Impl_$.create(year2,month2,1,0,0,0,0),offset2];
+		var this35 = this34[0];
+		var b5 = offset2;
+		var high19 = this35.high - b5.high | 0;
+		var low19 = this35.low - b5.low | 0;
+		if(haxe__$Int32_Int32_$Impl_$.ucompare(this35.low,b5.low) < 0) {
+			--high19;
+			high19 = high19 | 0;
+		}
+		return [thx__$DateTimeUtc_DateTimeUtc_$Impl_$.fromInt64(new haxe__$Int64__$_$_$Int64(high19,low19)),this34[1]];
+	case 6:
+		var this36 = this1[0];
+		var this37 = this1[1];
+		var high20 = this36.high + this37.high | 0;
+		var low20 = this36.low + this37.low | 0;
+		if(haxe__$Int32_Int32_$Impl_$.ucompare(low20,this36.low) < 0) {
+			++high20;
+			high20 = high20 | 0;
+		}
+		var year3 = thx__$DateTimeUtc_DateTimeUtc_$Impl_$.getDatePart(new haxe__$Int64__$_$_$Int64(high20,low20),thx__$DateTimeUtc_DateTimeUtc_$Impl_$.DATE_PART_YEAR);
+		var offset3 = this1[1];
+		var this38 = [thx__$DateTimeUtc_DateTimeUtc_$Impl_$.create(year3,6,2,0,0,0,0),offset3];
+		var this39 = this38[0];
+		var b6 = offset3;
+		var high21 = this39.high - b6.high | 0;
+		var low21 = this39.low - b6.low | 0;
+		if(haxe__$Int32_Int32_$Impl_$.ucompare(this39.low,b6.low) < 0) {
+			--high21;
+			high21 = high21 | 0;
+		}
+		var mod3 = thx__$DateTime_DateTime_$Impl_$.compareTo(this1,[thx__$DateTimeUtc_DateTimeUtc_$Impl_$.fromInt64(new haxe__$Int64__$_$_$Int64(high21,low21)),this38[1]]) > 0?1:0;
+		var this40 = this1[0];
+		var this41 = this1[1];
+		var high22 = this40.high + this41.high | 0;
+		var low22 = this40.low + this41.low | 0;
+		if(haxe__$Int32_Int32_$Impl_$.ucompare(low22,this40.low) < 0) {
+			++high22;
+			high22 = high22 | 0;
+		}
+		var year4 = thx__$DateTimeUtc_DateTimeUtc_$Impl_$.getDatePart(new haxe__$Int64__$_$_$Int64(high22,low22),thx__$DateTimeUtc_DateTimeUtc_$Impl_$.DATE_PART_YEAR) + mod3;
+		var offset4 = this1[1];
+		var this42 = [thx__$DateTimeUtc_DateTimeUtc_$Impl_$.create(year4,1,1,0,0,0,0),offset4];
+		var this43 = this42[0];
+		var b7 = offset4;
+		var high23 = this43.high - b7.high | 0;
+		var low23 = this43.low - b7.low | 0;
+		if(haxe__$Int32_Int32_$Impl_$.ucompare(this43.low,b7.low) < 0) {
+			--high23;
+			high23 = high23 | 0;
+		}
+		return [thx__$DateTimeUtc_DateTimeUtc_$Impl_$.fromInt64(new haxe__$Int64__$_$_$Int64(high23,low23)),this42[1]];
+	}
+};
+thx__$DateTime_DateTime_$Impl_$.sameYear = function(this1,other) {
+	var this2 = this1[0];
+	var this3 = this1[1];
+	var high = this2.high + this3.high | 0;
+	var low = this2.low + this3.low | 0;
+	if(haxe__$Int32_Int32_$Impl_$.ucompare(low,this2.low) < 0) {
+		++high;
+		high = high | 0;
+	}
+	var tmp = thx__$DateTimeUtc_DateTimeUtc_$Impl_$.getDatePart(new haxe__$Int64__$_$_$Int64(high,low),thx__$DateTimeUtc_DateTimeUtc_$Impl_$.DATE_PART_YEAR);
+	var this4 = other[0];
+	var this5 = other[1];
+	var high1 = this4.high + this5.high | 0;
+	var low1 = this4.low + this5.low | 0;
+	if(haxe__$Int32_Int32_$Impl_$.ucompare(low1,this4.low) < 0) {
+		++high1;
+		high1 = high1 | 0;
+	}
+	return tmp == thx__$DateTimeUtc_DateTimeUtc_$Impl_$.getDatePart(new haxe__$Int64__$_$_$Int64(high1,low1),thx__$DateTimeUtc_DateTimeUtc_$Impl_$.DATE_PART_YEAR);
+};
+thx__$DateTime_DateTime_$Impl_$.sameMonth = function(this1,other) {
+	if(thx__$DateTime_DateTime_$Impl_$.sameYear(this1,other)) {
+		var this2 = this1[0];
+		var this3 = this1[1];
+		var high = this2.high + this3.high | 0;
+		var low = this2.low + this3.low | 0;
+		if(haxe__$Int32_Int32_$Impl_$.ucompare(low,this2.low) < 0) {
+			++high;
+			high = high | 0;
+		}
+		var tmp = thx__$DateTimeUtc_DateTimeUtc_$Impl_$.getDatePart(new haxe__$Int64__$_$_$Int64(high,low),thx__$DateTimeUtc_DateTimeUtc_$Impl_$.DATE_PART_MONTH);
+		var this4 = other[0];
+		var this5 = other[1];
+		var high1 = this4.high + this5.high | 0;
+		var low1 = this4.low + this5.low | 0;
+		if(haxe__$Int32_Int32_$Impl_$.ucompare(low1,this4.low) < 0) {
+			++high1;
+			high1 = high1 | 0;
+		}
+		return tmp == thx__$DateTimeUtc_DateTimeUtc_$Impl_$.getDatePart(new haxe__$Int64__$_$_$Int64(high1,low1),thx__$DateTimeUtc_DateTimeUtc_$Impl_$.DATE_PART_MONTH);
+	} else {
+		return false;
+	}
+};
+thx__$DateTime_DateTime_$Impl_$.sameDay = function(this1,other) {
+	if(thx__$DateTime_DateTime_$Impl_$.sameMonth(this1,other)) {
+		var this2 = this1[0];
+		var this3 = this1[1];
+		var high = this2.high + this3.high | 0;
+		var low = this2.low + this3.low | 0;
+		if(haxe__$Int32_Int32_$Impl_$.ucompare(low,this2.low) < 0) {
+			++high;
+			high = high | 0;
+		}
+		var tmp = thx__$DateTimeUtc_DateTimeUtc_$Impl_$.getDatePart(new haxe__$Int64__$_$_$Int64(high,low),thx__$DateTimeUtc_DateTimeUtc_$Impl_$.DATE_PART_DAY);
+		var this4 = other[0];
+		var this5 = other[1];
+		var high1 = this4.high + this5.high | 0;
+		var low1 = this4.low + this5.low | 0;
+		if(haxe__$Int32_Int32_$Impl_$.ucompare(low1,this4.low) < 0) {
+			++high1;
+			high1 = high1 | 0;
+		}
+		return tmp == thx__$DateTimeUtc_DateTimeUtc_$Impl_$.getDatePart(new haxe__$Int64__$_$_$Int64(high1,low1),thx__$DateTimeUtc_DateTimeUtc_$Impl_$.DATE_PART_DAY);
+	} else {
+		return false;
+	}
+};
+thx__$DateTime_DateTime_$Impl_$.sameHour = function(this1,other) {
+	if(thx__$DateTime_DateTime_$Impl_$.sameDay(this1,other)) {
+		var this2 = this1[0];
+		var this3 = this1[1];
+		var high = this2.high + this3.high | 0;
+		var low = this2.low + this3.low | 0;
+		if(haxe__$Int32_Int32_$Impl_$.ucompare(low,this2.low) < 0) {
+			++high;
+			high = high | 0;
+		}
+		var tmp = thx__$DateTimeUtc_DateTimeUtc_$Impl_$.get_hour(new haxe__$Int64__$_$_$Int64(high,low));
+		var this4 = other[0];
+		var this5 = other[1];
+		var high1 = this4.high + this5.high | 0;
+		var low1 = this4.low + this5.low | 0;
+		if(haxe__$Int32_Int32_$Impl_$.ucompare(low1,this4.low) < 0) {
+			++high1;
+			high1 = high1 | 0;
+		}
+		return tmp == thx__$DateTimeUtc_DateTimeUtc_$Impl_$.get_hour(new haxe__$Int64__$_$_$Int64(high1,low1));
+	} else {
+		return false;
+	}
+};
+thx__$DateTime_DateTime_$Impl_$.sameMinute = function(this1,other) {
+	if(thx__$DateTime_DateTime_$Impl_$.sameHour(this1,other)) {
+		var this2 = this1[0];
+		var this3 = this1[1];
+		var high = this2.high + this3.high | 0;
+		var low = this2.low + this3.low | 0;
+		if(haxe__$Int32_Int32_$Impl_$.ucompare(low,this2.low) < 0) {
+			++high;
+			high = high | 0;
+		}
+		var tmp = thx__$DateTimeUtc_DateTimeUtc_$Impl_$.get_minute(new haxe__$Int64__$_$_$Int64(high,low));
+		var this4 = other[0];
+		var this5 = other[1];
+		var high1 = this4.high + this5.high | 0;
+		var low1 = this4.low + this5.low | 0;
+		if(haxe__$Int32_Int32_$Impl_$.ucompare(low1,this4.low) < 0) {
+			++high1;
+			high1 = high1 | 0;
+		}
+		return tmp == thx__$DateTimeUtc_DateTimeUtc_$Impl_$.get_minute(new haxe__$Int64__$_$_$Int64(high1,low1));
+	} else {
+		return false;
+	}
+};
+thx__$DateTime_DateTime_$Impl_$.sameSecond = function(this1,other) {
+	if(thx__$DateTime_DateTime_$Impl_$.sameMinute(this1,other)) {
+		var this2 = this1[0];
+		var this3 = this1[1];
+		var high = this2.high + this3.high | 0;
+		var low = this2.low + this3.low | 0;
+		if(haxe__$Int32_Int32_$Impl_$.ucompare(low,this2.low) < 0) {
+			++high;
+			high = high | 0;
+		}
+		var tmp = thx__$DateTimeUtc_DateTimeUtc_$Impl_$.get_second(new haxe__$Int64__$_$_$Int64(high,low));
+		var this4 = other[0];
+		var this5 = other[1];
+		var high1 = this4.high + this5.high | 0;
+		var low1 = this4.low + this5.low | 0;
+		if(haxe__$Int32_Int32_$Impl_$.ucompare(low1,this4.low) < 0) {
+			++high1;
+			high1 = high1 | 0;
+		}
+		return tmp == thx__$DateTimeUtc_DateTimeUtc_$Impl_$.get_second(new haxe__$Int64__$_$_$Int64(high1,low1));
+	} else {
+		return false;
+	}
+};
+thx__$DateTime_DateTime_$Impl_$.withYear = function(this1,year) {
+	var this2 = this1[0];
+	var this3 = this1[1];
+	var high = this2.high + this3.high | 0;
+	var low = this2.low + this3.low | 0;
+	if(haxe__$Int32_Int32_$Impl_$.ucompare(low,this2.low) < 0) {
+		++high;
+		high = high | 0;
+	}
+	var month = thx__$DateTimeUtc_DateTimeUtc_$Impl_$.getDatePart(new haxe__$Int64__$_$_$Int64(high,low),thx__$DateTimeUtc_DateTimeUtc_$Impl_$.DATE_PART_MONTH);
+	var this4 = this1[0];
+	var this5 = this1[1];
+	var high1 = this4.high + this5.high | 0;
+	var low1 = this4.low + this5.low | 0;
+	if(haxe__$Int32_Int32_$Impl_$.ucompare(low1,this4.low) < 0) {
+		++high1;
+		high1 = high1 | 0;
+	}
+	var day = thx__$DateTimeUtc_DateTimeUtc_$Impl_$.getDatePart(new haxe__$Int64__$_$_$Int64(high1,low1),thx__$DateTimeUtc_DateTimeUtc_$Impl_$.DATE_PART_DAY);
+	var this6 = this1[0];
+	var this7 = this1[1];
+	var high2 = this6.high + this7.high | 0;
+	var low2 = this6.low + this7.low | 0;
+	if(haxe__$Int32_Int32_$Impl_$.ucompare(low2,this6.low) < 0) {
+		++high2;
+		high2 = high2 | 0;
+	}
+	var hour = thx__$DateTimeUtc_DateTimeUtc_$Impl_$.get_hour(new haxe__$Int64__$_$_$Int64(high2,low2));
+	var this8 = this1[0];
+	var this9 = this1[1];
+	var high3 = this8.high + this9.high | 0;
+	var low3 = this8.low + this9.low | 0;
+	if(haxe__$Int32_Int32_$Impl_$.ucompare(low3,this8.low) < 0) {
+		++high3;
+		high3 = high3 | 0;
+	}
+	var minute = thx__$DateTimeUtc_DateTimeUtc_$Impl_$.get_minute(new haxe__$Int64__$_$_$Int64(high3,low3));
+	var this10 = this1[0];
+	var this11 = this1[1];
+	var high4 = this10.high + this11.high | 0;
+	var low4 = this10.low + this11.low | 0;
+	if(haxe__$Int32_Int32_$Impl_$.ucompare(low4,this10.low) < 0) {
+		++high4;
+		high4 = high4 | 0;
+	}
+	var second = thx__$DateTimeUtc_DateTimeUtc_$Impl_$.get_second(new haxe__$Int64__$_$_$Int64(high4,low4));
+	var this12 = this1[0];
+	var this13 = this1[1];
+	var high5 = this12.high + this13.high | 0;
+	var low5 = this12.low + this13.low | 0;
+	if(haxe__$Int32_Int32_$Impl_$.ucompare(low5,this12.low) < 0) {
+		++high5;
+		high5 = high5 | 0;
+	}
+	var millisecond = thx__$DateTimeUtc_DateTimeUtc_$Impl_$.get_millisecond(new haxe__$Int64__$_$_$Int64(high5,low5));
+	var offset = this1[1];
+	var this14 = [thx__$DateTimeUtc_DateTimeUtc_$Impl_$.create(year,month,day,hour,minute,second,millisecond),offset];
+	var this15 = this14[0];
+	var b = offset;
+	var high6 = this15.high - b.high | 0;
+	var low6 = this15.low - b.low | 0;
+	if(haxe__$Int32_Int32_$Impl_$.ucompare(this15.low,b.low) < 0) {
+		--high6;
+		high6 = high6 | 0;
+	}
+	return [thx__$DateTimeUtc_DateTimeUtc_$Impl_$.fromInt64(new haxe__$Int64__$_$_$Int64(high6,low6)),this14[1]];
+};
+thx__$DateTime_DateTime_$Impl_$.withMonth = function(this1,month) {
+	var this2 = this1[0];
+	var this3 = this1[1];
+	var high = this2.high + this3.high | 0;
+	var low = this2.low + this3.low | 0;
+	if(haxe__$Int32_Int32_$Impl_$.ucompare(low,this2.low) < 0) {
+		++high;
+		high = high | 0;
+	}
+	var year = thx__$DateTimeUtc_DateTimeUtc_$Impl_$.getDatePart(new haxe__$Int64__$_$_$Int64(high,low),thx__$DateTimeUtc_DateTimeUtc_$Impl_$.DATE_PART_YEAR);
+	var this4 = this1[0];
+	var this5 = this1[1];
+	var high1 = this4.high + this5.high | 0;
+	var low1 = this4.low + this5.low | 0;
+	if(haxe__$Int32_Int32_$Impl_$.ucompare(low1,this4.low) < 0) {
+		++high1;
+		high1 = high1 | 0;
+	}
+	var day = thx__$DateTimeUtc_DateTimeUtc_$Impl_$.getDatePart(new haxe__$Int64__$_$_$Int64(high1,low1),thx__$DateTimeUtc_DateTimeUtc_$Impl_$.DATE_PART_DAY);
+	var this6 = this1[0];
+	var this7 = this1[1];
+	var high2 = this6.high + this7.high | 0;
+	var low2 = this6.low + this7.low | 0;
+	if(haxe__$Int32_Int32_$Impl_$.ucompare(low2,this6.low) < 0) {
+		++high2;
+		high2 = high2 | 0;
+	}
+	var hour = thx__$DateTimeUtc_DateTimeUtc_$Impl_$.get_hour(new haxe__$Int64__$_$_$Int64(high2,low2));
+	var this8 = this1[0];
+	var this9 = this1[1];
+	var high3 = this8.high + this9.high | 0;
+	var low3 = this8.low + this9.low | 0;
+	if(haxe__$Int32_Int32_$Impl_$.ucompare(low3,this8.low) < 0) {
+		++high3;
+		high3 = high3 | 0;
+	}
+	var minute = thx__$DateTimeUtc_DateTimeUtc_$Impl_$.get_minute(new haxe__$Int64__$_$_$Int64(high3,low3));
+	var this10 = this1[0];
+	var this11 = this1[1];
+	var high4 = this10.high + this11.high | 0;
+	var low4 = this10.low + this11.low | 0;
+	if(haxe__$Int32_Int32_$Impl_$.ucompare(low4,this10.low) < 0) {
+		++high4;
+		high4 = high4 | 0;
+	}
+	var second = thx__$DateTimeUtc_DateTimeUtc_$Impl_$.get_second(new haxe__$Int64__$_$_$Int64(high4,low4));
+	var this12 = this1[0];
+	var this13 = this1[1];
+	var high5 = this12.high + this13.high | 0;
+	var low5 = this12.low + this13.low | 0;
+	if(haxe__$Int32_Int32_$Impl_$.ucompare(low5,this12.low) < 0) {
+		++high5;
+		high5 = high5 | 0;
+	}
+	var millisecond = thx__$DateTimeUtc_DateTimeUtc_$Impl_$.get_millisecond(new haxe__$Int64__$_$_$Int64(high5,low5));
+	var offset = this1[1];
+	var this14 = [thx__$DateTimeUtc_DateTimeUtc_$Impl_$.create(year,month,day,hour,minute,second,millisecond),offset];
+	var this15 = this14[0];
+	var b = offset;
+	var high6 = this15.high - b.high | 0;
+	var low6 = this15.low - b.low | 0;
+	if(haxe__$Int32_Int32_$Impl_$.ucompare(this15.low,b.low) < 0) {
+		--high6;
+		high6 = high6 | 0;
+	}
+	return [thx__$DateTimeUtc_DateTimeUtc_$Impl_$.fromInt64(new haxe__$Int64__$_$_$Int64(high6,low6)),this14[1]];
+};
+thx__$DateTime_DateTime_$Impl_$.withDay = function(this1,day) {
+	var this2 = this1[0];
+	var this3 = this1[1];
+	var high = this2.high + this3.high | 0;
+	var low = this2.low + this3.low | 0;
+	if(haxe__$Int32_Int32_$Impl_$.ucompare(low,this2.low) < 0) {
+		++high;
+		high = high | 0;
+	}
+	var year = thx__$DateTimeUtc_DateTimeUtc_$Impl_$.getDatePart(new haxe__$Int64__$_$_$Int64(high,low),thx__$DateTimeUtc_DateTimeUtc_$Impl_$.DATE_PART_YEAR);
+	var this4 = this1[0];
+	var this5 = this1[1];
+	var high1 = this4.high + this5.high | 0;
+	var low1 = this4.low + this5.low | 0;
+	if(haxe__$Int32_Int32_$Impl_$.ucompare(low1,this4.low) < 0) {
+		++high1;
+		high1 = high1 | 0;
+	}
+	var month = thx__$DateTimeUtc_DateTimeUtc_$Impl_$.getDatePart(new haxe__$Int64__$_$_$Int64(high1,low1),thx__$DateTimeUtc_DateTimeUtc_$Impl_$.DATE_PART_MONTH);
+	var this6 = this1[0];
+	var this7 = this1[1];
+	var high2 = this6.high + this7.high | 0;
+	var low2 = this6.low + this7.low | 0;
+	if(haxe__$Int32_Int32_$Impl_$.ucompare(low2,this6.low) < 0) {
+		++high2;
+		high2 = high2 | 0;
+	}
+	var hour = thx__$DateTimeUtc_DateTimeUtc_$Impl_$.get_hour(new haxe__$Int64__$_$_$Int64(high2,low2));
+	var this8 = this1[0];
+	var this9 = this1[1];
+	var high3 = this8.high + this9.high | 0;
+	var low3 = this8.low + this9.low | 0;
+	if(haxe__$Int32_Int32_$Impl_$.ucompare(low3,this8.low) < 0) {
+		++high3;
+		high3 = high3 | 0;
+	}
+	var minute = thx__$DateTimeUtc_DateTimeUtc_$Impl_$.get_minute(new haxe__$Int64__$_$_$Int64(high3,low3));
+	var this10 = this1[0];
+	var this11 = this1[1];
+	var high4 = this10.high + this11.high | 0;
+	var low4 = this10.low + this11.low | 0;
+	if(haxe__$Int32_Int32_$Impl_$.ucompare(low4,this10.low) < 0) {
+		++high4;
+		high4 = high4 | 0;
+	}
+	var second = thx__$DateTimeUtc_DateTimeUtc_$Impl_$.get_second(new haxe__$Int64__$_$_$Int64(high4,low4));
+	var this12 = this1[0];
+	var this13 = this1[1];
+	var high5 = this12.high + this13.high | 0;
+	var low5 = this12.low + this13.low | 0;
+	if(haxe__$Int32_Int32_$Impl_$.ucompare(low5,this12.low) < 0) {
+		++high5;
+		high5 = high5 | 0;
+	}
+	var millisecond = thx__$DateTimeUtc_DateTimeUtc_$Impl_$.get_millisecond(new haxe__$Int64__$_$_$Int64(high5,low5));
+	var offset = this1[1];
+	var this14 = [thx__$DateTimeUtc_DateTimeUtc_$Impl_$.create(year,month,day,hour,minute,second,millisecond),offset];
+	var this15 = this14[0];
+	var b = offset;
+	var high6 = this15.high - b.high | 0;
+	var low6 = this15.low - b.low | 0;
+	if(haxe__$Int32_Int32_$Impl_$.ucompare(this15.low,b.low) < 0) {
+		--high6;
+		high6 = high6 | 0;
+	}
+	return [thx__$DateTimeUtc_DateTimeUtc_$Impl_$.fromInt64(new haxe__$Int64__$_$_$Int64(high6,low6)),this14[1]];
+};
+thx__$DateTime_DateTime_$Impl_$.withHour = function(this1,hour) {
+	var this2 = this1[0];
+	var this3 = this1[1];
+	var high = this2.high + this3.high | 0;
+	var low = this2.low + this3.low | 0;
+	if(haxe__$Int32_Int32_$Impl_$.ucompare(low,this2.low) < 0) {
+		++high;
+		high = high | 0;
+	}
+	var year = thx__$DateTimeUtc_DateTimeUtc_$Impl_$.getDatePart(new haxe__$Int64__$_$_$Int64(high,low),thx__$DateTimeUtc_DateTimeUtc_$Impl_$.DATE_PART_YEAR);
+	var this4 = this1[0];
+	var this5 = this1[1];
+	var high1 = this4.high + this5.high | 0;
+	var low1 = this4.low + this5.low | 0;
+	if(haxe__$Int32_Int32_$Impl_$.ucompare(low1,this4.low) < 0) {
+		++high1;
+		high1 = high1 | 0;
+	}
+	var month = thx__$DateTimeUtc_DateTimeUtc_$Impl_$.getDatePart(new haxe__$Int64__$_$_$Int64(high1,low1),thx__$DateTimeUtc_DateTimeUtc_$Impl_$.DATE_PART_MONTH);
+	var this6 = this1[0];
+	var this7 = this1[1];
+	var high2 = this6.high + this7.high | 0;
+	var low2 = this6.low + this7.low | 0;
+	if(haxe__$Int32_Int32_$Impl_$.ucompare(low2,this6.low) < 0) {
+		++high2;
+		high2 = high2 | 0;
+	}
+	var day = thx__$DateTimeUtc_DateTimeUtc_$Impl_$.getDatePart(new haxe__$Int64__$_$_$Int64(high2,low2),thx__$DateTimeUtc_DateTimeUtc_$Impl_$.DATE_PART_DAY);
+	var this8 = this1[0];
+	var this9 = this1[1];
+	var high3 = this8.high + this9.high | 0;
+	var low3 = this8.low + this9.low | 0;
+	if(haxe__$Int32_Int32_$Impl_$.ucompare(low3,this8.low) < 0) {
+		++high3;
+		high3 = high3 | 0;
+	}
+	var minute = thx__$DateTimeUtc_DateTimeUtc_$Impl_$.get_minute(new haxe__$Int64__$_$_$Int64(high3,low3));
+	var this10 = this1[0];
+	var this11 = this1[1];
+	var high4 = this10.high + this11.high | 0;
+	var low4 = this10.low + this11.low | 0;
+	if(haxe__$Int32_Int32_$Impl_$.ucompare(low4,this10.low) < 0) {
+		++high4;
+		high4 = high4 | 0;
+	}
+	var second = thx__$DateTimeUtc_DateTimeUtc_$Impl_$.get_second(new haxe__$Int64__$_$_$Int64(high4,low4));
+	var this12 = this1[0];
+	var this13 = this1[1];
+	var high5 = this12.high + this13.high | 0;
+	var low5 = this12.low + this13.low | 0;
+	if(haxe__$Int32_Int32_$Impl_$.ucompare(low5,this12.low) < 0) {
+		++high5;
+		high5 = high5 | 0;
+	}
+	var millisecond = thx__$DateTimeUtc_DateTimeUtc_$Impl_$.get_millisecond(new haxe__$Int64__$_$_$Int64(high5,low5));
+	var offset = this1[1];
+	var this14 = [thx__$DateTimeUtc_DateTimeUtc_$Impl_$.create(year,month,day,hour,minute,second,millisecond),offset];
+	var this15 = this14[0];
+	var b = offset;
+	var high6 = this15.high - b.high | 0;
+	var low6 = this15.low - b.low | 0;
+	if(haxe__$Int32_Int32_$Impl_$.ucompare(this15.low,b.low) < 0) {
+		--high6;
+		high6 = high6 | 0;
+	}
+	return [thx__$DateTimeUtc_DateTimeUtc_$Impl_$.fromInt64(new haxe__$Int64__$_$_$Int64(high6,low6)),this14[1]];
+};
+thx__$DateTime_DateTime_$Impl_$.withMinute = function(this1,minute) {
+	var this2 = this1[0];
+	var this3 = this1[1];
+	var high = this2.high + this3.high | 0;
+	var low = this2.low + this3.low | 0;
+	if(haxe__$Int32_Int32_$Impl_$.ucompare(low,this2.low) < 0) {
+		++high;
+		high = high | 0;
+	}
+	var year = thx__$DateTimeUtc_DateTimeUtc_$Impl_$.getDatePart(new haxe__$Int64__$_$_$Int64(high,low),thx__$DateTimeUtc_DateTimeUtc_$Impl_$.DATE_PART_YEAR);
+	var this4 = this1[0];
+	var this5 = this1[1];
+	var high1 = this4.high + this5.high | 0;
+	var low1 = this4.low + this5.low | 0;
+	if(haxe__$Int32_Int32_$Impl_$.ucompare(low1,this4.low) < 0) {
+		++high1;
+		high1 = high1 | 0;
+	}
+	var month = thx__$DateTimeUtc_DateTimeUtc_$Impl_$.getDatePart(new haxe__$Int64__$_$_$Int64(high1,low1),thx__$DateTimeUtc_DateTimeUtc_$Impl_$.DATE_PART_MONTH);
+	var this6 = this1[0];
+	var this7 = this1[1];
+	var high2 = this6.high + this7.high | 0;
+	var low2 = this6.low + this7.low | 0;
+	if(haxe__$Int32_Int32_$Impl_$.ucompare(low2,this6.low) < 0) {
+		++high2;
+		high2 = high2 | 0;
+	}
+	var day = thx__$DateTimeUtc_DateTimeUtc_$Impl_$.getDatePart(new haxe__$Int64__$_$_$Int64(high2,low2),thx__$DateTimeUtc_DateTimeUtc_$Impl_$.DATE_PART_DAY);
+	var this8 = this1[0];
+	var this9 = this1[1];
+	var high3 = this8.high + this9.high | 0;
+	var low3 = this8.low + this9.low | 0;
+	if(haxe__$Int32_Int32_$Impl_$.ucompare(low3,this8.low) < 0) {
+		++high3;
+		high3 = high3 | 0;
+	}
+	var hour = thx__$DateTimeUtc_DateTimeUtc_$Impl_$.get_hour(new haxe__$Int64__$_$_$Int64(high3,low3));
+	var this10 = this1[0];
+	var this11 = this1[1];
+	var high4 = this10.high + this11.high | 0;
+	var low4 = this10.low + this11.low | 0;
+	if(haxe__$Int32_Int32_$Impl_$.ucompare(low4,this10.low) < 0) {
+		++high4;
+		high4 = high4 | 0;
+	}
+	var second = thx__$DateTimeUtc_DateTimeUtc_$Impl_$.get_second(new haxe__$Int64__$_$_$Int64(high4,low4));
+	var this12 = this1[0];
+	var this13 = this1[1];
+	var high5 = this12.high + this13.high | 0;
+	var low5 = this12.low + this13.low | 0;
+	if(haxe__$Int32_Int32_$Impl_$.ucompare(low5,this12.low) < 0) {
+		++high5;
+		high5 = high5 | 0;
+	}
+	var millisecond = thx__$DateTimeUtc_DateTimeUtc_$Impl_$.get_millisecond(new haxe__$Int64__$_$_$Int64(high5,low5));
+	var offset = this1[1];
+	var this14 = [thx__$DateTimeUtc_DateTimeUtc_$Impl_$.create(year,month,day,hour,minute,second,millisecond),offset];
+	var this15 = this14[0];
+	var b = offset;
+	var high6 = this15.high - b.high | 0;
+	var low6 = this15.low - b.low | 0;
+	if(haxe__$Int32_Int32_$Impl_$.ucompare(this15.low,b.low) < 0) {
+		--high6;
+		high6 = high6 | 0;
+	}
+	return [thx__$DateTimeUtc_DateTimeUtc_$Impl_$.fromInt64(new haxe__$Int64__$_$_$Int64(high6,low6)),this14[1]];
+};
+thx__$DateTime_DateTime_$Impl_$.withSecond = function(this1,second) {
+	var this2 = this1[0];
+	var this3 = this1[1];
+	var high = this2.high + this3.high | 0;
+	var low = this2.low + this3.low | 0;
+	if(haxe__$Int32_Int32_$Impl_$.ucompare(low,this2.low) < 0) {
+		++high;
+		high = high | 0;
+	}
+	var year = thx__$DateTimeUtc_DateTimeUtc_$Impl_$.getDatePart(new haxe__$Int64__$_$_$Int64(high,low),thx__$DateTimeUtc_DateTimeUtc_$Impl_$.DATE_PART_YEAR);
+	var this4 = this1[0];
+	var this5 = this1[1];
+	var high1 = this4.high + this5.high | 0;
+	var low1 = this4.low + this5.low | 0;
+	if(haxe__$Int32_Int32_$Impl_$.ucompare(low1,this4.low) < 0) {
+		++high1;
+		high1 = high1 | 0;
+	}
+	var month = thx__$DateTimeUtc_DateTimeUtc_$Impl_$.getDatePart(new haxe__$Int64__$_$_$Int64(high1,low1),thx__$DateTimeUtc_DateTimeUtc_$Impl_$.DATE_PART_MONTH);
+	var this6 = this1[0];
+	var this7 = this1[1];
+	var high2 = this6.high + this7.high | 0;
+	var low2 = this6.low + this7.low | 0;
+	if(haxe__$Int32_Int32_$Impl_$.ucompare(low2,this6.low) < 0) {
+		++high2;
+		high2 = high2 | 0;
+	}
+	var day = thx__$DateTimeUtc_DateTimeUtc_$Impl_$.getDatePart(new haxe__$Int64__$_$_$Int64(high2,low2),thx__$DateTimeUtc_DateTimeUtc_$Impl_$.DATE_PART_DAY);
+	var this8 = this1[0];
+	var this9 = this1[1];
+	var high3 = this8.high + this9.high | 0;
+	var low3 = this8.low + this9.low | 0;
+	if(haxe__$Int32_Int32_$Impl_$.ucompare(low3,this8.low) < 0) {
+		++high3;
+		high3 = high3 | 0;
+	}
+	var hour = thx__$DateTimeUtc_DateTimeUtc_$Impl_$.get_hour(new haxe__$Int64__$_$_$Int64(high3,low3));
+	var this10 = this1[0];
+	var this11 = this1[1];
+	var high4 = this10.high + this11.high | 0;
+	var low4 = this10.low + this11.low | 0;
+	if(haxe__$Int32_Int32_$Impl_$.ucompare(low4,this10.low) < 0) {
+		++high4;
+		high4 = high4 | 0;
+	}
+	var minute = thx__$DateTimeUtc_DateTimeUtc_$Impl_$.get_minute(new haxe__$Int64__$_$_$Int64(high4,low4));
+	var this12 = this1[0];
+	var this13 = this1[1];
+	var high5 = this12.high + this13.high | 0;
+	var low5 = this12.low + this13.low | 0;
+	if(haxe__$Int32_Int32_$Impl_$.ucompare(low5,this12.low) < 0) {
+		++high5;
+		high5 = high5 | 0;
+	}
+	var millisecond = thx__$DateTimeUtc_DateTimeUtc_$Impl_$.get_millisecond(new haxe__$Int64__$_$_$Int64(high5,low5));
+	var offset = this1[1];
+	var this14 = [thx__$DateTimeUtc_DateTimeUtc_$Impl_$.create(year,month,day,hour,minute,second,millisecond),offset];
+	var this15 = this14[0];
+	var b = offset;
+	var high6 = this15.high - b.high | 0;
+	var low6 = this15.low - b.low | 0;
+	if(haxe__$Int32_Int32_$Impl_$.ucompare(this15.low,b.low) < 0) {
+		--high6;
+		high6 = high6 | 0;
+	}
+	return [thx__$DateTimeUtc_DateTimeUtc_$Impl_$.fromInt64(new haxe__$Int64__$_$_$Int64(high6,low6)),this14[1]];
+};
+thx__$DateTime_DateTime_$Impl_$.withMillisecond = function(this1,millisecond) {
+	var this2 = this1[0];
+	var this3 = this1[1];
+	var high = this2.high + this3.high | 0;
+	var low = this2.low + this3.low | 0;
+	if(haxe__$Int32_Int32_$Impl_$.ucompare(low,this2.low) < 0) {
+		++high;
+		high = high | 0;
+	}
+	var year = thx__$DateTimeUtc_DateTimeUtc_$Impl_$.getDatePart(new haxe__$Int64__$_$_$Int64(high,low),thx__$DateTimeUtc_DateTimeUtc_$Impl_$.DATE_PART_YEAR);
+	var this4 = this1[0];
+	var this5 = this1[1];
+	var high1 = this4.high + this5.high | 0;
+	var low1 = this4.low + this5.low | 0;
+	if(haxe__$Int32_Int32_$Impl_$.ucompare(low1,this4.low) < 0) {
+		++high1;
+		high1 = high1 | 0;
+	}
+	var month = thx__$DateTimeUtc_DateTimeUtc_$Impl_$.getDatePart(new haxe__$Int64__$_$_$Int64(high1,low1),thx__$DateTimeUtc_DateTimeUtc_$Impl_$.DATE_PART_MONTH);
+	var this6 = this1[0];
+	var this7 = this1[1];
+	var high2 = this6.high + this7.high | 0;
+	var low2 = this6.low + this7.low | 0;
+	if(haxe__$Int32_Int32_$Impl_$.ucompare(low2,this6.low) < 0) {
+		++high2;
+		high2 = high2 | 0;
+	}
+	var day = thx__$DateTimeUtc_DateTimeUtc_$Impl_$.getDatePart(new haxe__$Int64__$_$_$Int64(high2,low2),thx__$DateTimeUtc_DateTimeUtc_$Impl_$.DATE_PART_DAY);
+	var this8 = this1[0];
+	var this9 = this1[1];
+	var high3 = this8.high + this9.high | 0;
+	var low3 = this8.low + this9.low | 0;
+	if(haxe__$Int32_Int32_$Impl_$.ucompare(low3,this8.low) < 0) {
+		++high3;
+		high3 = high3 | 0;
+	}
+	var hour = thx__$DateTimeUtc_DateTimeUtc_$Impl_$.get_hour(new haxe__$Int64__$_$_$Int64(high3,low3));
+	var this10 = this1[0];
+	var this11 = this1[1];
+	var high4 = this10.high + this11.high | 0;
+	var low4 = this10.low + this11.low | 0;
+	if(haxe__$Int32_Int32_$Impl_$.ucompare(low4,this10.low) < 0) {
+		++high4;
+		high4 = high4 | 0;
+	}
+	var minute = thx__$DateTimeUtc_DateTimeUtc_$Impl_$.get_minute(new haxe__$Int64__$_$_$Int64(high4,low4));
+	var this12 = this1[0];
+	var this13 = this1[1];
+	var high5 = this12.high + this13.high | 0;
+	var low5 = this12.low + this13.low | 0;
+	if(haxe__$Int32_Int32_$Impl_$.ucompare(low5,this12.low) < 0) {
+		++high5;
+		high5 = high5 | 0;
+	}
+	var second = thx__$DateTimeUtc_DateTimeUtc_$Impl_$.get_second(new haxe__$Int64__$_$_$Int64(high5,low5));
+	var offset = this1[1];
+	var this14 = [thx__$DateTimeUtc_DateTimeUtc_$Impl_$.create(year,month,day,hour,minute,second,millisecond),offset];
+	var this15 = this14[0];
+	var b = offset;
+	var high6 = this15.high - b.high | 0;
+	var low6 = this15.low - b.low | 0;
+	if(haxe__$Int32_Int32_$Impl_$.ucompare(this15.low,b.low) < 0) {
+		--high6;
+		high6 = high6 | 0;
+	}
+	return [thx__$DateTimeUtc_DateTimeUtc_$Impl_$.fromInt64(new haxe__$Int64__$_$_$Int64(high6,low6)),this14[1]];
+};
+thx__$DateTime_DateTime_$Impl_$.withOffset = function(this1,offset) {
+	return [this1[0],offset];
+};
+thx__$DateTime_DateTime_$Impl_$.add = function(this1,time) {
+	var this2 = this1[0];
+	var b = time;
+	var high = this2.high + b.high | 0;
+	var low = this2.low + b.low | 0;
+	if(haxe__$Int32_Int32_$Impl_$.ucompare(low,this2.low) < 0) {
+		++high;
+		high = high | 0;
+	}
+	return [thx__$DateTimeUtc_DateTimeUtc_$Impl_$.fromInt64(new haxe__$Int64__$_$_$Int64(high,low)),this1[1]];
+};
+thx__$DateTime_DateTime_$Impl_$.addTicks = function(this1,ticks) {
+	var this2 = this1[0];
+	var high = this2.high + ticks.high | 0;
+	var low = this2.low + ticks.low | 0;
+	if(haxe__$Int32_Int32_$Impl_$.ucompare(low,this2.low) < 0) {
+		++high;
+		high = high | 0;
+	}
+	return [thx__$DateTimeUtc_DateTimeUtc_$Impl_$.fromInt64(new haxe__$Int64__$_$_$Int64(high,low)),this1[1]];
+};
+thx__$DateTime_DateTime_$Impl_$.subtract = function(this1,time) {
+	var this2 = this1[0];
+	var b = time;
+	var high = this2.high - b.high | 0;
+	var low = this2.low - b.low | 0;
+	if(haxe__$Int32_Int32_$Impl_$.ucompare(this2.low,b.low) < 0) {
+		--high;
+		high = high | 0;
+	}
+	return [thx__$DateTimeUtc_DateTimeUtc_$Impl_$.fromInt64(new haxe__$Int64__$_$_$Int64(high,low)),this1[1]];
+};
+thx__$DateTime_DateTime_$Impl_$.subtractDate = function(this1,date) {
+	var this2 = this1[0];
+	var this3 = date[0];
+	var high = this2.high + this3.high | 0;
+	var low = this2.low + this3.low | 0;
+	if(haxe__$Int32_Int32_$Impl_$.ucompare(low,this2.low) < 0) {
+		++high;
+		high = high | 0;
+	}
+	return [thx__$DateTimeUtc_DateTimeUtc_$Impl_$.fromInt64(new haxe__$Int64__$_$_$Int64(high,low)),this1[1]][0];
+};
+thx__$DateTime_DateTime_$Impl_$.addDays = function(this1,days) {
+	return [thx__$DateTimeUtc_DateTimeUtc_$Impl_$.addScaled(this1[0],days,thx__$DateTimeUtc_DateTimeUtc_$Impl_$.millisPerDay),this1[1]];
+};
+thx__$DateTime_DateTime_$Impl_$.addHours = function(this1,hours) {
+	return [thx__$DateTimeUtc_DateTimeUtc_$Impl_$.addScaled(this1[0],hours,thx__$DateTimeUtc_DateTimeUtc_$Impl_$.millisPerHour),this1[1]];
+};
+thx__$DateTime_DateTime_$Impl_$.addMilliseconds = function(this1,milliseconds) {
+	return [thx__$DateTimeUtc_DateTimeUtc_$Impl_$.addScaled(this1[0],milliseconds,1),this1[1]];
+};
+thx__$DateTime_DateTime_$Impl_$.addMinutes = function(this1,minutes) {
+	return [thx__$DateTimeUtc_DateTimeUtc_$Impl_$.addScaled(this1[0],minutes,thx__$DateTimeUtc_DateTimeUtc_$Impl_$.millisPerMinute),this1[1]];
+};
+thx__$DateTime_DateTime_$Impl_$.addMonths = function(this1,months) {
+	return [thx__$DateTimeUtc_DateTimeUtc_$Impl_$.addMonths(this1[0],months),this1[1]];
+};
+thx__$DateTime_DateTime_$Impl_$.addSeconds = function(this1,seconds) {
+	return [thx__$DateTimeUtc_DateTimeUtc_$Impl_$.addScaled(this1[0],seconds,thx__$DateTimeUtc_DateTimeUtc_$Impl_$.millisPerSecond),this1[1]];
+};
+thx__$DateTime_DateTime_$Impl_$.addYears = function(this1,years) {
+	return [thx__$DateTimeUtc_DateTimeUtc_$Impl_$.addMonths(this1[0],years * 12),this1[1]];
+};
+thx__$DateTime_DateTime_$Impl_$.compareTo = function(this1,other) {
+	if(null == other && this1 == null) {
+		return 0;
+	}
+	if(null == this1) {
+		return -1;
+	} else if(null == other) {
+		return 1;
+	}
+	return thx_Int64s.compare(this1[0],other[0]);
+};
+thx__$DateTime_DateTime_$Impl_$.equalsTo = function(this1,that) {
+	var this2 = this1[0];
+	var this3 = that[0];
+	if(this2.high == this3.high) {
+		return this2.low == this3.low;
+	} else {
+		return false;
+	}
+};
+thx__$DateTime_DateTime_$Impl_$.equals = function(self,that) {
+	var this1 = self[0];
+	var this2 = that[0];
+	if(this1.high == this2.high) {
+		return this1.low == this2.low;
+	} else {
+		return false;
+	}
+};
+thx__$DateTime_DateTime_$Impl_$.notEqualsTo = function(this1,that) {
+	var this2 = this1[0];
+	var this3 = that[0];
+	if(!(this2.high != this3.high)) {
+		return this2.low != this3.low;
+	} else {
+		return true;
+	}
+};
+thx__$DateTime_DateTime_$Impl_$.notEquals = function(self,that) {
+	var this1 = self[0];
+	var this2 = that[0];
+	if(!(this1.high != this2.high)) {
+		return this1.low != this2.low;
+	} else {
+		return true;
+	}
+};
+thx__$DateTime_DateTime_$Impl_$.nearEqualsTo = function(this1,other,span) {
+	var this2 = other[0];
+	var this3 = this1[0];
+	var high = this2.high - this3.high | 0;
+	var low = this2.low - this3.low | 0;
+	if(haxe__$Int32_Int32_$Impl_$.ucompare(this2.low,this3.low) < 0) {
+		--high;
+		high = high | 0;
+	}
+	var ticks = thx_Int64s.abs(new haxe__$Int64__$_$_$Int64(high,low));
+	var this4 = thx__$Time_Time_$Impl_$.abs(span);
+	var v = ticks.high - this4.high | 0;
+	if(v != 0) {
+		v = v;
+	} else {
+		v = haxe__$Int32_Int32_$Impl_$.ucompare(ticks.low,this4.low);
+	}
+	return (ticks.high < 0?this4.high < 0?v:-1:this4.high >= 0?v:1) <= 0;
+};
+thx__$DateTime_DateTime_$Impl_$.greaterThan = function(this1,that) {
+	return thx__$DateTime_DateTime_$Impl_$.compareTo(this1,that) > 0;
+};
+thx__$DateTime_DateTime_$Impl_$.greater = function(self,that) {
+	return thx__$DateTime_DateTime_$Impl_$.compareTo(self,that) > 0;
+};
+thx__$DateTime_DateTime_$Impl_$.greaterEqualsTo = function(this1,that) {
+	return thx__$DateTime_DateTime_$Impl_$.compareTo(this1,that) >= 0;
+};
+thx__$DateTime_DateTime_$Impl_$.greaterEquals = function(self,that) {
+	return thx__$DateTime_DateTime_$Impl_$.compareTo(self,that) >= 0;
+};
+thx__$DateTime_DateTime_$Impl_$.lessTo = function(this1,that) {
+	return thx__$DateTime_DateTime_$Impl_$.compareTo(this1,that) < 0;
+};
+thx__$DateTime_DateTime_$Impl_$.less = function(self,that) {
+	return thx__$DateTime_DateTime_$Impl_$.compareTo(self,that) < 0;
+};
+thx__$DateTime_DateTime_$Impl_$.lessEqualsTo = function(this1,that) {
+	return thx__$DateTime_DateTime_$Impl_$.compareTo(this1,that) <= 0;
+};
+thx__$DateTime_DateTime_$Impl_$.lessEquals = function(self,that) {
+	return thx__$DateTime_DateTime_$Impl_$.compareTo(self,that) <= 0;
+};
+thx__$DateTime_DateTime_$Impl_$.changeOffset = function(this1,newoffset) {
+	var this2 = this1[0];
+	var this3 = this1[1];
+	var high = this2.high + this3.high | 0;
+	var low = this2.low + this3.low | 0;
+	if(haxe__$Int32_Int32_$Impl_$.ucompare(low,this2.low) < 0) {
+		++high;
+		high = high | 0;
+	}
+	var ticks = new haxe__$Int64__$_$_$Int64(high,low);
+	var b = newoffset;
+	var high1 = ticks.high - b.high | 0;
+	var low1 = ticks.low - b.low | 0;
+	if(haxe__$Int32_Int32_$Impl_$.ucompare(ticks.low,b.low) < 0) {
+		--high1;
+		high1 = high1 | 0;
+	}
+	return [new haxe__$Int64__$_$_$Int64(high1,low1),newoffset];
+};
+thx__$DateTime_DateTime_$Impl_$.toUtc = function(this1) {
+	return this1[0];
+};
+thx__$DateTime_DateTime_$Impl_$.clockDateTime = function(this1) {
+	var this2 = this1[0];
+	var this3 = this1[1];
+	var high = this2.high + this3.high | 0;
+	var low = this2.low + this3.low | 0;
+	if(haxe__$Int32_Int32_$Impl_$.ucompare(low,this2.low) < 0) {
+		++high;
+		high = high | 0;
+	}
+	return new haxe__$Int64__$_$_$Int64(high,low);
+};
+thx__$DateTime_DateTime_$Impl_$.toString = function(this1) {
+	if(null == this1) {
+		return "";
+	}
+	var abs = [thx_Int64s.abs(this1[0]),this1[1]];
+	var decimals;
+	var this2 = abs[0];
+	var this3 = abs[1];
+	var high = this2.high + this3.high | 0;
+	var low = this2.low + this3.low | 0;
+	if(haxe__$Int32_Int32_$Impl_$.ucompare(low,this2.low) < 0) {
+		++high;
+		high = high | 0;
+	}
+	if(thx__$DateTimeUtc_DateTimeUtc_$Impl_$.get_tickInSecond(new haxe__$Int64__$_$_$Int64(high,low)) != 0) {
+		var this4 = abs[0];
+		var this5 = abs[1];
+		var high1 = this4.high + this5.high | 0;
+		var low1 = this4.low + this5.low | 0;
+		if(haxe__$Int32_Int32_$Impl_$.ucompare(low1,this4.low) < 0) {
+			++high1;
+			high1 = high1 | 0;
+		}
+		decimals = "." + thx_Strings.trimCharsRight(thx_Ints.lpad(thx__$DateTimeUtc_DateTimeUtc_$Impl_$.get_tickInSecond(new haxe__$Int64__$_$_$Int64(high1,low1)),"0",7),")");
+	} else {
+		decimals = "";
+	}
+	var this6 = this1[0];
+	var b = thx_Int64s.zero;
+	var v = this6.high - b.high | 0;
+	if(v != 0) {
+		v = v;
+	} else {
+		v = haxe__$Int32_Int32_$Impl_$.ucompare(this6.low,b.low);
+	}
+	var tmp = (this6.high < 0?b.high < 0?v:-1:b.high >= 0?v:1) < 0?"-":"";
+	var this7 = abs[0];
+	var this8 = abs[1];
+	var high2 = this7.high + this8.high | 0;
+	var low2 = this7.low + this8.low | 0;
+	if(haxe__$Int32_Int32_$Impl_$.ucompare(low2,this7.low) < 0) {
+		++high2;
+		high2 = high2 | 0;
+	}
+	var tmp1 = "" + thx__$DateTimeUtc_DateTimeUtc_$Impl_$.getDatePart(new haxe__$Int64__$_$_$Int64(high2,low2),thx__$DateTimeUtc_DateTimeUtc_$Impl_$.DATE_PART_YEAR) + "-";
+	var this9 = abs[0];
+	var this10 = abs[1];
+	var high3 = this9.high + this10.high | 0;
+	var low3 = this9.low + this10.low | 0;
+	if(haxe__$Int32_Int32_$Impl_$.ucompare(low3,this9.low) < 0) {
+		++high3;
+		high3 = high3 | 0;
+	}
+	var tmp2 = tmp1 + thx_Ints.lpad(thx__$DateTimeUtc_DateTimeUtc_$Impl_$.getDatePart(new haxe__$Int64__$_$_$Int64(high3,low3),thx__$DateTimeUtc_DateTimeUtc_$Impl_$.DATE_PART_MONTH),"0",2) + "-";
+	var this11 = abs[0];
+	var this12 = abs[1];
+	var high4 = this11.high + this12.high | 0;
+	var low4 = this11.low + this12.low | 0;
+	if(haxe__$Int32_Int32_$Impl_$.ucompare(low4,this11.low) < 0) {
+		++high4;
+		high4 = high4 | 0;
+	}
+	var tmp3 = tmp2 + thx_Ints.lpad(thx__$DateTimeUtc_DateTimeUtc_$Impl_$.getDatePart(new haxe__$Int64__$_$_$Int64(high4,low4),thx__$DateTimeUtc_DateTimeUtc_$Impl_$.DATE_PART_DAY),"0",2) + "T";
+	var this13 = abs[0];
+	var this14 = abs[1];
+	var high5 = this13.high + this14.high | 0;
+	var low5 = this13.low + this14.low | 0;
+	if(haxe__$Int32_Int32_$Impl_$.ucompare(low5,this13.low) < 0) {
+		++high5;
+		high5 = high5 | 0;
+	}
+	var tmp4 = tmp3 + thx_Ints.lpad(thx__$DateTimeUtc_DateTimeUtc_$Impl_$.get_hour(new haxe__$Int64__$_$_$Int64(high5,low5)),"0",2) + ":";
+	var this15 = abs[0];
+	var this16 = abs[1];
+	var high6 = this15.high + this16.high | 0;
+	var low6 = this15.low + this16.low | 0;
+	if(haxe__$Int32_Int32_$Impl_$.ucompare(low6,this15.low) < 0) {
+		++high6;
+		high6 = high6 | 0;
+	}
+	var tmp5 = tmp4 + thx_Ints.lpad(thx__$DateTimeUtc_DateTimeUtc_$Impl_$.get_minute(new haxe__$Int64__$_$_$Int64(high6,low6)),"0",2) + ":";
+	var this17 = abs[0];
+	var this18 = abs[1];
+	var high7 = this17.high + this18.high | 0;
+	var low7 = this17.low + this18.low | 0;
+	if(haxe__$Int32_Int32_$Impl_$.ucompare(low7,this17.low) < 0) {
+		++high7;
+		high7 = high7 | 0;
+	}
+	return tmp + (tmp5 + thx_Ints.lpad(thx__$DateTimeUtc_DateTimeUtc_$Impl_$.get_second(new haxe__$Int64__$_$_$Int64(high7,low7)),"0",2) + decimals + thx__$Time_Time_$Impl_$.toGmtString(this1[1]));
+};
+thx__$DateTime_DateTime_$Impl_$.get_utc = function(this1) {
+	return this1[0];
+};
+thx__$DateTime_DateTime_$Impl_$.get_offset = function(this1) {
+	return this1[1];
+};
+thx__$DateTime_DateTime_$Impl_$.get_year = function(this1) {
+	var this2 = this1[0];
+	var this3 = this1[1];
+	var high = this2.high + this3.high | 0;
+	var low = this2.low + this3.low | 0;
+	if(haxe__$Int32_Int32_$Impl_$.ucompare(low,this2.low) < 0) {
+		++high;
+		high = high | 0;
+	}
+	return thx__$DateTimeUtc_DateTimeUtc_$Impl_$.getDatePart(new haxe__$Int64__$_$_$Int64(high,low),thx__$DateTimeUtc_DateTimeUtc_$Impl_$.DATE_PART_YEAR);
+};
+thx__$DateTime_DateTime_$Impl_$.get_month = function(this1) {
+	var this2 = this1[0];
+	var this3 = this1[1];
+	var high = this2.high + this3.high | 0;
+	var low = this2.low + this3.low | 0;
+	if(haxe__$Int32_Int32_$Impl_$.ucompare(low,this2.low) < 0) {
+		++high;
+		high = high | 0;
+	}
+	return thx__$DateTimeUtc_DateTimeUtc_$Impl_$.getDatePart(new haxe__$Int64__$_$_$Int64(high,low),thx__$DateTimeUtc_DateTimeUtc_$Impl_$.DATE_PART_MONTH);
+};
+thx__$DateTime_DateTime_$Impl_$.get_day = function(this1) {
+	var this2 = this1[0];
+	var this3 = this1[1];
+	var high = this2.high + this3.high | 0;
+	var low = this2.low + this3.low | 0;
+	if(haxe__$Int32_Int32_$Impl_$.ucompare(low,this2.low) < 0) {
+		++high;
+		high = high | 0;
+	}
+	return thx__$DateTimeUtc_DateTimeUtc_$Impl_$.getDatePart(new haxe__$Int64__$_$_$Int64(high,low),thx__$DateTimeUtc_DateTimeUtc_$Impl_$.DATE_PART_DAY);
+};
+thx__$DateTime_DateTime_$Impl_$.get_hour = function(this1) {
+	var this2 = this1[0];
+	var this3 = this1[1];
+	var high = this2.high + this3.high | 0;
+	var low = this2.low + this3.low | 0;
+	if(haxe__$Int32_Int32_$Impl_$.ucompare(low,this2.low) < 0) {
+		++high;
+		high = high | 0;
+	}
+	return thx__$DateTimeUtc_DateTimeUtc_$Impl_$.get_hour(new haxe__$Int64__$_$_$Int64(high,low));
+};
+thx__$DateTime_DateTime_$Impl_$.get_minute = function(this1) {
+	var this2 = this1[0];
+	var this3 = this1[1];
+	var high = this2.high + this3.high | 0;
+	var low = this2.low + this3.low | 0;
+	if(haxe__$Int32_Int32_$Impl_$.ucompare(low,this2.low) < 0) {
+		++high;
+		high = high | 0;
+	}
+	return thx__$DateTimeUtc_DateTimeUtc_$Impl_$.get_minute(new haxe__$Int64__$_$_$Int64(high,low));
+};
+thx__$DateTime_DateTime_$Impl_$.get_dayOfWeek = function(this1) {
+	var this2 = this1[0];
+	var this3 = this1[1];
+	var high = this2.high + this3.high | 0;
+	var low = this2.low + this3.low | 0;
+	if(haxe__$Int32_Int32_$Impl_$.ucompare(low,this2.low) < 0) {
+		++high;
+		high = high | 0;
+	}
+	return thx__$DateTimeUtc_DateTimeUtc_$Impl_$.get_dayOfWeek(new haxe__$Int64__$_$_$Int64(high,low));
+};
+thx__$DateTime_DateTime_$Impl_$.get_dayOfYear = function(this1) {
+	var this2 = this1[0];
+	var this3 = this1[1];
+	var high = this2.high + this3.high | 0;
+	var low = this2.low + this3.low | 0;
+	if(haxe__$Int32_Int32_$Impl_$.ucompare(low,this2.low) < 0) {
+		++high;
+		high = high | 0;
+	}
+	return thx__$DateTimeUtc_DateTimeUtc_$Impl_$.getDatePart(new haxe__$Int64__$_$_$Int64(high,low),thx__$DateTimeUtc_DateTimeUtc_$Impl_$.DATE_PART_DAY_OF_YEAR);
+};
+thx__$DateTime_DateTime_$Impl_$.get_millisecond = function(this1) {
+	var this2 = this1[0];
+	var this3 = this1[1];
+	var high = this2.high + this3.high | 0;
+	var low = this2.low + this3.low | 0;
+	if(haxe__$Int32_Int32_$Impl_$.ucompare(low,this2.low) < 0) {
+		++high;
+		high = high | 0;
+	}
+	return thx__$DateTimeUtc_DateTimeUtc_$Impl_$.get_millisecond(new haxe__$Int64__$_$_$Int64(high,low));
+};
+thx__$DateTime_DateTime_$Impl_$.get_microsecond = function(this1) {
+	var this2 = this1[0];
+	var this3 = this1[1];
+	var high = this2.high + this3.high | 0;
+	var low = this2.low + this3.low | 0;
+	if(haxe__$Int32_Int32_$Impl_$.ucompare(low,this2.low) < 0) {
+		++high;
+		high = high | 0;
+	}
+	return thx__$DateTimeUtc_DateTimeUtc_$Impl_$.get_microsecond(new haxe__$Int64__$_$_$Int64(high,low));
+};
+thx__$DateTime_DateTime_$Impl_$.get_tickInSecond = function(this1) {
+	var this2 = this1[0];
+	var this3 = this1[1];
+	var high = this2.high + this3.high | 0;
+	var low = this2.low + this3.low | 0;
+	if(haxe__$Int32_Int32_$Impl_$.ucompare(low,this2.low) < 0) {
+		++high;
+		high = high | 0;
+	}
+	return thx__$DateTimeUtc_DateTimeUtc_$Impl_$.get_tickInSecond(new haxe__$Int64__$_$_$Int64(high,low));
+};
+thx__$DateTime_DateTime_$Impl_$.get_second = function(this1) {
+	var this2 = this1[0];
+	var this3 = this1[1];
+	var high = this2.high + this3.high | 0;
+	var low = this2.low + this3.low | 0;
+	if(haxe__$Int32_Int32_$Impl_$.ucompare(low,this2.low) < 0) {
+		++high;
+		high = high | 0;
+	}
+	return thx__$DateTimeUtc_DateTimeUtc_$Impl_$.get_second(new haxe__$Int64__$_$_$Int64(high,low));
+};
+thx__$DateTime_DateTime_$Impl_$.get_timeOfDay = function(this1) {
+	var this2 = this1[0];
+	var this3 = this1[1];
+	var high = this2.high + this3.high | 0;
+	var low = this2.low + this3.low | 0;
+	if(haxe__$Int32_Int32_$Impl_$.ucompare(low,this2.low) < 0) {
+		++high;
+		high = high | 0;
+	}
+	return haxe__$Int64_Int64_$Impl_$.divMod(new haxe__$Int64__$_$_$Int64(high,low),thx__$DateTimeUtc_DateTimeUtc_$Impl_$.ticksPerDayI64).modulus;
+};
+thx__$DateTime_DateTime_$Impl_$.get_isInLeapYear = function(this1) {
+	var this2 = this1[0];
+	var this3 = this1[1];
+	var high = this2.high + this3.high | 0;
+	var low = this2.low + this3.low | 0;
+	if(haxe__$Int32_Int32_$Impl_$.ucompare(low,this2.low) < 0) {
+		++high;
+		high = high | 0;
+	}
+	return thx__$DateTimeUtc_DateTimeUtc_$Impl_$.isLeapYear(thx__$DateTimeUtc_DateTimeUtc_$Impl_$.getDatePart(new haxe__$Int64__$_$_$Int64(high,low),thx__$DateTimeUtc_DateTimeUtc_$Impl_$.DATE_PART_YEAR));
+};
+thx__$DateTime_DateTime_$Impl_$.get_monthDays = function(this1) {
+	var this2 = this1[0];
+	var this3 = this1[1];
+	var high = this2.high + this3.high | 0;
+	var low = this2.low + this3.low | 0;
+	if(haxe__$Int32_Int32_$Impl_$.ucompare(low,this2.low) < 0) {
+		++high;
+		high = high | 0;
+	}
+	var tmp = thx__$DateTimeUtc_DateTimeUtc_$Impl_$.getDatePart(new haxe__$Int64__$_$_$Int64(high,low),thx__$DateTimeUtc_DateTimeUtc_$Impl_$.DATE_PART_YEAR);
+	var this4 = this1[0];
+	var this5 = this1[1];
+	var high1 = this4.high + this5.high | 0;
+	var low1 = this4.low + this5.low | 0;
+	if(haxe__$Int32_Int32_$Impl_$.ucompare(low1,this4.low) < 0) {
+		++high1;
+		high1 = high1 | 0;
+	}
+	return thx__$DateTimeUtc_DateTimeUtc_$Impl_$.daysInMonth(tmp,thx__$DateTimeUtc_DateTimeUtc_$Impl_$.getDatePart(new haxe__$Int64__$_$_$Int64(high1,low1),thx__$DateTimeUtc_DateTimeUtc_$Impl_$.DATE_PART_MONTH));
+};
+thx__$DateTime_DateTime_$Impl_$.self = function(this1) {
+	return this1;
+};
+var thx__$DateTimeUtc_DateTimeUtc_$Impl_$ = {};
+thx__$DateTimeUtc_DateTimeUtc_$Impl_$.__name__ = ["thx","_DateTimeUtc","DateTimeUtc_Impl_"];
+thx__$DateTimeUtc_DateTimeUtc_$Impl_$.now = function() {
+	return thx__$DateTimeUtc_DateTimeUtc_$Impl_$.fromDate(new Date());
+};
+thx__$DateTimeUtc_DateTimeUtc_$Impl_$.fromInt64 = function(ticks) {
+	return ticks;
+};
+thx__$DateTimeUtc_DateTimeUtc_$Impl_$.fromDate = function(date) {
+	return thx__$DateTimeUtc_DateTimeUtc_$Impl_$.fromTime(date.getTime());
+};
+thx__$DateTimeUtc_DateTimeUtc_$Impl_$.fromTime = function(timestamp) {
+	var a = thx_Int64s.fromFloat(timestamp);
+	var b = thx__$DateTimeUtc_DateTimeUtc_$Impl_$.ticksPerMillisecondI64;
+	var al = a.low & 65535;
+	var ah = a.low >>> 16;
+	var bl = b.low & 65535;
+	var bh = b.low >>> 16;
+	var p00 = haxe__$Int32_Int32_$Impl_$.mul(al,bl);
+	var p10 = haxe__$Int32_Int32_$Impl_$.mul(ah,bl);
+	var p01 = haxe__$Int32_Int32_$Impl_$.mul(al,bh);
+	var p11 = haxe__$Int32_Int32_$Impl_$.mul(ah,bh);
+	var low = p00;
+	var high = (p11 + (p01 >>> 16) | 0) + (p10 >>> 16) | 0;
+	p01 = p01 << 16;
+	low = p00 + p01 | 0;
+	if(haxe__$Int32_Int32_$Impl_$.ucompare(low,p01) < 0) {
+		++high;
+		high = high | 0;
+	}
+	p10 = p10 << 16;
+	low = low + p10 | 0;
+	if(haxe__$Int32_Int32_$Impl_$.ucompare(low,p10) < 0) {
+		++high;
+		high = high | 0;
+	}
+	high = high + (haxe__$Int32_Int32_$Impl_$.mul(a.low,b.high) + haxe__$Int32_Int32_$Impl_$.mul(a.high,b.low) | 0) | 0;
+	var a1 = new haxe__$Int64__$_$_$Int64(high,low);
+	var b1 = thx__$DateTimeUtc_DateTimeUtc_$Impl_$.unixEpochTicks;
+	var high1 = a1.high + b1.high | 0;
+	var low1 = a1.low + b1.low | 0;
+	if(haxe__$Int32_Int32_$Impl_$.ucompare(low1,a1.low) < 0) {
+		++high1;
+		high1 = high1 | 0;
+	}
+	return new haxe__$Int64__$_$_$Int64(high1,low1);
+};
+thx__$DateTimeUtc_DateTimeUtc_$Impl_$.fromString = function(s) {
+	return thx__$DateTime_DateTime_$Impl_$.fromString(s)[0];
+};
+thx__$DateTimeUtc_DateTimeUtc_$Impl_$.parse = function(s) {
+	try {
+		return thx_Either.Right(thx__$DateTimeUtc_DateTimeUtc_$Impl_$.fromString(s));
+	} catch( e ) {
+		haxe_CallStack.lastException = e;
+		if (e instanceof js__$Boot_HaxeError) e = e.val;
+		return thx_Either.Left(thx_Error.fromDynamic(e,{ fileName : "DateTimeUtc.hx", lineNumber : 101, className : "thx._DateTimeUtc.DateTimeUtc_Impl_", methodName : "parse"}).message);
+	}
+};
+thx__$DateTimeUtc_DateTimeUtc_$Impl_$.compare = function(a,b) {
+	return thx__$DateTimeUtc_DateTimeUtc_$Impl_$.compareTo(a,b);
+};
+thx__$DateTimeUtc_DateTimeUtc_$Impl_$.create = function(year,month,day,hour,minute,second,millisecond) {
+	if(millisecond == null) {
+		millisecond = 0;
+	}
+	if(second == null) {
+		second = 0;
+	}
+	if(minute == null) {
+		minute = 0;
+	}
+	if(hour == null) {
+		hour = 0;
+	}
+	second += Math.floor(millisecond / 1000);
+	millisecond %= 1000;
+	if(millisecond < 0) {
+		millisecond += 1000;
+	}
+	var a = thx__$DateTimeUtc_DateTimeUtc_$Impl_$.dateToTicks(year,month,day);
+	var b = thx__$Time_Time_$Impl_$.timeToTicks(hour,minute,second);
+	var high = a.high + b.high | 0;
+	var low = a.low + b.low | 0;
+	if(haxe__$Int32_Int32_$Impl_$.ucompare(low,a.low) < 0) {
+		++high;
+		high = high | 0;
+	}
+	var a1 = new haxe__$Int64__$_$_$Int64(high,low);
+	var a2 = new haxe__$Int64__$_$_$Int64(millisecond >> 31,millisecond);
+	var b1 = thx__$DateTimeUtc_DateTimeUtc_$Impl_$.ticksPerMillisecondI64;
+	var al = a2.low & 65535;
+	var ah = a2.low >>> 16;
+	var bl = b1.low & 65535;
+	var bh = b1.low >>> 16;
+	var p00 = haxe__$Int32_Int32_$Impl_$.mul(al,bl);
+	var p10 = haxe__$Int32_Int32_$Impl_$.mul(ah,bl);
+	var p01 = haxe__$Int32_Int32_$Impl_$.mul(al,bh);
+	var p11 = haxe__$Int32_Int32_$Impl_$.mul(ah,bh);
+	var low1 = p00;
+	var high1 = (p11 + (p01 >>> 16) | 0) + (p10 >>> 16) | 0;
+	p01 = p01 << 16;
+	low1 = p00 + p01 | 0;
+	if(haxe__$Int32_Int32_$Impl_$.ucompare(low1,p01) < 0) {
+		++high1;
+		high1 = high1 | 0;
+	}
+	p10 = p10 << 16;
+	low1 = low1 + p10 | 0;
+	if(haxe__$Int32_Int32_$Impl_$.ucompare(low1,p10) < 0) {
+		++high1;
+		high1 = high1 | 0;
+	}
+	high1 = high1 + (haxe__$Int32_Int32_$Impl_$.mul(a2.low,b1.high) + haxe__$Int32_Int32_$Impl_$.mul(a2.high,b1.low) | 0) | 0;
+	var b2 = new haxe__$Int64__$_$_$Int64(high1,low1);
+	var high2 = a1.high + b2.high | 0;
+	var low2 = a1.low + b2.low | 0;
+	if(haxe__$Int32_Int32_$Impl_$.ucompare(low2,a1.low) < 0) {
+		++high2;
+		high2 = high2 | 0;
+	}
+	return new haxe__$Int64__$_$_$Int64(high2,low2);
+};
+thx__$DateTimeUtc_DateTimeUtc_$Impl_$.isLeapYear = function(year) {
+	if(year % 4 == 0) {
+		if(year % 100 == 0) {
+			return year % 400 == 0;
+		} else {
+			return true;
+		}
+	} else {
+		return false;
+	}
+};
+thx__$DateTimeUtc_DateTimeUtc_$Impl_$.dateToTicks = function(year,month,day) {
+	var fixMonthYear = function() {
+		if(month == 0) {
+			--year;
+			month = 12;
+		} else if(month < 0) {
+			month = -month;
+			var years = Math.ceil(month / 12);
+			year -= years;
+			month = years * 12 - month;
+		} else if(month > 12) {
+			var years1 = Math.floor(month / 12);
+			year += years1;
+			month -= years1 * 12;
+		}
+	};
+	while(day < 0) {
+		--month;
+		fixMonthYear();
+		day += thx__$DateTimeUtc_DateTimeUtc_$Impl_$.daysInMonth(year,month);
+	}
+	fixMonthYear();
+	var days;
+	while(true) {
+		days = thx__$DateTimeUtc_DateTimeUtc_$Impl_$.daysInMonth(year,month);
+		if(!(day > days)) {
+			break;
+		}
+		++month;
+		fixMonthYear();
+		day -= days;
+	}
+	if(day == 0) {
+		--month;
+		fixMonthYear();
+		day = thx__$DateTimeUtc_DateTimeUtc_$Impl_$.daysInMonth(year,month);
+	}
+	fixMonthYear();
+	return thx__$DateTimeUtc_DateTimeUtc_$Impl_$.rawDateToTicks(year,month,day);
+};
+thx__$DateTimeUtc_DateTimeUtc_$Impl_$.rawDateToTicks = function(year,month,day) {
+	var days = thx__$DateTimeUtc_DateTimeUtc_$Impl_$.isLeapYear(year)?thx__$DateTimeUtc_DateTimeUtc_$Impl_$.daysToMonth366:thx__$DateTimeUtc_DateTimeUtc_$Impl_$.daysToMonth365;
+	if(day >= 1 && day <= days[month] - days[month - 1]) {
+		var y = year - 1;
+		var n = y * 365 + (y / 4 | 0) - (y / 100 | 0) + (y / 400 | 0) + days[month - 1] + day - 1;
+		var a = new haxe__$Int64__$_$_$Int64(n >> 31,n);
+		var b = thx__$DateTimeUtc_DateTimeUtc_$Impl_$.ticksPerDayI64;
+		var al = a.low & 65535;
+		var ah = a.low >>> 16;
+		var bl = b.low & 65535;
+		var bh = b.low >>> 16;
+		var p00 = haxe__$Int32_Int32_$Impl_$.mul(al,bl);
+		var p10 = haxe__$Int32_Int32_$Impl_$.mul(ah,bl);
+		var p01 = haxe__$Int32_Int32_$Impl_$.mul(al,bh);
+		var p11 = haxe__$Int32_Int32_$Impl_$.mul(ah,bh);
+		var low = p00;
+		var high = (p11 + (p01 >>> 16) | 0) + (p10 >>> 16) | 0;
+		p01 = p01 << 16;
+		low = p00 + p01 | 0;
+		if(haxe__$Int32_Int32_$Impl_$.ucompare(low,p01) < 0) {
+			++high;
+			high = high | 0;
+		}
+		p10 = p10 << 16;
+		low = low + p10 | 0;
+		if(haxe__$Int32_Int32_$Impl_$.ucompare(low,p10) < 0) {
+			++high;
+			high = high | 0;
+		}
+		high = high + (haxe__$Int32_Int32_$Impl_$.mul(a.low,b.high) + haxe__$Int32_Int32_$Impl_$.mul(a.high,b.low) | 0) | 0;
+		return new haxe__$Int64__$_$_$Int64(high,low);
+	}
+	throw new thx_Error("bad year/month/day " + year + "/" + month + "/" + day,null,{ fileName : "DateTimeUtc.hx", lineNumber : 179, className : "thx._DateTimeUtc.DateTimeUtc_Impl_", methodName : "rawDateToTicks"});
+};
+thx__$DateTimeUtc_DateTimeUtc_$Impl_$.daysInMonth = function(year,month) {
+	var days = thx__$DateTimeUtc_DateTimeUtc_$Impl_$.isLeapYear(year)?thx__$DateTimeUtc_DateTimeUtc_$Impl_$.daysToMonth366:thx__$DateTimeUtc_DateTimeUtc_$Impl_$.daysToMonth365;
+	return days[month] - days[month - 1];
+};
+thx__$DateTimeUtc_DateTimeUtc_$Impl_$.daysRange = function(start,end) {
+	var a = end;
+	var b = start;
+	var v = a.high - b.high | 0;
+	if(v != 0) {
+		v = v;
+	} else {
+		v = haxe__$Int32_Int32_$Impl_$.ucompare(a.low,b.low);
+	}
+	if((a.high < 0?b.high < 0?v:-1:b.high >= 0?v:1) < 0) {
+		return [];
+	}
+	var days = [];
+	while(!thx__$DateTimeUtc_DateTimeUtc_$Impl_$.sameDay(start,end)) {
+		days.push(start);
+		start = thx__$DateTimeUtc_DateTimeUtc_$Impl_$.jump(start,thx_TimePeriod.Day,1);
+	}
+	days.push(end);
+	return days;
+};
+thx__$DateTimeUtc_DateTimeUtc_$Impl_$.getDatePart = function(this1,part) {
+	var x = haxe__$Int64_Int64_$Impl_$.divMod(this1,thx__$DateTimeUtc_DateTimeUtc_$Impl_$.ticksPerDayI64).quotient;
+	if(x.high != x.low >> 31) {
+		throw new js__$Boot_HaxeError("Overflow");
+	}
+	var n = x.low;
+	var y400 = n / thx__$DateTimeUtc_DateTimeUtc_$Impl_$.daysPer400Years | 0;
+	n -= y400 * thx__$DateTimeUtc_DateTimeUtc_$Impl_$.daysPer400Years;
+	var y100 = n / thx__$DateTimeUtc_DateTimeUtc_$Impl_$.daysPer100Years | 0;
+	if(y100 == 4) {
+		y100 = 3;
+	}
+	n -= y100 * thx__$DateTimeUtc_DateTimeUtc_$Impl_$.daysPer100Years;
+	var y4 = n / thx__$DateTimeUtc_DateTimeUtc_$Impl_$.daysPer4Years | 0;
+	n -= y4 * thx__$DateTimeUtc_DateTimeUtc_$Impl_$.daysPer4Years;
+	var y1 = n / thx__$DateTimeUtc_DateTimeUtc_$Impl_$.daysPerYear | 0;
+	if(y1 == 4) {
+		y1 = 3;
+	}
+	if(part == thx__$DateTimeUtc_DateTimeUtc_$Impl_$.DATE_PART_YEAR) {
+		return y400 * 400 + y100 * 100 + y4 * 4 + y1 + 1;
+	}
+	n -= y1 * thx__$DateTimeUtc_DateTimeUtc_$Impl_$.daysPerYear;
+	if(part == thx__$DateTimeUtc_DateTimeUtc_$Impl_$.DATE_PART_DAY_OF_YEAR) {
+		return n + 1;
+	}
+	var days = y1 == 3 && (y4 != 24 || y100 == 3)?thx__$DateTimeUtc_DateTimeUtc_$Impl_$.daysToMonth366:thx__$DateTimeUtc_DateTimeUtc_$Impl_$.daysToMonth365;
+	var m = n >> 6;
+	while(n >= days[m]) ++m;
+	if(part == thx__$DateTimeUtc_DateTimeUtc_$Impl_$.DATE_PART_MONTH) {
+		return m;
+	}
+	return n - days[m - 1] + 1;
+};
+thx__$DateTimeUtc_DateTimeUtc_$Impl_$._new = function(ticks) {
+	return ticks;
+};
+thx__$DateTimeUtc_DateTimeUtc_$Impl_$.min = function(this1,other) {
+	if(thx__$DateTimeUtc_DateTimeUtc_$Impl_$.compareTo(this1,other) <= 0) {
+		return this1;
+	} else {
+		return other;
+	}
+};
+thx__$DateTimeUtc_DateTimeUtc_$Impl_$.max = function(this1,other) {
+	if(thx__$DateTimeUtc_DateTimeUtc_$Impl_$.compareTo(this1,other) >= 0) {
+		return this1;
+	} else {
+		return other;
+	}
+};
+thx__$DateTimeUtc_DateTimeUtc_$Impl_$.jump = function(this1,period,amount) {
+	var sec = thx__$DateTimeUtc_DateTimeUtc_$Impl_$.get_second(this1);
+	var min = thx__$DateTimeUtc_DateTimeUtc_$Impl_$.get_minute(this1);
+	var hr = thx__$DateTimeUtc_DateTimeUtc_$Impl_$.get_hour(this1);
+	var day = thx__$DateTimeUtc_DateTimeUtc_$Impl_$.getDatePart(this1,thx__$DateTimeUtc_DateTimeUtc_$Impl_$.DATE_PART_DAY);
+	var mon = thx__$DateTimeUtc_DateTimeUtc_$Impl_$.getDatePart(this1,thx__$DateTimeUtc_DateTimeUtc_$Impl_$.DATE_PART_MONTH);
+	var yr = thx__$DateTimeUtc_DateTimeUtc_$Impl_$.getDatePart(this1,thx__$DateTimeUtc_DateTimeUtc_$Impl_$.DATE_PART_YEAR);
+	switch(period[1]) {
+	case 0:
+		sec += amount;
+		break;
+	case 1:
+		min += amount;
+		break;
+	case 2:
+		hr += amount;
+		break;
+	case 3:
+		day += amount;
+		break;
+	case 4:
+		day += amount * 7;
+		break;
+	case 5:
+		mon += amount;
+		break;
+	case 6:
+		yr += amount;
+		break;
+	}
+	return thx__$DateTimeUtc_DateTimeUtc_$Impl_$.create(yr,mon,day,hr,min,sec,thx__$DateTimeUtc_DateTimeUtc_$Impl_$.get_millisecond(this1));
+};
+thx__$DateTimeUtc_DateTimeUtc_$Impl_$.daysInThisMonth = function(this1) {
+	return thx__$DateTimeUtc_DateTimeUtc_$Impl_$.daysInMonth(thx__$DateTimeUtc_DateTimeUtc_$Impl_$.getDatePart(this1,thx__$DateTimeUtc_DateTimeUtc_$Impl_$.DATE_PART_YEAR),thx__$DateTimeUtc_DateTimeUtc_$Impl_$.getDatePart(this1,thx__$DateTimeUtc_DateTimeUtc_$Impl_$.DATE_PART_MONTH));
+};
+thx__$DateTimeUtc_DateTimeUtc_$Impl_$.prevYear = function(this1) {
+	return thx__$DateTimeUtc_DateTimeUtc_$Impl_$.jump(this1,thx_TimePeriod.Year,-1);
+};
+thx__$DateTimeUtc_DateTimeUtc_$Impl_$.nextYear = function(this1) {
+	return thx__$DateTimeUtc_DateTimeUtc_$Impl_$.jump(this1,thx_TimePeriod.Year,1);
+};
+thx__$DateTimeUtc_DateTimeUtc_$Impl_$.prevMonth = function(this1) {
+	return thx__$DateTimeUtc_DateTimeUtc_$Impl_$.jump(this1,thx_TimePeriod.Month,-1);
+};
+thx__$DateTimeUtc_DateTimeUtc_$Impl_$.nextMonth = function(this1) {
+	return thx__$DateTimeUtc_DateTimeUtc_$Impl_$.jump(this1,thx_TimePeriod.Month,1);
+};
+thx__$DateTimeUtc_DateTimeUtc_$Impl_$.prevWeek = function(this1) {
+	return thx__$DateTimeUtc_DateTimeUtc_$Impl_$.jump(this1,thx_TimePeriod.Week,-1);
+};
+thx__$DateTimeUtc_DateTimeUtc_$Impl_$.nextWeek = function(this1) {
+	return thx__$DateTimeUtc_DateTimeUtc_$Impl_$.jump(this1,thx_TimePeriod.Week,1);
+};
+thx__$DateTimeUtc_DateTimeUtc_$Impl_$.prevDay = function(this1) {
+	return thx__$DateTimeUtc_DateTimeUtc_$Impl_$.jump(this1,thx_TimePeriod.Day,-1);
+};
+thx__$DateTimeUtc_DateTimeUtc_$Impl_$.nextDay = function(this1) {
+	return thx__$DateTimeUtc_DateTimeUtc_$Impl_$.jump(this1,thx_TimePeriod.Day,1);
+};
+thx__$DateTimeUtc_DateTimeUtc_$Impl_$.prevHour = function(this1) {
+	return thx__$DateTimeUtc_DateTimeUtc_$Impl_$.jump(this1,thx_TimePeriod.Hour,-1);
+};
+thx__$DateTimeUtc_DateTimeUtc_$Impl_$.nextHour = function(this1) {
+	return thx__$DateTimeUtc_DateTimeUtc_$Impl_$.jump(this1,thx_TimePeriod.Hour,1);
+};
+thx__$DateTimeUtc_DateTimeUtc_$Impl_$.prevMinute = function(this1) {
+	return thx__$DateTimeUtc_DateTimeUtc_$Impl_$.jump(this1,thx_TimePeriod.Minute,-1);
+};
+thx__$DateTimeUtc_DateTimeUtc_$Impl_$.nextMinute = function(this1) {
+	return thx__$DateTimeUtc_DateTimeUtc_$Impl_$.jump(this1,thx_TimePeriod.Minute,1);
+};
+thx__$DateTimeUtc_DateTimeUtc_$Impl_$.prevSecond = function(this1) {
+	return thx__$DateTimeUtc_DateTimeUtc_$Impl_$.jump(this1,thx_TimePeriod.Second,-1);
+};
+thx__$DateTimeUtc_DateTimeUtc_$Impl_$.nextSecond = function(this1) {
+	return thx__$DateTimeUtc_DateTimeUtc_$Impl_$.jump(this1,thx_TimePeriod.Second,1);
+};
+thx__$DateTimeUtc_DateTimeUtc_$Impl_$.snapToWeekDay = function(this1,weekday,firstDayOfWk) {
+	if(firstDayOfWk == null) {
+		firstDayOfWk = 0;
+	}
+	var d = thx__$DateTimeUtc_DateTimeUtc_$Impl_$.get_dayOfWeek(this1);
+	var s = weekday;
+	if(s < firstDayOfWk) {
+		s += 7;
+	}
+	if(d < firstDayOfWk) {
+		d += 7;
+	}
+	return thx__$DateTimeUtc_DateTimeUtc_$Impl_$.jump(this1,thx_TimePeriod.Day,s - d);
+};
+thx__$DateTimeUtc_DateTimeUtc_$Impl_$.snapNextWeekDay = function(this1,weekday) {
+	var d = thx__$DateTimeUtc_DateTimeUtc_$Impl_$.get_dayOfWeek(this1);
+	var s = weekday;
+	if(s < d) {
+		s += 7;
+	}
+	return thx__$DateTimeUtc_DateTimeUtc_$Impl_$.jump(this1,thx_TimePeriod.Day,s - d);
+};
+thx__$DateTimeUtc_DateTimeUtc_$Impl_$.snapPrevWeekDay = function(this1,weekday) {
+	var d = thx__$DateTimeUtc_DateTimeUtc_$Impl_$.get_dayOfWeek(this1);
+	var s = weekday;
+	if(s > d) {
+		s -= 7;
+	}
+	return thx__$DateTimeUtc_DateTimeUtc_$Impl_$.jump(this1,thx_TimePeriod.Day,s - d);
+};
+thx__$DateTimeUtc_DateTimeUtc_$Impl_$.snapNext = function(this1,period) {
+	switch(period[1]) {
+	case 0:
+		var a = thx_Int64s.divCeil(this1,thx__$DateTimeUtc_DateTimeUtc_$Impl_$.ticksPerSecondI64);
+		var b = thx__$DateTimeUtc_DateTimeUtc_$Impl_$.ticksPerSecondI64;
+		var al = a.low & 65535;
+		var ah = a.low >>> 16;
+		var bl = b.low & 65535;
+		var bh = b.low >>> 16;
+		var p00 = haxe__$Int32_Int32_$Impl_$.mul(al,bl);
+		var p10 = haxe__$Int32_Int32_$Impl_$.mul(ah,bl);
+		var p01 = haxe__$Int32_Int32_$Impl_$.mul(al,bh);
+		var p11 = haxe__$Int32_Int32_$Impl_$.mul(ah,bh);
+		var low = p00;
+		var high = (p11 + (p01 >>> 16) | 0) + (p10 >>> 16) | 0;
+		p01 = p01 << 16;
+		low = p00 + p01 | 0;
+		if(haxe__$Int32_Int32_$Impl_$.ucompare(low,p01) < 0) {
+			++high;
+			high = high | 0;
+		}
+		p10 = p10 << 16;
+		low = low + p10 | 0;
+		if(haxe__$Int32_Int32_$Impl_$.ucompare(low,p10) < 0) {
+			++high;
+			high = high | 0;
+		}
+		high = high + (haxe__$Int32_Int32_$Impl_$.mul(a.low,b.high) + haxe__$Int32_Int32_$Impl_$.mul(a.high,b.low) | 0) | 0;
+		return new haxe__$Int64__$_$_$Int64(high,low);
+	case 1:
+		var a1 = thx_Int64s.divCeil(this1,thx__$DateTimeUtc_DateTimeUtc_$Impl_$.ticksPerMinuteI64);
+		var b1 = thx__$DateTimeUtc_DateTimeUtc_$Impl_$.ticksPerMinuteI64;
+		var al1 = a1.low & 65535;
+		var ah1 = a1.low >>> 16;
+		var bl1 = b1.low & 65535;
+		var bh1 = b1.low >>> 16;
+		var p001 = haxe__$Int32_Int32_$Impl_$.mul(al1,bl1);
+		var p101 = haxe__$Int32_Int32_$Impl_$.mul(ah1,bl1);
+		var p011 = haxe__$Int32_Int32_$Impl_$.mul(al1,bh1);
+		var p111 = haxe__$Int32_Int32_$Impl_$.mul(ah1,bh1);
+		var low1 = p001;
+		var high1 = (p111 + (p011 >>> 16) | 0) + (p101 >>> 16) | 0;
+		p011 = p011 << 16;
+		low1 = p001 + p011 | 0;
+		if(haxe__$Int32_Int32_$Impl_$.ucompare(low1,p011) < 0) {
+			++high1;
+			high1 = high1 | 0;
+		}
+		p101 = p101 << 16;
+		low1 = low1 + p101 | 0;
+		if(haxe__$Int32_Int32_$Impl_$.ucompare(low1,p101) < 0) {
+			++high1;
+			high1 = high1 | 0;
+		}
+		high1 = high1 + (haxe__$Int32_Int32_$Impl_$.mul(a1.low,b1.high) + haxe__$Int32_Int32_$Impl_$.mul(a1.high,b1.low) | 0) | 0;
+		return new haxe__$Int64__$_$_$Int64(high1,low1);
+	case 2:
+		var a2 = thx_Int64s.divCeil(this1,thx__$DateTimeUtc_DateTimeUtc_$Impl_$.ticksPerHourI64);
+		var b2 = thx__$DateTimeUtc_DateTimeUtc_$Impl_$.ticksPerHourI64;
+		var al2 = a2.low & 65535;
+		var ah2 = a2.low >>> 16;
+		var bl2 = b2.low & 65535;
+		var bh2 = b2.low >>> 16;
+		var p002 = haxe__$Int32_Int32_$Impl_$.mul(al2,bl2);
+		var p102 = haxe__$Int32_Int32_$Impl_$.mul(ah2,bl2);
+		var p012 = haxe__$Int32_Int32_$Impl_$.mul(al2,bh2);
+		var p112 = haxe__$Int32_Int32_$Impl_$.mul(ah2,bh2);
+		var low2 = p002;
+		var high2 = (p112 + (p012 >>> 16) | 0) + (p102 >>> 16) | 0;
+		p012 = p012 << 16;
+		low2 = p002 + p012 | 0;
+		if(haxe__$Int32_Int32_$Impl_$.ucompare(low2,p012) < 0) {
+			++high2;
+			high2 = high2 | 0;
+		}
+		p102 = p102 << 16;
+		low2 = low2 + p102 | 0;
+		if(haxe__$Int32_Int32_$Impl_$.ucompare(low2,p102) < 0) {
+			++high2;
+			high2 = high2 | 0;
+		}
+		high2 = high2 + (haxe__$Int32_Int32_$Impl_$.mul(a2.low,b2.high) + haxe__$Int32_Int32_$Impl_$.mul(a2.high,b2.low) | 0) | 0;
+		return new haxe__$Int64__$_$_$Int64(high2,low2);
+	case 3:
+		return thx__$DateTimeUtc_DateTimeUtc_$Impl_$.create(thx__$DateTimeUtc_DateTimeUtc_$Impl_$.getDatePart(this1,thx__$DateTimeUtc_DateTimeUtc_$Impl_$.DATE_PART_YEAR),thx__$DateTimeUtc_DateTimeUtc_$Impl_$.getDatePart(this1,thx__$DateTimeUtc_DateTimeUtc_$Impl_$.DATE_PART_MONTH),thx__$DateTimeUtc_DateTimeUtc_$Impl_$.getDatePart(this1,thx__$DateTimeUtc_DateTimeUtc_$Impl_$.DATE_PART_DAY) + 1,0,0,0);
+	case 4:
+		var wd = thx__$DateTimeUtc_DateTimeUtc_$Impl_$.get_dayOfWeek(this1);
+		return thx__$DateTimeUtc_DateTimeUtc_$Impl_$.create(thx__$DateTimeUtc_DateTimeUtc_$Impl_$.getDatePart(this1,thx__$DateTimeUtc_DateTimeUtc_$Impl_$.DATE_PART_YEAR),thx__$DateTimeUtc_DateTimeUtc_$Impl_$.getDatePart(this1,thx__$DateTimeUtc_DateTimeUtc_$Impl_$.DATE_PART_MONTH),thx__$DateTimeUtc_DateTimeUtc_$Impl_$.getDatePart(this1,thx__$DateTimeUtc_DateTimeUtc_$Impl_$.DATE_PART_DAY) + 7 - wd,0,0,0);
+	case 5:
+		return thx__$DateTimeUtc_DateTimeUtc_$Impl_$.create(thx__$DateTimeUtc_DateTimeUtc_$Impl_$.getDatePart(this1,thx__$DateTimeUtc_DateTimeUtc_$Impl_$.DATE_PART_YEAR),thx__$DateTimeUtc_DateTimeUtc_$Impl_$.getDatePart(this1,thx__$DateTimeUtc_DateTimeUtc_$Impl_$.DATE_PART_MONTH) + 1,1,0,0,0);
+	case 6:
+		return thx__$DateTimeUtc_DateTimeUtc_$Impl_$.create(thx__$DateTimeUtc_DateTimeUtc_$Impl_$.getDatePart(this1,thx__$DateTimeUtc_DateTimeUtc_$Impl_$.DATE_PART_YEAR) + 1,1,1,0,0,0);
+	}
+};
+thx__$DateTimeUtc_DateTimeUtc_$Impl_$.snapPrev = function(this1,period) {
+	switch(period[1]) {
+	case 0:
+		var a = thx_Int64s.divFloor(this1,thx__$DateTimeUtc_DateTimeUtc_$Impl_$.ticksPerSecondI64);
+		var b = thx__$DateTimeUtc_DateTimeUtc_$Impl_$.ticksPerSecondI64;
+		var al = a.low & 65535;
+		var ah = a.low >>> 16;
+		var bl = b.low & 65535;
+		var bh = b.low >>> 16;
+		var p00 = haxe__$Int32_Int32_$Impl_$.mul(al,bl);
+		var p10 = haxe__$Int32_Int32_$Impl_$.mul(ah,bl);
+		var p01 = haxe__$Int32_Int32_$Impl_$.mul(al,bh);
+		var p11 = haxe__$Int32_Int32_$Impl_$.mul(ah,bh);
+		var low = p00;
+		var high = (p11 + (p01 >>> 16) | 0) + (p10 >>> 16) | 0;
+		p01 = p01 << 16;
+		low = p00 + p01 | 0;
+		if(haxe__$Int32_Int32_$Impl_$.ucompare(low,p01) < 0) {
+			++high;
+			high = high | 0;
+		}
+		p10 = p10 << 16;
+		low = low + p10 | 0;
+		if(haxe__$Int32_Int32_$Impl_$.ucompare(low,p10) < 0) {
+			++high;
+			high = high | 0;
+		}
+		high = high + (haxe__$Int32_Int32_$Impl_$.mul(a.low,b.high) + haxe__$Int32_Int32_$Impl_$.mul(a.high,b.low) | 0) | 0;
+		return new haxe__$Int64__$_$_$Int64(high,low);
+	case 1:
+		var a1 = thx_Int64s.divFloor(this1,thx__$DateTimeUtc_DateTimeUtc_$Impl_$.ticksPerMinuteI64);
+		var b1 = thx__$DateTimeUtc_DateTimeUtc_$Impl_$.ticksPerMinuteI64;
+		var al1 = a1.low & 65535;
+		var ah1 = a1.low >>> 16;
+		var bl1 = b1.low & 65535;
+		var bh1 = b1.low >>> 16;
+		var p001 = haxe__$Int32_Int32_$Impl_$.mul(al1,bl1);
+		var p101 = haxe__$Int32_Int32_$Impl_$.mul(ah1,bl1);
+		var p011 = haxe__$Int32_Int32_$Impl_$.mul(al1,bh1);
+		var p111 = haxe__$Int32_Int32_$Impl_$.mul(ah1,bh1);
+		var low1 = p001;
+		var high1 = (p111 + (p011 >>> 16) | 0) + (p101 >>> 16) | 0;
+		p011 = p011 << 16;
+		low1 = p001 + p011 | 0;
+		if(haxe__$Int32_Int32_$Impl_$.ucompare(low1,p011) < 0) {
+			++high1;
+			high1 = high1 | 0;
+		}
+		p101 = p101 << 16;
+		low1 = low1 + p101 | 0;
+		if(haxe__$Int32_Int32_$Impl_$.ucompare(low1,p101) < 0) {
+			++high1;
+			high1 = high1 | 0;
+		}
+		high1 = high1 + (haxe__$Int32_Int32_$Impl_$.mul(a1.low,b1.high) + haxe__$Int32_Int32_$Impl_$.mul(a1.high,b1.low) | 0) | 0;
+		return new haxe__$Int64__$_$_$Int64(high1,low1);
+	case 2:
+		var a2 = thx_Int64s.divFloor(this1,thx__$DateTimeUtc_DateTimeUtc_$Impl_$.ticksPerHourI64);
+		var b2 = thx__$DateTimeUtc_DateTimeUtc_$Impl_$.ticksPerHourI64;
+		var al2 = a2.low & 65535;
+		var ah2 = a2.low >>> 16;
+		var bl2 = b2.low & 65535;
+		var bh2 = b2.low >>> 16;
+		var p002 = haxe__$Int32_Int32_$Impl_$.mul(al2,bl2);
+		var p102 = haxe__$Int32_Int32_$Impl_$.mul(ah2,bl2);
+		var p012 = haxe__$Int32_Int32_$Impl_$.mul(al2,bh2);
+		var p112 = haxe__$Int32_Int32_$Impl_$.mul(ah2,bh2);
+		var low2 = p002;
+		var high2 = (p112 + (p012 >>> 16) | 0) + (p102 >>> 16) | 0;
+		p012 = p012 << 16;
+		low2 = p002 + p012 | 0;
+		if(haxe__$Int32_Int32_$Impl_$.ucompare(low2,p012) < 0) {
+			++high2;
+			high2 = high2 | 0;
+		}
+		p102 = p102 << 16;
+		low2 = low2 + p102 | 0;
+		if(haxe__$Int32_Int32_$Impl_$.ucompare(low2,p102) < 0) {
+			++high2;
+			high2 = high2 | 0;
+		}
+		high2 = high2 + (haxe__$Int32_Int32_$Impl_$.mul(a2.low,b2.high) + haxe__$Int32_Int32_$Impl_$.mul(a2.high,b2.low) | 0) | 0;
+		return new haxe__$Int64__$_$_$Int64(high2,low2);
+	case 3:
+		return thx__$DateTimeUtc_DateTimeUtc_$Impl_$.create(thx__$DateTimeUtc_DateTimeUtc_$Impl_$.getDatePart(this1,thx__$DateTimeUtc_DateTimeUtc_$Impl_$.DATE_PART_YEAR),thx__$DateTimeUtc_DateTimeUtc_$Impl_$.getDatePart(this1,thx__$DateTimeUtc_DateTimeUtc_$Impl_$.DATE_PART_MONTH),thx__$DateTimeUtc_DateTimeUtc_$Impl_$.getDatePart(this1,thx__$DateTimeUtc_DateTimeUtc_$Impl_$.DATE_PART_DAY),0,0,0);
+	case 4:
+		var wd = thx__$DateTimeUtc_DateTimeUtc_$Impl_$.get_dayOfWeek(this1);
+		return thx__$DateTimeUtc_DateTimeUtc_$Impl_$.create(thx__$DateTimeUtc_DateTimeUtc_$Impl_$.getDatePart(this1,thx__$DateTimeUtc_DateTimeUtc_$Impl_$.DATE_PART_YEAR),thx__$DateTimeUtc_DateTimeUtc_$Impl_$.getDatePart(this1,thx__$DateTimeUtc_DateTimeUtc_$Impl_$.DATE_PART_MONTH),thx__$DateTimeUtc_DateTimeUtc_$Impl_$.getDatePart(this1,thx__$DateTimeUtc_DateTimeUtc_$Impl_$.DATE_PART_DAY) - wd,0,0,0);
+	case 5:
+		return thx__$DateTimeUtc_DateTimeUtc_$Impl_$.create(thx__$DateTimeUtc_DateTimeUtc_$Impl_$.getDatePart(this1,thx__$DateTimeUtc_DateTimeUtc_$Impl_$.DATE_PART_YEAR),thx__$DateTimeUtc_DateTimeUtc_$Impl_$.getDatePart(this1,thx__$DateTimeUtc_DateTimeUtc_$Impl_$.DATE_PART_MONTH),1,0,0,0);
+	case 6:
+		return thx__$DateTimeUtc_DateTimeUtc_$Impl_$.create(thx__$DateTimeUtc_DateTimeUtc_$Impl_$.getDatePart(this1,thx__$DateTimeUtc_DateTimeUtc_$Impl_$.DATE_PART_YEAR),1,1,0,0,0);
+	}
+};
+thx__$DateTimeUtc_DateTimeUtc_$Impl_$.snapTo = function(this1,period) {
+	switch(period[1]) {
+	case 0:
+		var a = thx_Int64s.divRound(this1,thx__$DateTimeUtc_DateTimeUtc_$Impl_$.ticksPerSecondI64);
+		var b = thx__$DateTimeUtc_DateTimeUtc_$Impl_$.ticksPerSecondI64;
+		var al = a.low & 65535;
+		var ah = a.low >>> 16;
+		var bl = b.low & 65535;
+		var bh = b.low >>> 16;
+		var p00 = haxe__$Int32_Int32_$Impl_$.mul(al,bl);
+		var p10 = haxe__$Int32_Int32_$Impl_$.mul(ah,bl);
+		var p01 = haxe__$Int32_Int32_$Impl_$.mul(al,bh);
+		var p11 = haxe__$Int32_Int32_$Impl_$.mul(ah,bh);
+		var low = p00;
+		var high = (p11 + (p01 >>> 16) | 0) + (p10 >>> 16) | 0;
+		p01 = p01 << 16;
+		low = p00 + p01 | 0;
+		if(haxe__$Int32_Int32_$Impl_$.ucompare(low,p01) < 0) {
+			++high;
+			high = high | 0;
+		}
+		p10 = p10 << 16;
+		low = low + p10 | 0;
+		if(haxe__$Int32_Int32_$Impl_$.ucompare(low,p10) < 0) {
+			++high;
+			high = high | 0;
+		}
+		high = high + (haxe__$Int32_Int32_$Impl_$.mul(a.low,b.high) + haxe__$Int32_Int32_$Impl_$.mul(a.high,b.low) | 0) | 0;
+		return new haxe__$Int64__$_$_$Int64(high,low);
+	case 1:
+		var a1 = thx_Int64s.divRound(this1,thx__$DateTimeUtc_DateTimeUtc_$Impl_$.ticksPerMinuteI64);
+		var b1 = thx__$DateTimeUtc_DateTimeUtc_$Impl_$.ticksPerMinuteI64;
+		var al1 = a1.low & 65535;
+		var ah1 = a1.low >>> 16;
+		var bl1 = b1.low & 65535;
+		var bh1 = b1.low >>> 16;
+		var p001 = haxe__$Int32_Int32_$Impl_$.mul(al1,bl1);
+		var p101 = haxe__$Int32_Int32_$Impl_$.mul(ah1,bl1);
+		var p011 = haxe__$Int32_Int32_$Impl_$.mul(al1,bh1);
+		var p111 = haxe__$Int32_Int32_$Impl_$.mul(ah1,bh1);
+		var low1 = p001;
+		var high1 = (p111 + (p011 >>> 16) | 0) + (p101 >>> 16) | 0;
+		p011 = p011 << 16;
+		low1 = p001 + p011 | 0;
+		if(haxe__$Int32_Int32_$Impl_$.ucompare(low1,p011) < 0) {
+			++high1;
+			high1 = high1 | 0;
+		}
+		p101 = p101 << 16;
+		low1 = low1 + p101 | 0;
+		if(haxe__$Int32_Int32_$Impl_$.ucompare(low1,p101) < 0) {
+			++high1;
+			high1 = high1 | 0;
+		}
+		high1 = high1 + (haxe__$Int32_Int32_$Impl_$.mul(a1.low,b1.high) + haxe__$Int32_Int32_$Impl_$.mul(a1.high,b1.low) | 0) | 0;
+		return new haxe__$Int64__$_$_$Int64(high1,low1);
+	case 2:
+		var a2 = thx_Int64s.divRound(this1,thx__$DateTimeUtc_DateTimeUtc_$Impl_$.ticksPerHourI64);
+		var b2 = thx__$DateTimeUtc_DateTimeUtc_$Impl_$.ticksPerHourI64;
+		var al2 = a2.low & 65535;
+		var ah2 = a2.low >>> 16;
+		var bl2 = b2.low & 65535;
+		var bh2 = b2.low >>> 16;
+		var p002 = haxe__$Int32_Int32_$Impl_$.mul(al2,bl2);
+		var p102 = haxe__$Int32_Int32_$Impl_$.mul(ah2,bl2);
+		var p012 = haxe__$Int32_Int32_$Impl_$.mul(al2,bh2);
+		var p112 = haxe__$Int32_Int32_$Impl_$.mul(ah2,bh2);
+		var low2 = p002;
+		var high2 = (p112 + (p012 >>> 16) | 0) + (p102 >>> 16) | 0;
+		p012 = p012 << 16;
+		low2 = p002 + p012 | 0;
+		if(haxe__$Int32_Int32_$Impl_$.ucompare(low2,p012) < 0) {
+			++high2;
+			high2 = high2 | 0;
+		}
+		p102 = p102 << 16;
+		low2 = low2 + p102 | 0;
+		if(haxe__$Int32_Int32_$Impl_$.ucompare(low2,p102) < 0) {
+			++high2;
+			high2 = high2 | 0;
+		}
+		high2 = high2 + (haxe__$Int32_Int32_$Impl_$.mul(a2.low,b2.high) + haxe__$Int32_Int32_$Impl_$.mul(a2.high,b2.low) | 0) | 0;
+		return new haxe__$Int64__$_$_$Int64(high2,low2);
+	case 3:
+		var mod = thx__$DateTimeUtc_DateTimeUtc_$Impl_$.get_hour(this1) >= 12?1:0;
+		return thx__$DateTimeUtc_DateTimeUtc_$Impl_$.create(thx__$DateTimeUtc_DateTimeUtc_$Impl_$.getDatePart(this1,thx__$DateTimeUtc_DateTimeUtc_$Impl_$.DATE_PART_YEAR),thx__$DateTimeUtc_DateTimeUtc_$Impl_$.getDatePart(this1,thx__$DateTimeUtc_DateTimeUtc_$Impl_$.DATE_PART_MONTH),thx__$DateTimeUtc_DateTimeUtc_$Impl_$.getDatePart(this1,thx__$DateTimeUtc_DateTimeUtc_$Impl_$.DATE_PART_DAY) + mod,0,0,0);
+	case 4:
+		var wd = thx__$DateTimeUtc_DateTimeUtc_$Impl_$.get_dayOfWeek(this1);
+		var mod1 = wd < 3?-wd:wd > 3?7 - wd:thx__$DateTimeUtc_DateTimeUtc_$Impl_$.get_hour(this1) < 12?-wd:7 - wd;
+		return thx__$DateTimeUtc_DateTimeUtc_$Impl_$.create(thx__$DateTimeUtc_DateTimeUtc_$Impl_$.getDatePart(this1,thx__$DateTimeUtc_DateTimeUtc_$Impl_$.DATE_PART_YEAR),thx__$DateTimeUtc_DateTimeUtc_$Impl_$.getDatePart(this1,thx__$DateTimeUtc_DateTimeUtc_$Impl_$.DATE_PART_MONTH),thx__$DateTimeUtc_DateTimeUtc_$Impl_$.getDatePart(this1,thx__$DateTimeUtc_DateTimeUtc_$Impl_$.DATE_PART_DAY) + mod1,0,0,0);
+	case 5:
+		var mod2 = thx__$DateTimeUtc_DateTimeUtc_$Impl_$.getDatePart(this1,thx__$DateTimeUtc_DateTimeUtc_$Impl_$.DATE_PART_DAY) > Math.round(thx__$DateTimeUtc_DateTimeUtc_$Impl_$.daysInMonth(thx__$DateTimeUtc_DateTimeUtc_$Impl_$.getDatePart(this1,thx__$DateTimeUtc_DateTimeUtc_$Impl_$.DATE_PART_YEAR),thx__$DateTimeUtc_DateTimeUtc_$Impl_$.getDatePart(this1,thx__$DateTimeUtc_DateTimeUtc_$Impl_$.DATE_PART_MONTH)) / 2)?1:0;
+		return thx__$DateTimeUtc_DateTimeUtc_$Impl_$.create(thx__$DateTimeUtc_DateTimeUtc_$Impl_$.getDatePart(this1,thx__$DateTimeUtc_DateTimeUtc_$Impl_$.DATE_PART_YEAR),thx__$DateTimeUtc_DateTimeUtc_$Impl_$.getDatePart(this1,thx__$DateTimeUtc_DateTimeUtc_$Impl_$.DATE_PART_MONTH) + mod2,1,0,0,0);
+	case 6:
+		var mod3;
+		var b3 = thx__$DateTimeUtc_DateTimeUtc_$Impl_$.create(thx__$DateTimeUtc_DateTimeUtc_$Impl_$.getDatePart(this1,thx__$DateTimeUtc_DateTimeUtc_$Impl_$.DATE_PART_YEAR),6,2,0,0,0);
+		var v = this1.high - b3.high | 0;
+		if(v != 0) {
+			v = v;
+		} else {
+			v = haxe__$Int32_Int32_$Impl_$.ucompare(this1.low,b3.low);
+		}
+		if((this1.high < 0?b3.high < 0?v:-1:b3.high >= 0?v:1) > 0) {
+			mod3 = 1;
+		} else {
+			mod3 = 0;
+		}
+		return thx__$DateTimeUtc_DateTimeUtc_$Impl_$.create(thx__$DateTimeUtc_DateTimeUtc_$Impl_$.getDatePart(this1,thx__$DateTimeUtc_DateTimeUtc_$Impl_$.DATE_PART_YEAR) + mod3,1,1,0,0,0);
+	}
+};
+thx__$DateTimeUtc_DateTimeUtc_$Impl_$.sameYear = function(this1,other) {
+	return thx__$DateTimeUtc_DateTimeUtc_$Impl_$.getDatePart(this1,thx__$DateTimeUtc_DateTimeUtc_$Impl_$.DATE_PART_YEAR) == thx__$DateTimeUtc_DateTimeUtc_$Impl_$.getDatePart(other,thx__$DateTimeUtc_DateTimeUtc_$Impl_$.DATE_PART_YEAR);
+};
+thx__$DateTimeUtc_DateTimeUtc_$Impl_$.sameMonth = function(this1,other) {
+	if(thx__$DateTimeUtc_DateTimeUtc_$Impl_$.sameYear(this1,other)) {
+		return thx__$DateTimeUtc_DateTimeUtc_$Impl_$.getDatePart(this1,thx__$DateTimeUtc_DateTimeUtc_$Impl_$.DATE_PART_MONTH) == thx__$DateTimeUtc_DateTimeUtc_$Impl_$.getDatePart(other,thx__$DateTimeUtc_DateTimeUtc_$Impl_$.DATE_PART_MONTH);
+	} else {
+		return false;
+	}
+};
+thx__$DateTimeUtc_DateTimeUtc_$Impl_$.sameDay = function(this1,other) {
+	if(thx__$DateTimeUtc_DateTimeUtc_$Impl_$.sameMonth(this1,other)) {
+		return thx__$DateTimeUtc_DateTimeUtc_$Impl_$.getDatePart(this1,thx__$DateTimeUtc_DateTimeUtc_$Impl_$.DATE_PART_DAY) == thx__$DateTimeUtc_DateTimeUtc_$Impl_$.getDatePart(other,thx__$DateTimeUtc_DateTimeUtc_$Impl_$.DATE_PART_DAY);
+	} else {
+		return false;
+	}
+};
+thx__$DateTimeUtc_DateTimeUtc_$Impl_$.sameHour = function(this1,other) {
+	if(thx__$DateTimeUtc_DateTimeUtc_$Impl_$.sameDay(this1,other)) {
+		return thx__$DateTimeUtc_DateTimeUtc_$Impl_$.get_hour(this1) == thx__$DateTimeUtc_DateTimeUtc_$Impl_$.get_hour(other);
+	} else {
+		return false;
+	}
+};
+thx__$DateTimeUtc_DateTimeUtc_$Impl_$.sameMinute = function(this1,other) {
+	if(thx__$DateTimeUtc_DateTimeUtc_$Impl_$.sameHour(this1,other)) {
+		return thx__$DateTimeUtc_DateTimeUtc_$Impl_$.get_minute(this1) == thx__$DateTimeUtc_DateTimeUtc_$Impl_$.get_minute(other);
+	} else {
+		return false;
+	}
+};
+thx__$DateTimeUtc_DateTimeUtc_$Impl_$.sameSecond = function(this1,other) {
+	if(thx__$DateTimeUtc_DateTimeUtc_$Impl_$.sameMinute(this1,other)) {
+		return thx__$DateTimeUtc_DateTimeUtc_$Impl_$.get_second(this1) == thx__$DateTimeUtc_DateTimeUtc_$Impl_$.get_second(other);
+	} else {
+		return false;
+	}
+};
+thx__$DateTimeUtc_DateTimeUtc_$Impl_$.withYear = function(this1,year) {
+	return thx__$DateTimeUtc_DateTimeUtc_$Impl_$.create(year,thx__$DateTimeUtc_DateTimeUtc_$Impl_$.getDatePart(this1,thx__$DateTimeUtc_DateTimeUtc_$Impl_$.DATE_PART_MONTH),thx__$DateTimeUtc_DateTimeUtc_$Impl_$.getDatePart(this1,thx__$DateTimeUtc_DateTimeUtc_$Impl_$.DATE_PART_DAY),thx__$DateTimeUtc_DateTimeUtc_$Impl_$.get_hour(this1),thx__$DateTimeUtc_DateTimeUtc_$Impl_$.get_minute(this1),thx__$DateTimeUtc_DateTimeUtc_$Impl_$.get_second(this1),thx__$DateTimeUtc_DateTimeUtc_$Impl_$.get_millisecond(this1));
+};
+thx__$DateTimeUtc_DateTimeUtc_$Impl_$.withMonth = function(this1,month) {
+	return thx__$DateTimeUtc_DateTimeUtc_$Impl_$.create(thx__$DateTimeUtc_DateTimeUtc_$Impl_$.getDatePart(this1,thx__$DateTimeUtc_DateTimeUtc_$Impl_$.DATE_PART_YEAR),month,thx__$DateTimeUtc_DateTimeUtc_$Impl_$.getDatePart(this1,thx__$DateTimeUtc_DateTimeUtc_$Impl_$.DATE_PART_DAY),thx__$DateTimeUtc_DateTimeUtc_$Impl_$.get_hour(this1),thx__$DateTimeUtc_DateTimeUtc_$Impl_$.get_minute(this1),thx__$DateTimeUtc_DateTimeUtc_$Impl_$.get_second(this1),thx__$DateTimeUtc_DateTimeUtc_$Impl_$.get_millisecond(this1));
+};
+thx__$DateTimeUtc_DateTimeUtc_$Impl_$.withDay = function(this1,day) {
+	return thx__$DateTimeUtc_DateTimeUtc_$Impl_$.create(thx__$DateTimeUtc_DateTimeUtc_$Impl_$.getDatePart(this1,thx__$DateTimeUtc_DateTimeUtc_$Impl_$.DATE_PART_YEAR),thx__$DateTimeUtc_DateTimeUtc_$Impl_$.getDatePart(this1,thx__$DateTimeUtc_DateTimeUtc_$Impl_$.DATE_PART_MONTH),day,thx__$DateTimeUtc_DateTimeUtc_$Impl_$.get_hour(this1),thx__$DateTimeUtc_DateTimeUtc_$Impl_$.get_minute(this1),thx__$DateTimeUtc_DateTimeUtc_$Impl_$.get_second(this1),thx__$DateTimeUtc_DateTimeUtc_$Impl_$.get_millisecond(this1));
+};
+thx__$DateTimeUtc_DateTimeUtc_$Impl_$.withHour = function(this1,hour) {
+	return thx__$DateTimeUtc_DateTimeUtc_$Impl_$.create(thx__$DateTimeUtc_DateTimeUtc_$Impl_$.getDatePart(this1,thx__$DateTimeUtc_DateTimeUtc_$Impl_$.DATE_PART_YEAR),thx__$DateTimeUtc_DateTimeUtc_$Impl_$.getDatePart(this1,thx__$DateTimeUtc_DateTimeUtc_$Impl_$.DATE_PART_MONTH),thx__$DateTimeUtc_DateTimeUtc_$Impl_$.getDatePart(this1,thx__$DateTimeUtc_DateTimeUtc_$Impl_$.DATE_PART_DAY),hour,thx__$DateTimeUtc_DateTimeUtc_$Impl_$.get_minute(this1),thx__$DateTimeUtc_DateTimeUtc_$Impl_$.get_second(this1),thx__$DateTimeUtc_DateTimeUtc_$Impl_$.get_millisecond(this1));
+};
+thx__$DateTimeUtc_DateTimeUtc_$Impl_$.withMinute = function(this1,minute) {
+	return thx__$DateTimeUtc_DateTimeUtc_$Impl_$.create(thx__$DateTimeUtc_DateTimeUtc_$Impl_$.getDatePart(this1,thx__$DateTimeUtc_DateTimeUtc_$Impl_$.DATE_PART_YEAR),thx__$DateTimeUtc_DateTimeUtc_$Impl_$.getDatePart(this1,thx__$DateTimeUtc_DateTimeUtc_$Impl_$.DATE_PART_MONTH),thx__$DateTimeUtc_DateTimeUtc_$Impl_$.getDatePart(this1,thx__$DateTimeUtc_DateTimeUtc_$Impl_$.DATE_PART_DAY),thx__$DateTimeUtc_DateTimeUtc_$Impl_$.get_hour(this1),minute,thx__$DateTimeUtc_DateTimeUtc_$Impl_$.get_second(this1),thx__$DateTimeUtc_DateTimeUtc_$Impl_$.get_millisecond(this1));
+};
+thx__$DateTimeUtc_DateTimeUtc_$Impl_$.withSecond = function(this1,second) {
+	return thx__$DateTimeUtc_DateTimeUtc_$Impl_$.create(thx__$DateTimeUtc_DateTimeUtc_$Impl_$.getDatePart(this1,thx__$DateTimeUtc_DateTimeUtc_$Impl_$.DATE_PART_YEAR),thx__$DateTimeUtc_DateTimeUtc_$Impl_$.getDatePart(this1,thx__$DateTimeUtc_DateTimeUtc_$Impl_$.DATE_PART_MONTH),thx__$DateTimeUtc_DateTimeUtc_$Impl_$.getDatePart(this1,thx__$DateTimeUtc_DateTimeUtc_$Impl_$.DATE_PART_DAY),thx__$DateTimeUtc_DateTimeUtc_$Impl_$.get_hour(this1),thx__$DateTimeUtc_DateTimeUtc_$Impl_$.get_minute(this1),second,thx__$DateTimeUtc_DateTimeUtc_$Impl_$.get_millisecond(this1));
+};
+thx__$DateTimeUtc_DateTimeUtc_$Impl_$.withMillisecond = function(this1,millisecond) {
+	return thx__$DateTimeUtc_DateTimeUtc_$Impl_$.create(thx__$DateTimeUtc_DateTimeUtc_$Impl_$.getDatePart(this1,thx__$DateTimeUtc_DateTimeUtc_$Impl_$.DATE_PART_YEAR),thx__$DateTimeUtc_DateTimeUtc_$Impl_$.getDatePart(this1,thx__$DateTimeUtc_DateTimeUtc_$Impl_$.DATE_PART_MONTH),thx__$DateTimeUtc_DateTimeUtc_$Impl_$.getDatePart(this1,thx__$DateTimeUtc_DateTimeUtc_$Impl_$.DATE_PART_DAY),thx__$DateTimeUtc_DateTimeUtc_$Impl_$.get_hour(this1),thx__$DateTimeUtc_DateTimeUtc_$Impl_$.get_minute(this1),thx__$DateTimeUtc_DateTimeUtc_$Impl_$.get_second(this1),millisecond);
+};
+thx__$DateTimeUtc_DateTimeUtc_$Impl_$.add = function(this1,time) {
+	var b = time;
+	var high = this1.high + b.high | 0;
+	var low = this1.low + b.low | 0;
+	if(haxe__$Int32_Int32_$Impl_$.ucompare(low,this1.low) < 0) {
+		++high;
+		high = high | 0;
+	}
+	return new haxe__$Int64__$_$_$Int64(high,low);
+};
+thx__$DateTimeUtc_DateTimeUtc_$Impl_$.addTicks = function(this1,tickstoadd) {
+	var high = this1.high + tickstoadd.high | 0;
+	var low = this1.low + tickstoadd.low | 0;
+	if(haxe__$Int32_Int32_$Impl_$.ucompare(low,this1.low) < 0) {
+		++high;
+		high = high | 0;
+	}
+	return new haxe__$Int64__$_$_$Int64(high,low);
+};
+thx__$DateTimeUtc_DateTimeUtc_$Impl_$.subtract = function(this1,time) {
+	var b = time;
+	var high = this1.high - b.high | 0;
+	var low = this1.low - b.low | 0;
+	if(haxe__$Int32_Int32_$Impl_$.ucompare(this1.low,b.low) < 0) {
+		--high;
+		high = high | 0;
+	}
+	return new haxe__$Int64__$_$_$Int64(high,low);
+};
+thx__$DateTimeUtc_DateTimeUtc_$Impl_$.subtractDate = function(this1,date) {
+	var b = date;
+	var high = this1.high - b.high | 0;
+	var low = this1.low - b.low | 0;
+	if(haxe__$Int32_Int32_$Impl_$.ucompare(this1.low,b.low) < 0) {
+		--high;
+		high = high | 0;
+	}
+	return new haxe__$Int64__$_$_$Int64(high,low);
+};
+thx__$DateTimeUtc_DateTimeUtc_$Impl_$.addScaled = function(this1,value,scale) {
+	var x = value * scale + (value >= 0?0.5:-0.5) | 0;
+	var millis = new haxe__$Int64__$_$_$Int64(x >> 31,x);
+	var b = thx__$DateTimeUtc_DateTimeUtc_$Impl_$.ticksPerMillisecondI64;
+	var al = millis.low & 65535;
+	var ah = millis.low >>> 16;
+	var bl = b.low & 65535;
+	var bh = b.low >>> 16;
+	var p00 = haxe__$Int32_Int32_$Impl_$.mul(al,bl);
+	var p10 = haxe__$Int32_Int32_$Impl_$.mul(ah,bl);
+	var p01 = haxe__$Int32_Int32_$Impl_$.mul(al,bh);
+	var p11 = haxe__$Int32_Int32_$Impl_$.mul(ah,bh);
+	var low = p00;
+	var high = (p11 + (p01 >>> 16) | 0) + (p10 >>> 16) | 0;
+	p01 = p01 << 16;
+	low = p00 + p01 | 0;
+	if(haxe__$Int32_Int32_$Impl_$.ucompare(low,p01) < 0) {
+		++high;
+		high = high | 0;
+	}
+	p10 = p10 << 16;
+	low = low + p10 | 0;
+	if(haxe__$Int32_Int32_$Impl_$.ucompare(low,p10) < 0) {
+		++high;
+		high = high | 0;
+	}
+	high = high + (haxe__$Int32_Int32_$Impl_$.mul(millis.low,b.high) + haxe__$Int32_Int32_$Impl_$.mul(millis.high,b.low) | 0) | 0;
+	var b1 = new haxe__$Int64__$_$_$Int64(high,low);
+	var high1 = this1.high + b1.high | 0;
+	var low1 = this1.low + b1.low | 0;
+	if(haxe__$Int32_Int32_$Impl_$.ucompare(low1,this1.low) < 0) {
+		++high1;
+		high1 = high1 | 0;
+	}
+	return new haxe__$Int64__$_$_$Int64(high1,low1);
+};
+thx__$DateTimeUtc_DateTimeUtc_$Impl_$.addDays = function(this1,days) {
+	return thx__$DateTimeUtc_DateTimeUtc_$Impl_$.addScaled(this1,days,thx__$DateTimeUtc_DateTimeUtc_$Impl_$.millisPerDay);
+};
+thx__$DateTimeUtc_DateTimeUtc_$Impl_$.addHours = function(this1,hours) {
+	return thx__$DateTimeUtc_DateTimeUtc_$Impl_$.addScaled(this1,hours,thx__$DateTimeUtc_DateTimeUtc_$Impl_$.millisPerHour);
+};
+thx__$DateTimeUtc_DateTimeUtc_$Impl_$.addMilliseconds = function(this1,milliseconds) {
+	return thx__$DateTimeUtc_DateTimeUtc_$Impl_$.addScaled(this1,milliseconds,1);
+};
+thx__$DateTimeUtc_DateTimeUtc_$Impl_$.addMinutes = function(this1,minutes) {
+	return thx__$DateTimeUtc_DateTimeUtc_$Impl_$.addScaled(this1,minutes,thx__$DateTimeUtc_DateTimeUtc_$Impl_$.millisPerMinute);
+};
+thx__$DateTimeUtc_DateTimeUtc_$Impl_$.addMonths = function(this1,months) {
+	var y = thx__$DateTimeUtc_DateTimeUtc_$Impl_$.getDatePart(this1,thx__$DateTimeUtc_DateTimeUtc_$Impl_$.DATE_PART_YEAR);
+	var m = thx__$DateTimeUtc_DateTimeUtc_$Impl_$.getDatePart(this1,thx__$DateTimeUtc_DateTimeUtc_$Impl_$.DATE_PART_MONTH);
+	var d = thx__$DateTimeUtc_DateTimeUtc_$Impl_$.getDatePart(this1,thx__$DateTimeUtc_DateTimeUtc_$Impl_$.DATE_PART_DAY);
+	var i = m - 1 + months;
+	if(i >= 0) {
+		m = i % 12 + 1 | 0;
+		y = y + i / 12 | 0;
+	} else {
+		m = 12 + (i + 1) % 12 | 0;
+		y = y + (i - 11) / 12 | 0;
+	}
+	var days = thx__$DateTimeUtc_DateTimeUtc_$Impl_$.daysInMonth(y,m);
+	if(d > days) {
+		d = days;
+	}
+	var a = thx__$DateTimeUtc_DateTimeUtc_$Impl_$.dateToTicks(y,m,d);
+	var b = haxe__$Int64_Int64_$Impl_$.divMod(this1,thx__$DateTimeUtc_DateTimeUtc_$Impl_$.ticksPerDayI64).modulus;
+	var high = a.high + b.high | 0;
+	var low = a.low + b.low | 0;
+	if(haxe__$Int32_Int32_$Impl_$.ucompare(low,a.low) < 0) {
+		++high;
+		high = high | 0;
+	}
+	return new haxe__$Int64__$_$_$Int64(high,low);
+};
+thx__$DateTimeUtc_DateTimeUtc_$Impl_$.addSeconds = function(this1,seconds) {
+	return thx__$DateTimeUtc_DateTimeUtc_$Impl_$.addScaled(this1,seconds,thx__$DateTimeUtc_DateTimeUtc_$Impl_$.millisPerSecond);
+};
+thx__$DateTimeUtc_DateTimeUtc_$Impl_$.addYears = function(this1,years) {
+	return thx__$DateTimeUtc_DateTimeUtc_$Impl_$.addMonths(this1,years * 12);
+};
+thx__$DateTimeUtc_DateTimeUtc_$Impl_$.compareTo = function(this1,other) {
+	if(null == other && this1 == null) {
+		return 0;
+	}
+	if(null == this1) {
+		return -1;
+	} else if(null == other) {
+		return 1;
+	}
+	return thx_Int64s.compare(this1,other);
+};
+thx__$DateTimeUtc_DateTimeUtc_$Impl_$.equalsTo = function(this1,that) {
+	var b = that;
+	if(this1.high == b.high) {
+		return this1.low == b.low;
+	} else {
+		return false;
+	}
+};
+thx__$DateTimeUtc_DateTimeUtc_$Impl_$.equals = function(self,that) {
+	var a = self;
+	var b = that;
+	if(a.high == b.high) {
+		return a.low == b.low;
+	} else {
+		return false;
+	}
+};
+thx__$DateTimeUtc_DateTimeUtc_$Impl_$.notEqualsTo = function(this1,that) {
+	var b = that;
+	if(!(this1.high != b.high)) {
+		return this1.low != b.low;
+	} else {
+		return true;
+	}
+};
+thx__$DateTimeUtc_DateTimeUtc_$Impl_$.notEquals = function(self,that) {
+	var a = self;
+	var b = that;
+	if(!(a.high != b.high)) {
+		return a.low != b.low;
+	} else {
+		return true;
+	}
+};
+thx__$DateTimeUtc_DateTimeUtc_$Impl_$.nearEqualsTo = function(this1,other,span) {
+	var a = other;
+	var high = a.high - this1.high | 0;
+	var low = a.low - this1.low | 0;
+	if(haxe__$Int32_Int32_$Impl_$.ucompare(a.low,this1.low) < 0) {
+		--high;
+		high = high | 0;
+	}
+	var ticks = thx_Int64s.abs(new haxe__$Int64__$_$_$Int64(high,low));
+	var this2 = thx__$Time_Time_$Impl_$.abs(span);
+	var v = ticks.high - this2.high | 0;
+	if(v != 0) {
+		v = v;
+	} else {
+		v = haxe__$Int32_Int32_$Impl_$.ucompare(ticks.low,this2.low);
+	}
+	return (ticks.high < 0?this2.high < 0?v:-1:this2.high >= 0?v:1) <= 0;
+};
+thx__$DateTimeUtc_DateTimeUtc_$Impl_$.greaterThan = function(this1,that) {
+	var b = that;
+	var v = this1.high - b.high | 0;
+	if(v != 0) {
+		v = v;
+	} else {
+		v = haxe__$Int32_Int32_$Impl_$.ucompare(this1.low,b.low);
+	}
+	return (this1.high < 0?b.high < 0?v:-1:b.high >= 0?v:1) > 0;
+};
+thx__$DateTimeUtc_DateTimeUtc_$Impl_$.greater = function(self,that) {
+	var a = self;
+	var b = that;
+	var v = a.high - b.high | 0;
+	if(v != 0) {
+		v = v;
+	} else {
+		v = haxe__$Int32_Int32_$Impl_$.ucompare(a.low,b.low);
+	}
+	return (a.high < 0?b.high < 0?v:-1:b.high >= 0?v:1) > 0;
+};
+thx__$DateTimeUtc_DateTimeUtc_$Impl_$.greaterEqualsTo = function(this1,that) {
+	var b = that;
+	var v = this1.high - b.high | 0;
+	if(v != 0) {
+		v = v;
+	} else {
+		v = haxe__$Int32_Int32_$Impl_$.ucompare(this1.low,b.low);
+	}
+	return (this1.high < 0?b.high < 0?v:-1:b.high >= 0?v:1) >= 0;
+};
+thx__$DateTimeUtc_DateTimeUtc_$Impl_$.greaterEquals = function(self,that) {
+	var a = self;
+	var b = that;
+	var v = a.high - b.high | 0;
+	if(v != 0) {
+		v = v;
+	} else {
+		v = haxe__$Int32_Int32_$Impl_$.ucompare(a.low,b.low);
+	}
+	return (a.high < 0?b.high < 0?v:-1:b.high >= 0?v:1) >= 0;
+};
+thx__$DateTimeUtc_DateTimeUtc_$Impl_$.lessThan = function(this1,that) {
+	var b = that;
+	var v = this1.high - b.high | 0;
+	if(v != 0) {
+		v = v;
+	} else {
+		v = haxe__$Int32_Int32_$Impl_$.ucompare(this1.low,b.low);
+	}
+	return (this1.high < 0?b.high < 0?v:-1:b.high >= 0?v:1) < 0;
+};
+thx__$DateTimeUtc_DateTimeUtc_$Impl_$.less = function(self,that) {
+	var a = self;
+	var b = that;
+	var v = a.high - b.high | 0;
+	if(v != 0) {
+		v = v;
+	} else {
+		v = haxe__$Int32_Int32_$Impl_$.ucompare(a.low,b.low);
+	}
+	return (a.high < 0?b.high < 0?v:-1:b.high >= 0?v:1) < 0;
+};
+thx__$DateTimeUtc_DateTimeUtc_$Impl_$.lessEqualsTo = function(this1,that) {
+	var b = that;
+	var v = this1.high - b.high | 0;
+	if(v != 0) {
+		v = v;
+	} else {
+		v = haxe__$Int32_Int32_$Impl_$.ucompare(this1.low,b.low);
+	}
+	return (this1.high < 0?b.high < 0?v:-1:b.high >= 0?v:1) <= 0;
+};
+thx__$DateTimeUtc_DateTimeUtc_$Impl_$.lessEquals = function(self,that) {
+	var a = self;
+	var b = that;
+	var v = a.high - b.high | 0;
+	if(v != 0) {
+		v = v;
+	} else {
+		v = haxe__$Int32_Int32_$Impl_$.ucompare(a.low,b.low);
+	}
+	return (a.high < 0?b.high < 0?v:-1:b.high >= 0?v:1) <= 0;
+};
+thx__$DateTimeUtc_DateTimeUtc_$Impl_$.toTime = function(this1) {
+	var b = thx__$DateTimeUtc_DateTimeUtc_$Impl_$.unixEpochTicks;
+	var high = this1.high - b.high | 0;
+	var low = this1.low - b.low | 0;
+	if(haxe__$Int32_Int32_$Impl_$.ucompare(this1.low,b.low) < 0) {
+		--high;
+		high = high | 0;
+	}
+	return thx_Int64s.toFloat(haxe__$Int64_Int64_$Impl_$.divMod(new haxe__$Int64__$_$_$Int64(high,low),thx__$DateTimeUtc_DateTimeUtc_$Impl_$.ticksPerMillisecondI64).quotient);
+};
+thx__$DateTimeUtc_DateTimeUtc_$Impl_$.toDate = function(this1) {
+	var a = this1;
+	var b = thx__$DateTimeUtc_DateTimeUtc_$Impl_$.unixEpochTicks;
+	var high = a.high - b.high | 0;
+	var low = a.low - b.low | 0;
+	if(haxe__$Int32_Int32_$Impl_$.ucompare(a.low,b.low) < 0) {
+		var ret = high--;
+		high = high | 0;
+	}
+	var t = thx_Int64s.toFloat(haxe__$Int64_Int64_$Impl_$.divMod(new haxe__$Int64__$_$_$Int64(high,low),thx__$DateTimeUtc_DateTimeUtc_$Impl_$.ticksPerMillisecondI64).quotient);
+	return new Date(t);
+};
+thx__$DateTimeUtc_DateTimeUtc_$Impl_$.toDateTime = function(this1,offset) {
+	return [this1,null == offset?thx__$Time_Time_$Impl_$.zero:offset];
+};
+thx__$DateTimeUtc_DateTimeUtc_$Impl_$.toLocalDateTime = function(this1) {
+	return [this1,thx__$DateTime_DateTime_$Impl_$.localOffset()];
+};
+thx__$DateTimeUtc_DateTimeUtc_$Impl_$.toString = function(this1) {
+	if(null == this1) {
+		return "";
+	}
+	var abs = thx__$DateTimeUtc_DateTimeUtc_$Impl_$.fromInt64(thx_Int64s.abs(this1));
+	var decimals = thx__$DateTimeUtc_DateTimeUtc_$Impl_$.get_tickInSecond(abs) != 0?"." + thx_Strings.trimCharsRight(thx_Ints.lpad(thx__$DateTimeUtc_DateTimeUtc_$Impl_$.get_tickInSecond(abs),"0",7),")"):"";
+	var b = thx_Int64s.zero;
+	var v = this1.high - b.high | 0;
+	if(v != 0) {
+		v = v;
+	} else {
+		v = haxe__$Int32_Int32_$Impl_$.ucompare(this1.low,b.low);
+	}
+	return ((this1.high < 0?b.high < 0?v:-1:b.high >= 0?v:1) < 0?"-":"") + ("" + thx__$DateTimeUtc_DateTimeUtc_$Impl_$.getDatePart(abs,thx__$DateTimeUtc_DateTimeUtc_$Impl_$.DATE_PART_YEAR) + "-" + thx_Ints.lpad(thx__$DateTimeUtc_DateTimeUtc_$Impl_$.getDatePart(abs,thx__$DateTimeUtc_DateTimeUtc_$Impl_$.DATE_PART_MONTH),"0",2) + "-" + thx_Ints.lpad(thx__$DateTimeUtc_DateTimeUtc_$Impl_$.getDatePart(abs,thx__$DateTimeUtc_DateTimeUtc_$Impl_$.DATE_PART_DAY),"0",2) + "T" + thx_Ints.lpad(thx__$DateTimeUtc_DateTimeUtc_$Impl_$.get_hour(abs),"0",2) + ":" + thx_Ints.lpad(thx__$DateTimeUtc_DateTimeUtc_$Impl_$.get_minute(abs),"0",2) + ":" + thx_Ints.lpad(thx__$DateTimeUtc_DateTimeUtc_$Impl_$.get_second(abs),"0",2) + decimals + "Z");
+};
+thx__$DateTimeUtc_DateTimeUtc_$Impl_$.get_ticks = function(this1) {
+	return this1;
+};
+thx__$DateTimeUtc_DateTimeUtc_$Impl_$.get_year = function(this1) {
+	return thx__$DateTimeUtc_DateTimeUtc_$Impl_$.getDatePart(this1,thx__$DateTimeUtc_DateTimeUtc_$Impl_$.DATE_PART_YEAR);
+};
+thx__$DateTimeUtc_DateTimeUtc_$Impl_$.get_month = function(this1) {
+	return thx__$DateTimeUtc_DateTimeUtc_$Impl_$.getDatePart(this1,thx__$DateTimeUtc_DateTimeUtc_$Impl_$.DATE_PART_MONTH);
+};
+thx__$DateTimeUtc_DateTimeUtc_$Impl_$.get_day = function(this1) {
+	return thx__$DateTimeUtc_DateTimeUtc_$Impl_$.getDatePart(this1,thx__$DateTimeUtc_DateTimeUtc_$Impl_$.DATE_PART_DAY);
+};
+thx__$DateTimeUtc_DateTimeUtc_$Impl_$.get_hour = function(this1) {
+	var x = haxe__$Int64_Int64_$Impl_$.divMod(haxe__$Int64_Int64_$Impl_$.divMod(this1,thx__$DateTimeUtc_DateTimeUtc_$Impl_$.ticksPerHourI64).quotient,new haxe__$Int64__$_$_$Int64(0,24)).modulus;
+	if(x.high != x.low >> 31) {
+		throw new js__$Boot_HaxeError("Overflow");
+	}
+	return x.low;
+};
+thx__$DateTimeUtc_DateTimeUtc_$Impl_$.get_minute = function(this1) {
+	var x = haxe__$Int64_Int64_$Impl_$.divMod(haxe__$Int64_Int64_$Impl_$.divMod(this1,thx__$DateTimeUtc_DateTimeUtc_$Impl_$.ticksPerMinuteI64).quotient,new haxe__$Int64__$_$_$Int64(0,60)).modulus;
+	if(x.high != x.low >> 31) {
+		throw new js__$Boot_HaxeError("Overflow");
+	}
+	return x.low;
+};
+thx__$DateTimeUtc_DateTimeUtc_$Impl_$.get_dayOfWeek = function(this1) {
+	var a = haxe__$Int64_Int64_$Impl_$.divMod(this1,thx__$DateTimeUtc_DateTimeUtc_$Impl_$.ticksPerDayI64).quotient;
+	var b = new haxe__$Int64__$_$_$Int64(0,1);
+	var high = a.high + b.high | 0;
+	var low = a.low + b.low | 0;
+	if(haxe__$Int32_Int32_$Impl_$.ucompare(low,a.low) < 0) {
+		++high;
+		high = high | 0;
+	}
+	var x = haxe__$Int64_Int64_$Impl_$.divMod(new haxe__$Int64__$_$_$Int64(high,low),new haxe__$Int64__$_$_$Int64(0,7)).modulus;
+	if(x.high != x.low >> 31) {
+		throw new js__$Boot_HaxeError("Overflow");
+	}
+	return x.low;
+};
+thx__$DateTimeUtc_DateTimeUtc_$Impl_$.get_dayOfYear = function(this1) {
+	return thx__$DateTimeUtc_DateTimeUtc_$Impl_$.getDatePart(this1,thx__$DateTimeUtc_DateTimeUtc_$Impl_$.DATE_PART_DAY_OF_YEAR);
+};
+thx__$DateTimeUtc_DateTimeUtc_$Impl_$.get_millisecond = function(this1) {
+	var x = haxe__$Int64_Int64_$Impl_$.divMod(haxe__$Int64_Int64_$Impl_$.divMod(this1,thx__$DateTimeUtc_DateTimeUtc_$Impl_$.ticksPerMillisecondI64).quotient,thx__$DateTimeUtc_DateTimeUtc_$Impl_$.thousandI64).modulus;
+	if(x.high != x.low >> 31) {
+		throw new js__$Boot_HaxeError("Overflow");
+	}
+	return x.low;
+};
+thx__$DateTimeUtc_DateTimeUtc_$Impl_$.get_microsecond = function(this1) {
+	var x = haxe__$Int64_Int64_$Impl_$.divMod(haxe__$Int64_Int64_$Impl_$.divMod(this1,thx__$DateTimeUtc_DateTimeUtc_$Impl_$.ticksPerMicrosecondI64).quotient,thx__$DateTimeUtc_DateTimeUtc_$Impl_$.millionI64).modulus;
+	if(x.high != x.low >> 31) {
+		throw new js__$Boot_HaxeError("Overflow");
+	}
+	return x.low;
+};
+thx__$DateTimeUtc_DateTimeUtc_$Impl_$.get_tickInSecond = function(this1) {
+	var x = haxe__$Int64_Int64_$Impl_$.divMod(this1,new haxe__$Int64__$_$_$Int64(0,10000000)).modulus;
+	if(x.high != x.low >> 31) {
+		throw new js__$Boot_HaxeError("Overflow");
+	}
+	return x.low;
+};
+thx__$DateTimeUtc_DateTimeUtc_$Impl_$.get_second = function(this1) {
+	var x = haxe__$Int64_Int64_$Impl_$.divMod(haxe__$Int64_Int64_$Impl_$.divMod(this1,thx__$DateTimeUtc_DateTimeUtc_$Impl_$.ticksPerSecondI64).quotient,new haxe__$Int64__$_$_$Int64(0,60)).modulus;
+	if(x.high != x.low >> 31) {
+		throw new js__$Boot_HaxeError("Overflow");
+	}
+	return x.low;
+};
+thx__$DateTimeUtc_DateTimeUtc_$Impl_$.get_timeOfDay = function(this1) {
+	return haxe__$Int64_Int64_$Impl_$.divMod(this1,thx__$DateTimeUtc_DateTimeUtc_$Impl_$.ticksPerDayI64).modulus;
+};
+thx__$DateTimeUtc_DateTimeUtc_$Impl_$.get_isInLeapYear = function(this1) {
+	return thx__$DateTimeUtc_DateTimeUtc_$Impl_$.isLeapYear(thx__$DateTimeUtc_DateTimeUtc_$Impl_$.getDatePart(this1,thx__$DateTimeUtc_DateTimeUtc_$Impl_$.DATE_PART_YEAR));
+};
+thx__$DateTimeUtc_DateTimeUtc_$Impl_$.get_monthDays = function(this1) {
+	return thx__$DateTimeUtc_DateTimeUtc_$Impl_$.daysInMonth(thx__$DateTimeUtc_DateTimeUtc_$Impl_$.getDatePart(this1,thx__$DateTimeUtc_DateTimeUtc_$Impl_$.DATE_PART_YEAR),thx__$DateTimeUtc_DateTimeUtc_$Impl_$.getDatePart(this1,thx__$DateTimeUtc_DateTimeUtc_$Impl_$.DATE_PART_MONTH));
+};
+thx__$DateTimeUtc_DateTimeUtc_$Impl_$.self = function(this1) {
+	return this1;
 };
 var thx__$Ord_Ord_$Impl_$ = {};
 thx__$Ord_Ord_$Impl_$.__name__ = ["thx","_Ord","Ord_Impl_"];
@@ -5541,6 +10344,1434 @@ thx_Dates.parseDate = function(s) {
 		haxe_CallStack.lastException = e;
 		return thx_Either.Left("" + s + " could not be parsed to a valid Date value.");
 	}
+};
+var thx_bigint_Decimals = function() { };
+thx_bigint_Decimals.__name__ = ["thx","bigint","Decimals"];
+thx_bigint_Decimals.fromInt = function(value) {
+	return new thx_bigint_DecimalImpl(thx_bigint_Bigs.fromInt(value),0);
+};
+thx_bigint_Decimals.fromFloat = function(value) {
+	if(!isFinite(value)) {
+		throw new js__$Boot_HaxeError("Value is not a finite Float: " + value);
+	}
+	return thx_bigint_Decimals.parse("" + value);
+};
+thx_bigint_Decimals.parse = function(value) {
+	value = value.toLowerCase();
+	var pose = value.indexOf("e");
+	if(pose > 0) {
+		var isNeg = false;
+		var f = value.substring(0,pose);
+		var e = value.substring(pose + 1);
+		if(e.substring(0,1) == "-") {
+			isNeg = true;
+			e = e.substring(1);
+		}
+		var m = thx_bigint_Small.ten.pow(thx_bigint_Bigs.parseBase(e,10));
+		if(isNeg) {
+			return thx_bigint_Decimals.parse(f).divideWithScale(thx__$Decimal_Decimal_$Impl_$.fromBigInt(m),Std.parseInt(e));
+		} else {
+			return thx_bigint_Decimals.parse(f).multiply(thx__$Decimal_Decimal_$Impl_$.fromBigInt(m));
+		}
+	}
+	var pdec = value.indexOf(".");
+	if(pdec < 0) {
+		return new thx_bigint_DecimalImpl(thx_bigint_Bigs.parseBase(value,10),0);
+	}
+	return new thx_bigint_DecimalImpl(thx_bigint_Bigs.parseBase(value.substring(0,pdec) + value.substring(pdec + 1),10),value.length - pdec - 1);
+};
+var thx_bigint_Bigs = function() { };
+thx_bigint_Bigs.__name__ = ["thx","bigint","Bigs"];
+thx_bigint_Bigs.isPrecise = function(value) {
+	if(-thx_bigint_Bigs.MAX_INT < value) {
+		return value < thx_bigint_Bigs.MAX_INT;
+	} else {
+		return false;
+	}
+};
+thx_bigint_Bigs.canMultiply = function(a,b) {
+	if(a == 0 || b == 0) {
+		return true;
+	}
+	var v = a * b;
+	if(a != v / b) {
+		return false;
+	}
+	return thx_bigint_Bigs.isPrecise(v);
+};
+thx_bigint_Bigs.canPower = function(a,b) {
+	if(a == 0 || b == 0) {
+		return true;
+	}
+	var a1 = Math.abs(a);
+	var b1 = Math.abs(b);
+	var v;
+	try {
+		v = Math.pow(a1,b1) | 0;
+	} catch( e ) {
+		haxe_CallStack.lastException = e;
+		return false;
+	}
+	if((Math.pow(v,1.0 / b1) | 0) != a1) {
+		return false;
+	}
+	return thx_bigint_Bigs.isPrecise(v);
+};
+thx_bigint_Bigs.canAdd = function(a,b) {
+	var v = a + b;
+	if(a > 0 && b > 0 && v < 0) {
+		return false;
+	}
+	return thx_bigint_Bigs.isPrecise(v);
+};
+thx_bigint_Bigs.smallToArray = function(n) {
+	thx_Assert.isTrue(n >= 0,"Bigs.smallToArray should always be non-negative: " + n,{ fileName : "Bigs.hx", lineNumber : 57, className : "thx.bigint.Bigs", methodName : "smallToArray"});
+	if(n < 10000000) {
+		return [n];
+	}
+	if(n < 100000000000000.0) {
+		return [n % 10000000,Math.floor(n / 10000000)];
+	}
+	return [n % 10000000,Math.floor(n / 10000000) % 10000000,Math.floor(n / 100000000000000.0)];
+};
+thx_bigint_Bigs.arrayToSmall = function(arr) {
+	thx_bigint_Bigs.trim(arr);
+	var length = arr.length;
+	if(length < 4 && thx_bigint_Bigs.compareToAbs(arr,thx_bigint_Bigs.MAX_INT_ARR) < 0) {
+		switch(length) {
+		case 0:
+			return 0;
+		case 1:
+			return arr[0];
+		case 2:
+			return arr[0] + arr[1] * 10000000;
+		default:
+			return arr[0] + (arr[1] + arr[2] * 10000000) * 10000000;
+		}
+	}
+	return null;
+};
+thx_bigint_Bigs.trim = function(v) {
+	while(v.length > 1) {
+		if(v[v.length - 1] != 0) {
+			break;
+		}
+		v.pop();
+	}
+};
+thx_bigint_Bigs.createArray = function(length) {
+	var x = new Array(length);
+	var _g1 = 0;
+	var _g = length;
+	while(_g1 < _g) {
+		var i = _g1++;
+		x[i] = 0;
+	}
+	return x;
+};
+thx_bigint_Bigs.createFloatArray = function(length) {
+	var x = new Array(length);
+	var _g1 = 0;
+	var _g = length;
+	while(_g1 < _g) {
+		var i = _g1++;
+		x[i] = 0.0;
+	}
+	return x;
+};
+thx_bigint_Bigs.add = function(a,b) {
+	var l_a = a.length;
+	var l_b = b.length;
+	var r = new Array(l_a);
+	var carry = 0;
+	var sum;
+	var i = 0;
+	while(i < l_b) {
+		sum = a[i] + b[i] + carry;
+		if(sum >= 10000000) {
+			carry = 1;
+		} else {
+			carry = 0;
+		}
+		r[i++] = sum - carry * 10000000;
+	}
+	while(i < l_a) {
+		sum = a[i] + carry;
+		if(sum == 10000000) {
+			carry = 1;
+		} else {
+			carry = 0;
+		}
+		r[i++] = sum - carry * 10000000;
+	}
+	if(carry > 0) {
+		r.push(carry);
+	}
+	return r;
+};
+thx_bigint_Bigs.addAny = function(a,b) {
+	if(a.length >= b.length) {
+		return thx_bigint_Bigs.add(a,b);
+	}
+	return thx_bigint_Bigs.add(b,a);
+};
+thx_bigint_Bigs.addSmall = function(a,carry) {
+	var l = a.length;
+	var r = new Array(l);
+	var sum;
+	var i = 0;
+	while(i < l) {
+		sum = a[i] - 10000000 + carry;
+		carry = Math.floor(sum / 10000000);
+		r[i++] = sum - carry * 10000000;
+		++carry;
+	}
+	while(carry > 0) {
+		r[i++] = carry % 10000000;
+		carry = Math.floor(carry / 10000000);
+	}
+	return r;
+};
+thx_bigint_Bigs.compareToAbs = function(a,b) {
+	if(a.length != b.length) {
+		if(a.length > b.length) {
+			return 1;
+		} else {
+			return -1;
+		}
+	}
+	var i = a.length;
+	while(--i >= 0) if(a[i] != b[i]) {
+		if(a[i] > b[i]) {
+			return 1;
+		} else {
+			return -1;
+		}
+	}
+	return 0;
+};
+thx_bigint_Bigs.subtract = function(a,b) {
+	var a_l = a.length;
+	var b_l = b.length;
+	var r = new Array(a_l);
+	var borrow = 0;
+	var i = 0;
+	var difference;
+	while(i < b_l) {
+		difference = a[i] - borrow - b[i];
+		if(difference < 0) {
+			difference += 10000000;
+			borrow = 1;
+		} else {
+			borrow = 0;
+		}
+		r[i++] = difference;
+	}
+	while(i < a_l) {
+		difference = a[i] - borrow;
+		if(difference < 0) {
+			difference += 10000000;
+		} else {
+			r[i++] = difference;
+			break;
+		}
+		r[i++] = difference;
+	}
+	while(i < a_l) {
+		r[i] = a[i];
+		++i;
+	}
+	thx_bigint_Bigs.trim(r);
+	return r;
+};
+thx_bigint_Bigs.subtractAny = function(a,b,sign) {
+	var value;
+	if(thx_bigint_Bigs.compareToAbs(a,b) >= 0) {
+		value = thx_bigint_Bigs.subtract(a,b);
+	} else {
+		value = thx_bigint_Bigs.subtract(b,a);
+		sign = !sign;
+	}
+	var n = thx_bigint_Bigs.arrayToSmall(value);
+	if(null != n) {
+		if(sign) {
+			n = -n;
+		}
+		return new thx_bigint_Small(n);
+	}
+	return new thx_bigint_Big(value,sign);
+};
+thx_bigint_Bigs.subtractSmall = function(a,b,sign) {
+	var l = a.length;
+	var r = new Array(l);
+	var carry = -b;
+	var i;
+	var difference;
+	var _g1 = 0;
+	var _g = l;
+	while(_g1 < _g) {
+		var i1 = _g1++;
+		difference = a[i1] + carry;
+		carry = Math.floor(difference / 10000000);
+		r[i1] = difference < 0?difference % 10000000 + 10000000:difference;
+	}
+	var n = thx_bigint_Bigs.arrayToSmall(r);
+	if(null != n) {
+		if(sign) {
+			n = -n;
+		}
+		return new thx_bigint_Small(n);
+	}
+	return new thx_bigint_Big(r,sign);
+};
+thx_bigint_Bigs.multiplyLong = function(a,b) {
+	var a_l = a.length;
+	var b_l = b.length;
+	var r = thx_bigint_Bigs.createFloatArray(a_l + b_l);
+	var product;
+	var carry;
+	var a_i;
+	var b_j;
+	var _g1 = 0;
+	while(_g1 < a_l) {
+		var i = _g1++;
+		a_i = a[i];
+		var _g3 = 0;
+		while(_g3 < b_l) {
+			var j = _g3++;
+			b_j = b[j];
+			product = a_i * b_j + r[i + j];
+			var value = product / 10000000;
+			if(value < 0.0) {
+				carry = Math.ceil(value);
+			} else {
+				carry = Math.floor(value);
+			}
+			var tmp = i + j;
+			var value1 = product - carry * 10000000;
+			r[tmp] = value1 < 0.0?Math.ceil(value1):Math.floor(value1);
+			r[i + j + 1] += carry;
+		}
+	}
+	var arr = r.map(function(v) {
+		return v | 0;
+	});
+	thx_bigint_Bigs.trim(arr);
+	return arr;
+};
+thx_bigint_Bigs.multiplySmall = function(a,b) {
+	var l = a.length;
+	var r = new Array(l);
+	var carry = 0.0;
+	var product;
+	var i = 0;
+	var a_i;
+	var bf = b;
+	while(i < l) {
+		a_i = a[i];
+		product = carry + a[i] * bf;
+		var value = product / 10000000;
+		if(value < 0.0) {
+			carry = Math.ceil(value);
+		} else {
+			carry = Math.floor(value);
+		}
+		r[i++] = product - carry * 10000000;
+	}
+	while(carry > 0) {
+		r[i++] = carry % 10000000;
+		var value1 = carry / 10000000;
+		if(value1 < 0.0) {
+			carry = Math.ceil(value1);
+		} else {
+			carry = Math.floor(value1);
+		}
+	}
+	var arr = r.map(function(v) {
+		return v | 0;
+	});
+	thx_bigint_Bigs.trim(arr);
+	return arr;
+};
+thx_bigint_Bigs.shiftLeft = function(x,n) {
+	var r = [];
+	while(n-- > 0) r.push(0);
+	return r.concat(x);
+};
+thx_bigint_Bigs.multiplyKaratsuba = function(x,y) {
+	var a = x.length;
+	var b = y.length;
+	var n = a > b?a:b;
+	if(n <= 400) {
+		return thx_bigint_Bigs.multiplyLong(x,y);
+	}
+	n = Math.ceil(n / 2);
+	var b1 = x.slice(n);
+	var a1 = x.slice(0,n);
+	var d = y.slice(n);
+	var c = y.slice(0,n);
+	var ac = thx_bigint_Bigs.multiplyKaratsuba(a1,c);
+	var bd = thx_bigint_Bigs.multiplyKaratsuba(b1,d);
+	return thx_bigint_Bigs.addAny(thx_bigint_Bigs.addAny(ac,thx_bigint_Bigs.shiftLeft(thx_bigint_Bigs.subtract(thx_bigint_Bigs.subtract(thx_bigint_Bigs.multiplyKaratsuba(thx_bigint_Bigs.addAny(a1,b1),thx_bigint_Bigs.addAny(c,d)),ac),bd),n)),thx_bigint_Bigs.shiftLeft(bd,2 * n));
+};
+thx_bigint_Bigs.fromInt = function(value) {
+	var abs = value < 0?-value:value;
+	if(abs < 10000000) {
+		return new thx_bigint_Small(value);
+	} else {
+		return new thx_bigint_Big(thx_bigint_Bigs.smallToArray(abs),value < 0);
+	}
+};
+thx_bigint_Bigs.fromInt64 = function(value) {
+	return thx_bigint_Bigs.parseBase(haxe__$Int64_Int64_$Impl_$.toString(value),10);
+};
+thx_bigint_Bigs.toInt64 = function(value) {
+	return thx_Int64s.parse(value.toString());
+};
+thx_bigint_Bigs.fromFloat = function(value) {
+	if(isNaN(value) || !isFinite(value)) {
+		throw new thx_Error("Conversion to BigInt failed. Number is NaN or Infinite",null,{ fileName : "Bigs.hx", lineNumber : 305, className : "thx.bigint.Bigs", methodName : "fromFloat"});
+	}
+	var noFractions = value - value % 1;
+	var result = thx_bigint_Small.zero;
+	var neg = noFractions < 0.0;
+	var rest = neg?-noFractions:noFractions;
+	var i = 0;
+	var curr;
+	while(rest >= 1) {
+		curr = rest % 2;
+		rest /= 2;
+		if(curr >= 1) {
+			result = result.add(thx_bigint_Small.one.shiftLeft(i));
+		}
+		++i;
+	}
+	if(neg) {
+		return result.negate();
+	} else {
+		return result;
+	}
+};
+thx_bigint_Bigs.square = function(a) {
+	var l = a.length;
+	var r = thx_bigint_Bigs.createFloatArray(l + l);
+	var product;
+	var carry;
+	var a_i;
+	var a_j;
+	var _g1 = 0;
+	while(_g1 < l) {
+		var i = _g1++;
+		a_i = a[i];
+		var _g3 = 0;
+		while(_g3 < l) {
+			var j = _g3++;
+			a_j = a[j];
+			product = a_i * a_j + r[i + j];
+			var value = product / 10000000;
+			if(value < 0.0) {
+				carry = Math.ceil(value);
+			} else {
+				carry = Math.floor(value);
+			}
+			var tmp = i + j;
+			var value1 = product - carry * 10000000;
+			r[tmp] = value1 < 0.0?Math.ceil(value1):Math.floor(value1);
+			r[i + j + 1] += carry;
+		}
+	}
+	var arr = r.map(function(v) {
+		return v | 0;
+	});
+	thx_bigint_Bigs.trim(arr);
+	return arr;
+};
+thx_bigint_Bigs.divMod1 = function(a,b) {
+	var a_l = a.length;
+	var b_l = b.length;
+	var result = thx_bigint_Bigs.createFloatArray(b.length);
+	var divisorMostSignificantDigit = b[b_l - 1];
+	var lambda = Math.ceil(10000000 / (2 * divisorMostSignificantDigit));
+	var remainder = thx_bigint_Bigs.multiplySmall(a,lambda).map(function(v) {
+		return v;
+	});
+	var divisor = thx_bigint_Bigs.multiplySmall(b,lambda);
+	var quotientDigit;
+	var shift;
+	var carry;
+	var borrow;
+	var l;
+	var q;
+	if(remainder.length <= a_l) {
+		remainder.push(0.0);
+	}
+	divisor.push(0);
+	divisorMostSignificantDigit = divisor[b_l - 1];
+	shift = a_l - b_l;
+	while(shift >= 0) {
+		quotientDigit = 9999999.;
+		quotientDigit = Math.floor((remainder[shift + b_l] * 10000000 + remainder[shift + b_l - 1]) / divisorMostSignificantDigit);
+		carry = 0.0;
+		borrow = 0.0;
+		l = divisor.length;
+		var _g1 = 0;
+		while(_g1 < l) {
+			var i = _g1++;
+			carry += quotientDigit * divisor[i];
+			var value = carry / 10000000;
+			if(value < 0.0) {
+				q = Math.ceil(value);
+			} else {
+				q = Math.floor(value);
+			}
+			borrow += remainder[shift + i] - (carry - q * 10000000);
+			carry = q;
+			if(borrow < 0.0) {
+				remainder[shift + i] = borrow + 10000000;
+				borrow = -1.0;
+			} else {
+				remainder[shift + i] = borrow;
+				borrow = 0.0;
+			}
+		}
+		while(borrow != 0) {
+			--quotientDigit;
+			carry = 0;
+			var _g11 = 0;
+			while(_g11 < l) {
+				var i1 = _g11++;
+				carry += remainder[shift + i1] - 10000000 + divisor[i1];
+				if(carry < 0) {
+					remainder[shift + i1] = carry + 10000000;
+					carry = 0;
+				} else {
+					remainder[shift + i1] = carry;
+					carry = 1;
+				}
+			}
+			borrow += carry;
+		}
+		result[shift] = quotientDigit;
+		--shift;
+	}
+	var remainder1 = thx_bigint_Bigs.divModSmall(remainder.map(function(v1) {
+		return v1 | 0;
+	}),lambda).q;
+	var arr = result.map(function(v2) {
+		return v2 | 0;
+	});
+	thx_bigint_Bigs.trim(arr);
+	return [{ small : thx_bigint_Bigs.arrayToSmall(arr), big : arr},{ small : thx_bigint_Bigs.arrayToSmall(remainder1), big : remainder1}];
+};
+thx_bigint_Bigs.divMod2 = function(a,b) {
+	var a_l = a.length;
+	var b_l = b.length;
+	var result = [];
+	var part = [];
+	var guess;
+	var xlen;
+	var highx;
+	var highy;
+	var check;
+	while(a_l != 0) {
+		part.unshift(a[--a_l]);
+		if(thx_bigint_Bigs.compareToAbs(part,b) < 0) {
+			result.push(0);
+			continue;
+		}
+		xlen = part.length;
+		highx = part[xlen - 1] * 10000000 + part[xlen - 2];
+		highy = b[b_l - 1] * 10000000 + b[b_l - 2];
+		if(xlen > b_l) {
+			highx = (highx + 1) * 10000000;
+		}
+		guess = Math.ceil(highx / highy);
+		while(true) {
+			check = thx_bigint_Bigs.multiplySmall(b,guess);
+			if(thx_bigint_Bigs.compareToAbs(check,part) <= 0) {
+				break;
+			}
+			--guess;
+			if(!(guess != 0)) {
+				break;
+			}
+		}
+		result.push(guess);
+		part = thx_bigint_Bigs.subtract(part,check);
+	}
+	result.reverse();
+	return [{ small : thx_bigint_Bigs.arrayToSmall(result), big : result},{ small : thx_bigint_Bigs.arrayToSmall(part), big : part}];
+};
+thx_bigint_Bigs.divModSmall = function(value,lambda) {
+	var length = value.length;
+	var quotient = thx_bigint_Bigs.createArray(length);
+	var i;
+	var q;
+	var remainder;
+	var divisor;
+	remainder = 0;
+	i = length - 1;
+	while(i >= 0) {
+		divisor = remainder * 10000000 + value[i];
+		var value1 = divisor / lambda;
+		if(value1 < 0.0) {
+			q = Math.ceil(value1);
+		} else {
+			q = Math.floor(value1);
+		}
+		remainder = divisor - q * lambda;
+		quotient[i--] = q | 0;
+	}
+	return { q : quotient, r : remainder < 0.0?Math.ceil(remainder):Math.floor(remainder)};
+};
+thx_bigint_Bigs.parseBase = function(text,base) {
+	var val = thx_bigint_Small.zero;
+	var pow = thx_bigint_Small.one;
+	var bigBase = new thx_bigint_Small(base);
+	var isNegative = text.substring(0,1) == "-";
+	if(2 > base || base > 36) {
+		throw new thx_Error("base (" + base + ") must be a number between 2 ad 36",null,{ fileName : "Bigs.hx", lineNumber : 475, className : "thx.bigint.Bigs", methodName : "parseBase"});
+	}
+	if(isNegative) {
+		text = text.substring(1);
+	}
+	text = thx_Strings.trimCharsLeft(text,"0").toLowerCase();
+	if(text.length == 0) {
+		text = "0";
+	}
+	var e;
+	var tmp;
+	if(base == 10) {
+		e = text.indexOf("e");
+		tmp = e > 0;
+	} else {
+		tmp = false;
+	}
+	if(tmp) {
+		var sexp = text.substring(e + 1);
+		text = text.substring(0,e);
+		var exp = StringTools.startsWith(sexp,"+")?Std.parseInt(sexp.substring(1)):Std.parseInt(sexp);
+		var decimalPlace = text.indexOf(".");
+		if(decimalPlace >= 0) {
+			exp -= text.length - decimalPlace;
+			text = text.substring(0,decimalPlace) + text.substring(1 + decimalPlace);
+		}
+		text = thx_Strings.rpad(text,"0",text.length + exp);
+	}
+	var length = text.length;
+	if(length <= thx_bigint_Bigs.LOG_MAX_INT / Math.log(base)) {
+		return new thx_bigint_Small(thx_Ints.parse(text,base) * (isNegative?-1:1));
+	}
+	var digits = [];
+	var _g1 = 0;
+	while(_g1 < length) {
+		var charCode = HxOverrides.cca(text,_g1++);
+		if(48 <= charCode && charCode <= 57) {
+			digits.push(new thx_bigint_Small(charCode - 48));
+		} else if(97 <= charCode && charCode <= 122) {
+			digits.push(new thx_bigint_Small(charCode - 87));
+		} else {
+			throw new thx_Error("" + text + " is not a valid string",null,{ fileName : "Bigs.hx", lineNumber : 509, className : "thx.bigint.Bigs", methodName : "parseBase"});
+		}
+	}
+	digits.reverse();
+	var mul;
+	var _g11 = 0;
+	var _g = digits.length;
+	while(_g11 < _g) {
+		mul = digits[_g11++].multiply(pow);
+		val = val.add(mul);
+		pow = pow.multiply(bigBase);
+	}
+	if(isNegative) {
+		return val.negate();
+	} else {
+		return val;
+	}
+};
+thx_bigint_Bigs.bitwise = function(x,y,fn) {
+	var xSign = x.sign;
+	var ySign = y.sign;
+	var xRem = xSign?x.not():x;
+	var yRem = ySign?y.not():y;
+	var xBits = [];
+	var yBits = [];
+	var xStop = false;
+	var yStop = false;
+	while(!xStop || !yStop) {
+		if(xRem.isZero()) {
+			xStop = true;
+			xBits.push(xSign?1:0);
+		} else if(xSign) {
+			xBits.push(xRem.isEven()?1:0);
+		} else {
+			xBits.push(xRem.isEven()?0:1);
+		}
+		if(yRem.isZero()) {
+			yStop = true;
+			yBits.push(ySign?1:0);
+		} else if(ySign) {
+			yBits.push(yRem.isEven()?1:0);
+		} else {
+			yBits.push(yRem.isEven()?0:1);
+		}
+		xRem = xRem.divide(thx_bigint_Small.two);
+		yRem = yRem.divide(thx_bigint_Small.two);
+	}
+	var result = [];
+	var _g1 = 0;
+	var _g = xBits.length;
+	while(_g1 < _g) {
+		var i = _g1++;
+		result.push(fn(xBits[i],yBits[i]));
+	}
+	var a = thx_bigint_Bigs.fromInt(result.pop());
+	var p = thx_bigint_Small.two.pow(thx_bigint_Bigs.fromInt(result.length));
+	var sum = a.negate().multiply(p);
+	while(result.length > 0) {
+		a = thx_bigint_Bigs.fromInt(result.pop());
+		p = thx_bigint_Small.two.pow(thx_bigint_Bigs.fromInt(result.length));
+		sum = sum.add(a.multiply(p));
+	}
+	return sum;
+};
+var thx_bigint_Big = function(value,sign) {
+	this.sign = sign;
+	this.value = value;
+	this.isSmall = false;
+};
+thx_bigint_Big.__name__ = ["thx","bigint","Big"];
+thx_bigint_Big.__interfaces__ = [thx_bigint_BigIntImpl];
+thx_bigint_Big.prototype = {
+	value: null
+	,sign: null
+	,isSmall: null
+	,add: function(that) {
+		if(that.isZero()) {
+			return this;
+		}
+		if(this.isZero()) {
+			return that;
+		}
+		if(this.sign != that.sign) {
+			return this.subtract(that.negate());
+		}
+		if(that.isSmall) {
+			return this.addSmall(that);
+		} else {
+			return this.addBig(that);
+		}
+	}
+	,addSmall: function(small) {
+		var v = small.value;
+		return new thx_bigint_Big(thx_bigint_Bigs.addSmall(this.value,v < 0?-v:v),this.sign);
+	}
+	,addBig: function(big) {
+		return new thx_bigint_Big(thx_bigint_Bigs.addAny(this.value,big.value),this.sign);
+	}
+	,subtract: function(that) {
+		if(that.isZero()) {
+			return this;
+		}
+		if(this.isZero()) {
+			return that.negate();
+		}
+		if(this.sign != that.sign) {
+			return this.add(that.negate());
+		}
+		if(that.isSmall) {
+			return this.subtractSmall(that);
+		} else {
+			return this.subtractBig(that);
+		}
+	}
+	,subtractSmall: function(small) {
+		var v = small.value;
+		return thx_bigint_Bigs.subtractSmall(this.value,v < 0?-v:v,this.sign);
+	}
+	,subtractBig: function(big) {
+		return thx_bigint_Bigs.subtractAny(this.value,big.value,this.sign);
+	}
+	,divide: function(that) {
+		return this.divMod(that).quotient;
+	}
+	,divMod: function(that) {
+		if(that.isZero()) {
+			throw new thx_Error("division by zero",null,{ fileName : "Big.hx", lineNumber : 55, className : "thx.bigint.Big", methodName : "divMod"});
+		}
+		if(that.isSmall) {
+			return this.divModSmall(that);
+		} else {
+			return this.divModBig(that);
+		}
+	}
+	,divModSmall: function(small) {
+		var v = small.value;
+		var values = thx_bigint_Bigs.divModSmall(this.value,v < 0?-v:v);
+		var quotient = thx_bigint_Bigs.arrayToSmall(values.q);
+		var remainder = values.r;
+		if(this.sign) {
+			remainder = -remainder;
+		}
+		if(null != quotient) {
+			if(this.sign != small.sign) {
+				quotient = -quotient;
+			}
+			return { quotient : new thx_bigint_Small(quotient), remainder : new thx_bigint_Small(remainder)};
+		}
+		return { quotient : new thx_bigint_Big(values.q,this.sign != small.sign), remainder : new thx_bigint_Small(remainder)};
+	}
+	,divModBig: function(big) {
+		var comparison = thx_bigint_Bigs.compareToAbs(this.value,big.value);
+		if(comparison == -1) {
+			return { quotient : thx_bigint_Small.zero, remainder : this};
+		}
+		if(comparison == 0) {
+			return { quotient : this.sign == big.sign?thx_bigint_Small.one:thx_bigint_Small.negativeOne, remainder : thx_bigint_Small.zero};
+		}
+		var values = this.value.length + big.value.length <= 200?thx_bigint_Bigs.divMod1(this.value,big.value):thx_bigint_Bigs.divMod2(this.value,big.value);
+		var q = values[0].small;
+		var quotient;
+		var remainder;
+		var qSign = this.sign != big.sign;
+		var r = values[1].small;
+		var mSign = this.sign;
+		if(null != q) {
+			if(qSign) {
+				q = -q;
+			}
+			quotient = new thx_bigint_Small(q);
+		} else {
+			quotient = new thx_bigint_Big(values[0].big,qSign);
+		}
+		if(null != r) {
+			if(mSign) {
+				r = -r;
+			}
+			remainder = new thx_bigint_Small(r);
+		} else {
+			remainder = new thx_bigint_Big(values[1].big,mSign);
+		}
+		return { quotient : quotient, remainder : remainder};
+	}
+	,multiply: function(that) {
+		if(that.isZero()) {
+			return thx_bigint_Small.zero;
+		}
+		if(that.isSmall) {
+			return this.multiplySmall(that);
+		} else {
+			return this.multiplyBig(that);
+		}
+	}
+	,multiplySmall: function(small) {
+		var v = small.value;
+		return new thx_bigint_Big(thx_bigint_Bigs.multiplyLong(this.value,thx_bigint_Bigs.smallToArray(v < 0?-v:v)),this.sign != small.sign);
+	}
+	,multiplyBig: function(big) {
+		if(this.value.length + big.value.length > 4000) {
+			return new thx_bigint_Big(thx_bigint_Bigs.multiplyKaratsuba(this.value,big.value),this.sign != big.sign);
+		}
+		return new thx_bigint_Big(thx_bigint_Bigs.multiplyLong(this.value,big.value),this.sign != big.sign);
+	}
+	,modulo: function(that) {
+		return this.divMod(that).remainder;
+	}
+	,random: function() {
+		var length = this.value.length - 1;
+		var result = [];
+		var restricted = true;
+		var i = length;
+		var top;
+		var digit;
+		while(i >= 0) {
+			if(restricted) {
+				top = this.value[i];
+			} else {
+				top = 10000000;
+			}
+			var value = Math.random() * top;
+			if(value < 0.0) {
+				digit = Math.ceil(value);
+			} else {
+				digit = Math.floor(value);
+			}
+			result.unshift(digit);
+			if(digit < top) {
+				restricted = false;
+			}
+			--i;
+		}
+		var v = thx_bigint_Bigs.arrayToSmall(result);
+		if(null != v) {
+			return new thx_bigint_Small(v);
+		} else {
+			return new thx_bigint_Big(result,false);
+		}
+	}
+	,abs: function() {
+		return new thx_bigint_Big(this.value,false);
+	}
+	,negate: function() {
+		return new thx_bigint_Big(this.value,!this.sign);
+	}
+	,next: function() {
+		return this.add(thx_bigint_Small.one);
+	}
+	,prev: function() {
+		return this.subtract(thx_bigint_Small.one);
+	}
+	,pow: function(exp) {
+		if(this.isZero()) {
+			if(exp.isZero()) {
+				return thx_bigint_Small.one;
+			} else {
+				return this;
+			}
+		}
+		if(this.isUnit()) {
+			if(this.sign) {
+				if(exp.isEven()) {
+					return thx_bigint_Small.one;
+				} else {
+					return thx_bigint_Small.negativeOne;
+				}
+			} else {
+				return thx_bigint_Small.one;
+			}
+		}
+		if(exp.sign) {
+			return thx_bigint_Small.zero;
+		}
+		if(!exp.isSmall) {
+			throw new thx_Error("The exponent " + Std.string(exp) + " is too large.",null,{ fileName : "Big.hx", lineNumber : 174, className : "thx.bigint.Big", methodName : "pow"});
+		}
+		var b = exp.value;
+		var x = this;
+		var y = thx_bigint_Small.one;
+		while(true) {
+			if((b & 1) == 1) {
+				y = y.multiply(x);
+				--b;
+			}
+			if(b == 0) {
+				break;
+			}
+			b = b / 2 | 0;
+			x = x.square();
+		}
+		return y;
+	}
+	,shiftLeft: function(n) {
+		if(n < 0) {
+			return this.shiftRight(-n);
+		}
+		var result = this;
+		while(n >= thx_bigint_Bigs.powers2Length) {
+			result = result.multiply(thx_bigint_Bigs.bigHighestPower2);
+			n -= thx_bigint_Bigs.powers2Length - 1;
+		}
+		return result.multiply(thx_bigint_Bigs.bigPowersOfTwo[n]);
+	}
+	,shiftRight: function(n) {
+		if(n < 0) {
+			return this.shiftLeft(-n);
+		}
+		var result = this;
+		var remQuo;
+		while(n >= thx_bigint_Bigs.powers2Length) {
+			if(result.isZero()) {
+				return result;
+			}
+			remQuo = result.divMod(thx_bigint_Bigs.bigHighestPower2);
+			if(remQuo.remainder.sign) {
+				result = remQuo.quotient.prev();
+			} else {
+				result = remQuo.quotient;
+			}
+			n -= thx_bigint_Bigs.powers2Length - 1;
+		}
+		remQuo = result.divMod(thx_bigint_Bigs.bigPowersOfTwo[n]);
+		if(remQuo.remainder.sign) {
+			return remQuo.quotient.prev();
+		} else {
+			return remQuo.quotient;
+		}
+	}
+	,square: function() {
+		return new thx_bigint_Big(thx_bigint_Bigs.square(this.value),false);
+	}
+	,isEven: function() {
+		return (this.value[0] & 1) == 0;
+	}
+	,isOdd: function() {
+		return (this.value[0] & 1) == 1;
+	}
+	,isZero: function() {
+		return this.value.length == 0;
+	}
+	,isUnit: function() {
+		return false;
+	}
+	,compareTo: function(that) {
+		if(this.sign != that.sign) {
+			if(this.sign) {
+				return -1;
+			} else {
+				return 1;
+			}
+		}
+		if(that.isSmall) {
+			return this.compareToSmall(that);
+		} else {
+			return this.compareToBig(that);
+		}
+	}
+	,compareToSmall: function(small) {
+		var v = small.value;
+		return thx_bigint_Bigs.compareToAbs(this.value,thx_bigint_Bigs.smallToArray(v < 0?-v:v)) * (this.sign?-1:1);
+	}
+	,compareToBig: function(big) {
+		return thx_bigint_Bigs.compareToAbs(this.value,big.value) * (this.sign?-1:1);
+	}
+	,compareToAbs: function(that) {
+		if(that.isSmall) {
+			return this.compareToAbsSmall(that);
+		} else {
+			return this.compareToAbsBig(that);
+		}
+	}
+	,compareToAbsSmall: function(small) {
+		var v = small.value;
+		return thx_bigint_Bigs.compareToAbs(this.value,thx_bigint_Bigs.smallToArray(v < 0?-v:v));
+	}
+	,compareToAbsBig: function(big) {
+		return thx_bigint_Bigs.compareToAbs(this.value,big.value);
+	}
+	,not: function() {
+		return this.negate().prev();
+	}
+	,and: function(that) {
+		return thx_bigint_Bigs.bitwise(this,that,function(a,b) {
+			return a & b;
+		});
+	}
+	,or: function(that) {
+		return thx_bigint_Bigs.bitwise(this,that,function(a,b) {
+			return a | b;
+		});
+	}
+	,xor: function(that) {
+		return thx_bigint_Bigs.bitwise(this,that,function(a,b) {
+			return a ^ b;
+		});
+	}
+	,toFloat: function() {
+		var x = this.toString();
+		return parseFloat(x);
+	}
+	,toInt: function() {
+		var v = thx_bigint_Bigs.arrayToSmall(this.value);
+		if(null == v) {
+			throw new thx_Error("overflow",null,{ fileName : "Big.hx", lineNumber : 274, className : "thx.bigint.Big", methodName : "toInt"});
+		}
+		return (this.sign?-1:1) * v;
+	}
+	,toString: function() {
+		return this.toStringWithBase(10);
+	}
+	,toStringWithBase: function(base) {
+		if(this.isZero()) {
+			return "0";
+		}
+		if(base == 10) {
+			var l = this.value.length;
+			var out = "" + this.value[--l];
+			var digit;
+			while(--l >= 0) {
+				digit = "" + this.value[l];
+				out += "0000000".substring(digit.length) + digit;
+			}
+			return (this.sign?"-":"") + out;
+		}
+		var out1 = [];
+		var baseBig = new thx_bigint_Small(base);
+		var left = this;
+		var divmod;
+		while(left.sign || left.compareToAbs(baseBig) >= 0) {
+			divmod = left.divMod(baseBig);
+			left = divmod.quotient;
+			var digit1 = divmod.remainder;
+			if(digit1.sign) {
+				digit1 = baseBig.subtract(digit1).abs();
+				left = left.next();
+			}
+			out1.push(digit1.toStringWithBase(base));
+		}
+		out1.push(left.toStringWithBase(base));
+		out1.reverse();
+		return (this.sign?"-":"") + out1.join("");
+	}
+	,__class__: thx_bigint_Big
+};
+var thx_bigint_DecimalImpl = function(value,scale) {
+	this.value = value;
+	this.scale = scale;
+};
+thx_bigint_DecimalImpl.__name__ = ["thx","bigint","DecimalImpl"];
+thx_bigint_DecimalImpl.randomBetween = function(a,b) {
+	var lhs = a.matchScale(b);
+	return new thx_bigint_DecimalImpl(thx__$BigInt_BigInt_$Impl_$.randomBetween(lhs.value,b.matchScale(a).value),lhs.scale);
+};
+thx_bigint_DecimalImpl.prototype = {
+	value: null
+	,scale: null
+	,add: function(that) {
+		var lhs = this.matchScale(that);
+		return new thx_bigint_DecimalImpl(lhs.value.add(that.matchScale(this).value),lhs.scale);
+	}
+	,subtract: function(that) {
+		var lhs = this.matchScale(that);
+		return new thx_bigint_DecimalImpl(lhs.value.subtract(that.matchScale(this).value),lhs.scale);
+	}
+	,divide: function(that) {
+		return this.divideWithScale(that,thx_bigint_Decimals.divisionExtraScale);
+	}
+	,divideWithScale: function(that,scale) {
+		if(that.isZero()) {
+			throw new thx_Error("division by zero",null,{ fileName : "DecimalImpl.hx", lineNumber : 42, className : "thx.bigint.DecimalImpl", methodName : "divideWithScale"});
+		}
+		var lhs = this.matchScale(that);
+		var rhs = that.matchScale(this);
+		var qr = lhs.value.multiply(thx_bigint_Small.ten.pow(thx_bigint_Bigs.fromInt(rhs.scale + scale))).divMod(rhs.value);
+		var nscale = rhs.scale + scale;
+		return new thx_bigint_DecimalImpl(qr.quotient,nscale).trim(nscale);
+	}
+	,moduloWithScale: function(that,scale) {
+		if(that.isZero()) {
+			throw new thx_Error("modulo by zero",null,{ fileName : "DecimalImpl.hx", lineNumber : 53, className : "thx.bigint.DecimalImpl", methodName : "moduloWithScale"});
+		}
+		var lhs = this.matchScale(that);
+		var rhs = that.matchScale(this);
+		var pow = thx_bigint_Small.ten.pow(thx_bigint_Bigs.fromInt(scale));
+		var qr = lhs.value.multiply(pow).divMod(rhs.value.multiply(pow));
+		var nscale = lhs.scale + scale;
+		return new thx_bigint_DecimalImpl(qr.remainder,nscale).trim(nscale);
+	}
+	,multiply: function(that) {
+		return new thx_bigint_DecimalImpl(this.value.multiply(that.value),this.scale + that.scale);
+	}
+	,modulo: function(that) {
+		return this.moduloWithScale(that,thx_bigint_Decimals.divisionExtraScale);
+	}
+	,abs: function() {
+		return new thx_bigint_DecimalImpl(this.value.abs(),this.scale);
+	}
+	,negate: function() {
+		return new thx_bigint_DecimalImpl(this.value.negate(),this.scale);
+	}
+	,next: function() {
+		return this.add(thx_bigint_DecimalImpl.one);
+	}
+	,prev: function() {
+		return this.subtract(thx_bigint_DecimalImpl.one);
+	}
+	,pow: function(exp) {
+		if(exp < 0) {
+			return thx__$Decimal_Decimal_$Impl_$.one.divideWithScale(thx__$Decimal_Decimal_$Impl_$.fromBigInt(this.value.pow(thx_bigint_Bigs.fromInt(-exp))),(this.scale + 1) * -exp);
+		} else {
+			return new thx_bigint_DecimalImpl(this.value.pow(thx_bigint_Bigs.fromInt(exp)),this.scale * exp);
+		}
+	}
+	,ceilTo: function(newscale) {
+		if(this.isZero()) {
+			return this;
+		}
+		var scaled = this.scaleTo(newscale);
+		if((scaled.isZero()?thx_bigint_DecimalImpl.one:this.modulo(scaled)).multiply(thx_bigint_DecimalImpl.ten.pow(newscale)).toFloat() <= 0) {
+			return scaled;
+		} else {
+			return new thx_bigint_DecimalImpl(scaled.value.add(thx_bigint_Small.one),scaled.scale);
+		}
+	}
+	,floorTo: function(newscale) {
+		return this.scaleTo(newscale);
+	}
+	,roundTo: function(newscale) {
+		if(this.isZero()) {
+			return this;
+		}
+		var scaled = this.scaleTo(newscale);
+		if((scaled.isZero()?thx_bigint_DecimalImpl.one:this.modulo(scaled)).multiply(thx_bigint_DecimalImpl.ten.pow(newscale)).toFloat() < 0.5) {
+			return scaled;
+		} else {
+			return new thx_bigint_DecimalImpl(scaled.value.add(thx_bigint_Small.one),scaled.scale);
+		}
+	}
+	,scaleTo: function(newscale) {
+		if(newscale == this.scale) {
+			return this;
+		}
+		if(newscale > this.scale) {
+			return new thx_bigint_DecimalImpl(this.value.multiply(thx_bigint_Small.ten.pow(thx_bigint_Bigs.fromInt(newscale - this.scale))),newscale);
+		} else {
+			return new thx_bigint_DecimalImpl(this.value.divide(thx_bigint_Small.ten.pow(thx_bigint_Bigs.fromInt(this.scale - newscale))),newscale);
+		}
+	}
+	,square: function() {
+		return this.multiply(this);
+	}
+	,isNegative: function() {
+		return this.value.sign;
+	}
+	,isEven: function() {
+		return this.value.isEven();
+	}
+	,isOdd: function() {
+		return this.value.isOdd();
+	}
+	,isZero: function() {
+		return this.value.isZero();
+	}
+	,compareTo: function(that) {
+		return this.matchScale(that).value.compareTo(that.matchScale(this).value);
+	}
+	,compareToAbs: function(that) {
+		return this.matchScale(that).value.compareToAbs(that.matchScale(this).value);
+	}
+	,trim: function(min) {
+		if(min == null) {
+			min = 0;
+		}
+		if(this.scale == 0) {
+			return this;
+		}
+		var s = this.toString();
+		var parts = s.split(".");
+		var dec = thx_Strings.rpad(thx_Strings.trimCharsRight(parts[1],"0"),"0",min);
+		if(dec.length > 0) {
+			s = parts[0] + "." + dec;
+		} else {
+			s = parts[0];
+		}
+		return thx_bigint_Decimals.parse(s);
+	}
+	,toFloat: function() {
+		var x = this.toString();
+		return parseFloat(x);
+	}
+	,toInt: function() {
+		return this.value.divide(thx_bigint_Small.ten.pow(thx_bigint_Bigs.fromInt(this.scale))).toInt();
+	}
+	,toString: function() {
+		var sign = this.value.sign;
+		var i = (sign?this.value.negate():this.value).toString();
+		var l = i.length;
+		if(this.scale == 0) {
+			return (sign?"-":"") + i;
+		} else if(i.length <= this.scale) {
+			return (sign?"-":"") + "0." + thx_Strings.lpad(i,"0",this.scale);
+		} else {
+			return (sign?"-":"") + i.substring(0,l - this.scale) + "." + i.substring(l - this.scale);
+		}
+	}
+	,matchScale: function(that) {
+		if(this.scale >= that.scale) {
+			return this;
+		}
+		return this.scaleTo(that.scale);
+	}
+	,__class__: thx_bigint_DecimalImpl
+};
+var thx__$Decimal_Decimal_$Impl_$ = {};
+thx__$Decimal_Decimal_$Impl_$.__name__ = ["thx","_Decimal","Decimal_Impl_"];
+thx__$Decimal_Decimal_$Impl_$.fromInt64 = function(value) {
+	return new thx_bigint_DecimalImpl(thx_bigint_Bigs.fromInt64(value),0);
+};
+thx__$Decimal_Decimal_$Impl_$.fromBigInt = function(value) {
+	return new thx_bigint_DecimalImpl(value,0);
+};
+thx__$Decimal_Decimal_$Impl_$.fromInt = function(value) {
+	return thx_bigint_Decimals.fromInt(value);
+};
+thx__$Decimal_Decimal_$Impl_$.fromFloat = function(value) {
+	return thx_bigint_Decimals.fromFloat(value);
+};
+thx__$Decimal_Decimal_$Impl_$.fromString = function(value) {
+	return thx_bigint_Decimals.parse(value);
+};
+thx__$Decimal_Decimal_$Impl_$.randomBetween = function(a,b) {
+	return thx_bigint_DecimalImpl.randomBetween(a,b);
+};
+thx__$Decimal_Decimal_$Impl_$.compare = function(a,b) {
+	return a.compareTo(b);
+};
+thx__$Decimal_Decimal_$Impl_$.isZero = function(this1) {
+	return this1.isZero();
+};
+thx__$Decimal_Decimal_$Impl_$.abs = function(this1) {
+	return this1.abs();
+};
+thx__$Decimal_Decimal_$Impl_$.compareTo = function(this1,that) {
+	return this1.compareTo(that);
+};
+thx__$Decimal_Decimal_$Impl_$.compareAbs = function(this1,that) {
+	return this1.compareToAbs(that);
+};
+thx__$Decimal_Decimal_$Impl_$.next = function(this1) {
+	return this1.next();
+};
+thx__$Decimal_Decimal_$Impl_$.prev = function(this1) {
+	return this1.prev();
+};
+thx__$Decimal_Decimal_$Impl_$.square = function(this1) {
+	return this1.square();
+};
+thx__$Decimal_Decimal_$Impl_$.pow = function(this1,exp) {
+	return this1.pow(exp);
+};
+thx__$Decimal_Decimal_$Impl_$.isEven = function(this1) {
+	return this1.isEven();
+};
+thx__$Decimal_Decimal_$Impl_$.isOdd = function(this1) {
+	return this1.isOdd();
+};
+thx__$Decimal_Decimal_$Impl_$.isNegative = function(this1) {
+	return this1.isNegative();
+};
+thx__$Decimal_Decimal_$Impl_$.isPositive = function(this1) {
+	return this1.compareTo(thx__$Decimal_Decimal_$Impl_$.zero) > 0;
+};
+thx__$Decimal_Decimal_$Impl_$.max = function(this1,that) {
+	if(thx__$Decimal_Decimal_$Impl_$.greater(this1,that)) {
+		return this1;
+	} else {
+		return that;
+	}
+};
+thx__$Decimal_Decimal_$Impl_$.min = function(this1,that) {
+	if(thx__$Decimal_Decimal_$Impl_$.less(this1,that)) {
+		return this1;
+	} else {
+		return that;
+	}
+};
+thx__$Decimal_Decimal_$Impl_$.ceil = function(this1) {
+	return this1.ceilTo(0);
+};
+thx__$Decimal_Decimal_$Impl_$.ceilTo = function(this1,decimals) {
+	return this1.ceilTo(decimals);
+};
+thx__$Decimal_Decimal_$Impl_$.floor = function(this1) {
+	return this1.floorTo(0);
+};
+thx__$Decimal_Decimal_$Impl_$.floorTo = function(this1,decimals) {
+	return this1.floorTo(decimals);
+};
+thx__$Decimal_Decimal_$Impl_$.round = function(this1) {
+	return this1.roundTo(0);
+};
+thx__$Decimal_Decimal_$Impl_$.roundTo = function(this1,decimals) {
+	return this1.roundTo(decimals);
+};
+thx__$Decimal_Decimal_$Impl_$.scaleTo = function(this1,decimals) {
+	return this1.scaleTo(decimals);
+};
+thx__$Decimal_Decimal_$Impl_$.trim = function(this1,mindecimals) {
+	return this1.trim(mindecimals);
+};
+thx__$Decimal_Decimal_$Impl_$.greaterThan = function(this1,that) {
+	return this1.compareTo(that) > 0;
+};
+thx__$Decimal_Decimal_$Impl_$.greater = function(self,that) {
+	return self.compareTo(that) > 0;
+};
+thx__$Decimal_Decimal_$Impl_$.greaterEqualsTo = function(this1,that) {
+	return this1.compareTo(that) >= 0;
+};
+thx__$Decimal_Decimal_$Impl_$.greaterEquals = function(self,that) {
+	return self.compareTo(that) >= 0;
+};
+thx__$Decimal_Decimal_$Impl_$.lessThan = function(this1,that) {
+	return this1.compareTo(that) < 0;
+};
+thx__$Decimal_Decimal_$Impl_$.less = function(self,that) {
+	return self.compareTo(that) < 0;
+};
+thx__$Decimal_Decimal_$Impl_$.lessEqualsTo = function(this1,that) {
+	return this1.compareTo(that) <= 0;
+};
+thx__$Decimal_Decimal_$Impl_$.lessEquals = function(self,that) {
+	return self.compareTo(that) <= 0;
+};
+thx__$Decimal_Decimal_$Impl_$.equalsTo = function(this1,that) {
+	return this1.compareTo(that) == 0;
+};
+thx__$Decimal_Decimal_$Impl_$.equals = function(self,that) {
+	return self.compareTo(that) == 0;
+};
+thx__$Decimal_Decimal_$Impl_$.notEqualsTo = function(this1,that) {
+	return this1.compareTo(that) != 0;
+};
+thx__$Decimal_Decimal_$Impl_$.notEquals = function(self,that) {
+	return self.compareTo(that) != 0;
+};
+thx__$Decimal_Decimal_$Impl_$.add = function(this1,that) {
+	return this1.add(that);
+};
+thx__$Decimal_Decimal_$Impl_$.subtract = function(this1,that) {
+	return this1.subtract(that);
+};
+thx__$Decimal_Decimal_$Impl_$.negate = function(this1) {
+	return this1.negate();
+};
+thx__$Decimal_Decimal_$Impl_$.preIncrement = function(this1) {
+	this1 = this1.add(thx__$Decimal_Decimal_$Impl_$.one);
+	return this1;
+};
+thx__$Decimal_Decimal_$Impl_$.postIncrement = function(this1) {
+	var v = this1;
+	this1 = this1.add(thx__$Decimal_Decimal_$Impl_$.one);
+	return v;
+};
+thx__$Decimal_Decimal_$Impl_$.preDecrement = function(this1) {
+	this1 = this1.subtract(thx__$Decimal_Decimal_$Impl_$.one);
+	return this1;
+};
+thx__$Decimal_Decimal_$Impl_$.postDecrement = function(this1) {
+	var v = this1;
+	this1 = this1.subtract(thx__$Decimal_Decimal_$Impl_$.one);
+	return v;
+};
+thx__$Decimal_Decimal_$Impl_$.multiply = function(this1,that) {
+	return this1.multiply(that);
+};
+thx__$Decimal_Decimal_$Impl_$.divide = function(this1,that) {
+	return this1.divide(that);
+};
+thx__$Decimal_Decimal_$Impl_$.modulo = function(this1,that) {
+	return this1.modulo(that);
+};
+thx__$Decimal_Decimal_$Impl_$.toFloat = function(this1) {
+	return this1.toFloat();
+};
+thx__$Decimal_Decimal_$Impl_$.toInt = function(this1) {
+	return this1.toInt();
+};
+thx__$Decimal_Decimal_$Impl_$.toInt64 = function(this1) {
+	return thx_bigint_Bigs.toInt64(thx__$Decimal_Decimal_$Impl_$.toBigInt(this1));
+};
+thx__$Decimal_Decimal_$Impl_$.toBigInt = function(this1) {
+	return this1.value.divide(thx_bigint_Small.ten.pow(thx_bigint_Bigs.fromInt(this1.scale)));
+};
+thx__$Decimal_Decimal_$Impl_$.toString = function(this1) {
+	return this1.toString();
+};
+thx__$Decimal_Decimal_$Impl_$.get_divisionScale = function() {
+	return thx_bigint_Decimals.divisionExtraScale;
+};
+thx__$Decimal_Decimal_$Impl_$.set_divisionScale = function(v) {
+	return thx_bigint_Decimals.divisionExtraScale = v;
 };
 var thx_Dynamics = function() { };
 thx_Dynamics.__name__ = ["thx","Dynamics"];
@@ -6585,6 +12816,359 @@ thx_Functions.noop = function() {
 };
 thx_Functions.lift = function(t,f) {
 	return f(t);
+};
+var thx_Int64s = function() { };
+thx_Int64s.__name__ = ["thx","Int64s"];
+thx_Int64s.abs = function(value) {
+	if(thx_Int64s.compare(value,new haxe__$Int64__$_$_$Int64(0,0)) > 0) {
+		return value;
+	} else {
+		var high = ~value.high;
+		var low = -value.low;
+		if(low == 0) {
+			++high;
+			high = high | 0;
+		}
+		return new haxe__$Int64__$_$_$Int64(high,low);
+	}
+};
+thx_Int64s.compare = function(a,b) {
+	var v = a.high - b.high | 0;
+	if(v != 0) {
+		v = v;
+	} else {
+		v = haxe__$Int32_Int32_$Impl_$.ucompare(a.low,b.low);
+	}
+	return a.high < 0?b.high < 0?v:-1:b.high >= 0?v:1;
+};
+thx_Int64s.parse = function(s) {
+	var sIsNegative = false;
+	var multiplier = new haxe__$Int64__$_$_$Int64(0,1);
+	var current = new haxe__$Int64__$_$_$Int64(0,0);
+	if(s.charAt(0) == "-") {
+		sIsNegative = true;
+		s = s.substring(1,s.length);
+	}
+	var len = s.length;
+	var _g1 = 0;
+	while(_g1 < len) {
+		var digitInt = HxOverrides.cca(s,len - 1 - _g1++) - 48;
+		if(digitInt < 0 || digitInt > 9) {
+			throw new thx_Error("String should only contain digits (and an optional - sign)",null,{ fileName : "Int64s.hx", lineNumber : 70, className : "thx.Int64s", methodName : "parse"});
+		}
+		var digit = new haxe__$Int64__$_$_$Int64(digitInt >> 31,digitInt);
+		if(sIsNegative) {
+			var al = multiplier.low & 65535;
+			var ah = multiplier.low >>> 16;
+			var bl = digit.low & 65535;
+			var bh = digit.low >>> 16;
+			var p00 = haxe__$Int32_Int32_$Impl_$.mul(al,bl);
+			var p10 = haxe__$Int32_Int32_$Impl_$.mul(ah,bl);
+			var p01 = haxe__$Int32_Int32_$Impl_$.mul(al,bh);
+			var p11 = haxe__$Int32_Int32_$Impl_$.mul(ah,bh);
+			var low = p00;
+			var high = (p11 + (p01 >>> 16) | 0) + (p10 >>> 16) | 0;
+			p01 = p01 << 16;
+			low = p00 + p01 | 0;
+			if(haxe__$Int32_Int32_$Impl_$.ucompare(low,p01) < 0) {
+				++high;
+				high = high | 0;
+			}
+			p10 = p10 << 16;
+			low = low + p10 | 0;
+			if(haxe__$Int32_Int32_$Impl_$.ucompare(low,p10) < 0) {
+				++high;
+				high = high | 0;
+			}
+			high = high + (haxe__$Int32_Int32_$Impl_$.mul(multiplier.low,digit.high) + haxe__$Int32_Int32_$Impl_$.mul(multiplier.high,digit.low) | 0) | 0;
+			var b = new haxe__$Int64__$_$_$Int64(high,low);
+			var high1 = current.high - b.high | 0;
+			var low1 = current.low - b.low | 0;
+			if(haxe__$Int32_Int32_$Impl_$.ucompare(current.low,b.low) < 0) {
+				--high1;
+				high1 = high1 | 0;
+			}
+			current = new haxe__$Int64__$_$_$Int64(high1,low1);
+			if(!(current.high < 0)) {
+				throw new thx_Error("Int64 parsing error: Underflow",null,{ fileName : "Int64s.hx", lineNumber : 76, className : "thx.Int64s", methodName : "parse"});
+			}
+		} else {
+			var al1 = multiplier.low & 65535;
+			var ah1 = multiplier.low >>> 16;
+			var bl1 = digit.low & 65535;
+			var bh1 = digit.low >>> 16;
+			var p001 = haxe__$Int32_Int32_$Impl_$.mul(al1,bl1);
+			var p101 = haxe__$Int32_Int32_$Impl_$.mul(ah1,bl1);
+			var p011 = haxe__$Int32_Int32_$Impl_$.mul(al1,bh1);
+			var p111 = haxe__$Int32_Int32_$Impl_$.mul(ah1,bh1);
+			var low2 = p001;
+			var high2 = (p111 + (p011 >>> 16) | 0) + (p101 >>> 16) | 0;
+			p011 = p011 << 16;
+			low2 = p001 + p011 | 0;
+			if(haxe__$Int32_Int32_$Impl_$.ucompare(low2,p011) < 0) {
+				++high2;
+				high2 = high2 | 0;
+			}
+			p101 = p101 << 16;
+			low2 = low2 + p101 | 0;
+			if(haxe__$Int32_Int32_$Impl_$.ucompare(low2,p101) < 0) {
+				++high2;
+				high2 = high2 | 0;
+			}
+			high2 = high2 + (haxe__$Int32_Int32_$Impl_$.mul(multiplier.low,digit.high) + haxe__$Int32_Int32_$Impl_$.mul(multiplier.high,digit.low) | 0) | 0;
+			var b1 = new haxe__$Int64__$_$_$Int64(high2,low2);
+			var high3 = current.high + b1.high | 0;
+			var low3 = current.low + b1.low | 0;
+			if(haxe__$Int32_Int32_$Impl_$.ucompare(low3,current.low) < 0) {
+				++high3;
+				high3 = high3 | 0;
+			}
+			current = new haxe__$Int64__$_$_$Int64(high3,low3);
+			if(current.high < 0) {
+				throw new thx_Error("Int64 parsing error: Overflow",null,{ fileName : "Int64s.hx", lineNumber : 80, className : "thx.Int64s", methodName : "parse"});
+			}
+		}
+		var b2 = thx_Int64s.ten;
+		var al2 = multiplier.low & 65535;
+		var ah2 = multiplier.low >>> 16;
+		var bl2 = b2.low & 65535;
+		var bh2 = b2.low >>> 16;
+		var p002 = haxe__$Int32_Int32_$Impl_$.mul(al2,bl2);
+		var p102 = haxe__$Int32_Int32_$Impl_$.mul(ah2,bl2);
+		var p012 = haxe__$Int32_Int32_$Impl_$.mul(al2,bh2);
+		var p112 = haxe__$Int32_Int32_$Impl_$.mul(ah2,bh2);
+		var low4 = p002;
+		var high4 = (p112 + (p012 >>> 16) | 0) + (p102 >>> 16) | 0;
+		p012 = p012 << 16;
+		low4 = p002 + p012 | 0;
+		if(haxe__$Int32_Int32_$Impl_$.ucompare(low4,p012) < 0) {
+			++high4;
+			high4 = high4 | 0;
+		}
+		p102 = p102 << 16;
+		low4 = low4 + p102 | 0;
+		if(haxe__$Int32_Int32_$Impl_$.ucompare(low4,p102) < 0) {
+			++high4;
+			high4 = high4 | 0;
+		}
+		high4 = high4 + (haxe__$Int32_Int32_$Impl_$.mul(multiplier.low,b2.high) + haxe__$Int32_Int32_$Impl_$.mul(multiplier.high,b2.low) | 0) | 0;
+		multiplier = new haxe__$Int64__$_$_$Int64(high4,low4);
+	}
+	return current;
+};
+thx_Int64s.toInt64 = function(s) {
+	return thx_Int64s.parse(s);
+};
+thx_Int64s.divRound = function(num,div) {
+	var b = new haxe__$Int64__$_$_$Int64(0,0);
+	if(num.high == b.high && num.low == b.low) {
+		return thx_Int64s.zero;
+	}
+	var b1 = new haxe__$Int64__$_$_$Int64(0,0);
+	if(div.high == b1.high && div.low == b1.low) {
+		throw new thx_Error("Int64s.divRound division by zero",null,{ fileName : "Int64s.hx", lineNumber : 97, className : "thx.Int64s", methodName : "divRound"});
+	}
+	if(num.high < 0 == div.high < 0) {
+		var b2 = haxe__$Int64_Int64_$Impl_$.divMod(div,thx_Int64s.two).quotient;
+		var high = num.high + b2.high | 0;
+		var low = num.low + b2.low | 0;
+		if(haxe__$Int32_Int32_$Impl_$.ucompare(low,num.low) < 0) {
+			++high;
+			high = high | 0;
+		}
+		return haxe__$Int64_Int64_$Impl_$.divMod(new haxe__$Int64__$_$_$Int64(high,low),div).quotient;
+	} else if(div.high < 0) {
+		var high1 = ~num.high;
+		var low1 = -num.low;
+		if(low1 == 0) {
+			++high1;
+			high1 = high1 | 0;
+		}
+		var a = new haxe__$Int64__$_$_$Int64(high1,low1);
+		var b3 = thx_Int64s.one;
+		var high2 = a.high + b3.high | 0;
+		var low2 = a.low + b3.low | 0;
+		if(haxe__$Int32_Int32_$Impl_$.ucompare(low2,a.low) < 0) {
+			++high2;
+			high2 = high2 | 0;
+		}
+		var a1 = new haxe__$Int64__$_$_$Int64(high2,low2);
+		var b4 = haxe__$Int64_Int64_$Impl_$.divMod(div,thx_Int64s.two).quotient;
+		var high3 = a1.high + b4.high | 0;
+		var low3 = a1.low + b4.low | 0;
+		if(haxe__$Int32_Int32_$Impl_$.ucompare(low3,a1.low) < 0) {
+			++high3;
+			high3 = high3 | 0;
+		}
+		var a2 = new haxe__$Int64__$_$_$Int64(high3,low3);
+		var high4 = ~div.high;
+		var low4 = -div.low;
+		if(low4 == 0) {
+			++high4;
+			high4 = high4 | 0;
+		}
+		return haxe__$Int64_Int64_$Impl_$.divMod(a2,new haxe__$Int64__$_$_$Int64(high4,low4)).quotient;
+	} else {
+		var b5 = thx_Int64s.one;
+		var high5 = num.high + b5.high | 0;
+		var low5 = num.low + b5.low | 0;
+		if(haxe__$Int32_Int32_$Impl_$.ucompare(low5,num.low) < 0) {
+			++high5;
+			high5 = high5 | 0;
+		}
+		var a3 = new haxe__$Int64__$_$_$Int64(high5,low5);
+		var b6 = haxe__$Int64_Int64_$Impl_$.divMod(div,thx_Int64s.two).quotient;
+		var high6 = a3.high - b6.high | 0;
+		var low6 = a3.low - b6.low | 0;
+		if(haxe__$Int32_Int32_$Impl_$.ucompare(a3.low,b6.low) < 0) {
+			--high6;
+			high6 = high6 | 0;
+		}
+		return haxe__$Int64_Int64_$Impl_$.divMod(new haxe__$Int64__$_$_$Int64(high6,low6),div).quotient;
+	}
+};
+thx_Int64s.divFloor = function(num,div) {
+	var b = new haxe__$Int64__$_$_$Int64(0,0);
+	if(num.high == b.high && num.low == b.low) {
+		return thx_Int64s.zero;
+	}
+	var b1 = new haxe__$Int64__$_$_$Int64(0,0);
+	if(div.high == b1.high && div.low == b1.low) {
+		throw new thx_Error("Int64s.divFloor division by zero",null,{ fileName : "Int64s.hx", lineNumber : 111, className : "thx.Int64s", methodName : "divFloor"});
+	}
+	var a = haxe__$Int64_Int64_$Impl_$.divMod(num,div).quotient;
+	var x = num.high < 0 != div.high < 0?1:0;
+	var b2 = new haxe__$Int64__$_$_$Int64(x >> 31,x);
+	var high = a.high - b2.high | 0;
+	var low = a.low - b2.low | 0;
+	if(haxe__$Int32_Int32_$Impl_$.ucompare(a.low,b2.low) < 0) {
+		--high;
+		high = high | 0;
+	}
+	return new haxe__$Int64__$_$_$Int64(high,low);
+};
+thx_Int64s.divCeil = function(num,div) {
+	var b = new haxe__$Int64__$_$_$Int64(0,0);
+	if(num.high == b.high && num.low == b.low) {
+		return thx_Int64s.zero;
+	}
+	var b1 = new haxe__$Int64__$_$_$Int64(0,0);
+	if(div.high == b1.high && div.low == b1.low) {
+		throw new thx_Error("Int64s.divCeil division by zero",null,{ fileName : "Int64s.hx", lineNumber : 119, className : "thx.Int64s", methodName : "divCeil"});
+	}
+	var r = haxe__$Int64_Int64_$Impl_$.divMod(num,div);
+	var q = r.quotient;
+	var m = r.modulus;
+	var tmp;
+	if(num.high < 0 == div.high < 0) {
+		var b2 = new haxe__$Int64__$_$_$Int64(0,0);
+		tmp = !(m.high == b2.high && m.low == b2.low);
+	} else {
+		tmp = false;
+	}
+	if(tmp) {
+		var b3 = thx_Int64s.one;
+		var high = q.high + b3.high | 0;
+		var low = q.low + b3.low | 0;
+		if(haxe__$Int32_Int32_$Impl_$.ucompare(low,q.low) < 0) {
+			++high;
+			high = high | 0;
+		}
+		return new haxe__$Int64__$_$_$Int64(high,low);
+	} else {
+		return q;
+	}
+};
+thx_Int64s.toFloat = function(i) {
+	var isNegative = false;
+	var b = new haxe__$Int64__$_$_$Int64(0,0);
+	var v = i.high - b.high | 0;
+	if(v != 0) {
+		v = v;
+	} else {
+		v = haxe__$Int32_Int32_$Impl_$.ucompare(i.low,b.low);
+	}
+	if((i.high < 0?b.high < 0?v:-1:b.high >= 0?v:1) < 0) {
+		var b1 = thx_Int64s.min;
+		var v1 = i.high - b1.high | 0;
+		if(v1 != 0) {
+			v1 = v1;
+		} else {
+			v1 = haxe__$Int32_Int32_$Impl_$.ucompare(i.low,b1.low);
+		}
+		if((i.high < 0?b1.high < 0?v1:-1:b1.high >= 0?v1:1) < 0) {
+			return -9223372036854775808.0;
+		}
+		isNegative = true;
+		var high = ~i.high;
+		var low = -i.low;
+		if(low == 0) {
+			++high;
+			high = high | 0;
+		}
+		i = new haxe__$Int64__$_$_$Int64(high,low);
+	}
+	var multiplier = 1.0;
+	var ret = 0.0;
+	var _g = 0;
+	while(_g < 64) {
+		++_g;
+		var b2 = thx_Int64s.one;
+		var a = new haxe__$Int64__$_$_$Int64(i.high & b2.high,i.low & b2.low);
+		var b3 = thx_Int64s.zero;
+		if(a.high != b3.high || a.low != b3.low) {
+			ret += multiplier;
+		}
+		multiplier *= 2.0;
+		i = new haxe__$Int64__$_$_$Int64(i.high >> 1,i.high << 31 | i.low >>> 1);
+	}
+	return (isNegative?-1:1) * ret;
+};
+thx_Int64s.fromFloat = function(f) {
+	if(isNaN(f) || !isFinite(f)) {
+		throw new thx_Error("Conversion to Int64 failed. Number is NaN or Infinite",null,{ fileName : "Int64s.hx", lineNumber : 162, className : "thx.Int64s", methodName : "fromFloat"});
+	}
+	var noFractions = f - f % 1;
+	if(noFractions > 9007199254740991.0) {
+		throw new thx_Error("Conversion to Int64 failed. Conversion overflow",null,{ fileName : "Int64s.hx", lineNumber : 168, className : "thx.Int64s", methodName : "fromFloat"});
+	}
+	if(noFractions < -9007199254740991.0) {
+		throw new thx_Error("Conversion to Int64 failed. Conversion underflow",null,{ fileName : "Int64s.hx", lineNumber : 170, className : "thx.Int64s", methodName : "fromFloat"});
+	}
+	var result = thx_Int64s.zero;
+	var neg = noFractions < 0.0;
+	var rest = neg?-noFractions:noFractions;
+	var i = 0;
+	var curr;
+	while(rest >= 1) {
+		curr = rest % 2;
+		rest /= 2;
+		if(curr >= 1) {
+			var a = new haxe__$Int64__$_$_$Int64(0,1);
+			var b = i;
+			b &= 63;
+			var b1 = b == 0?new haxe__$Int64__$_$_$Int64(a.high,a.low):b < 32?new haxe__$Int64__$_$_$Int64(a.high << b | a.low >>> 32 - b,a.low << b):new haxe__$Int64__$_$_$Int64(a.low << b - 32,0);
+			var high = result.high + b1.high | 0;
+			var low = result.low + b1.low | 0;
+			if(haxe__$Int32_Int32_$Impl_$.ucompare(low,result.low) < 0) {
+				++high;
+				high = high | 0;
+			}
+			result = new haxe__$Int64__$_$_$Int64(high,low);
+		}
+		++i;
+	}
+	if(neg) {
+		var high1 = ~result.high;
+		var low1 = -result.low;
+		if(low1 == 0) {
+			++high1;
+			high1 = high1 | 0;
+		}
+		return new haxe__$Int64__$_$_$Int64(high1,low1);
+	} else {
+		return result;
+	}
 };
 var thx_Ints = function() { };
 thx_Ints.__name__ = ["thx","Ints"];
@@ -9165,6 +15749,564 @@ thx_Strings.rpad = function(s,$char,length) {
 	} else {
 		return s;
 	}
+};
+var thx__$Time_Time_$Impl_$ = {};
+thx__$Time_Time_$Impl_$.__name__ = ["thx","_Time","Time_Impl_"];
+thx__$Time_Time_$Impl_$.fromDays = function(days) {
+	return thx__$Time_Time_$Impl_$.create(24 * days,0,0,0);
+};
+thx__$Time_Time_$Impl_$.fromHours = function(hours) {
+	return thx__$Time_Time_$Impl_$.create(hours,0,0,0);
+};
+thx__$Time_Time_$Impl_$.fromMinutes = function(minutes) {
+	return thx__$Time_Time_$Impl_$.create(0,minutes,0,0);
+};
+thx__$Time_Time_$Impl_$.fromSeconds = function(seconds) {
+	return thx__$Time_Time_$Impl_$.create(0,0,seconds,0);
+};
+thx__$Time_Time_$Impl_$.fromMilliseconds = function(milliseconds) {
+	return thx__$Time_Time_$Impl_$.create(0,0,0,milliseconds);
+};
+thx__$Time_Time_$Impl_$.timeToTicks = function(hours,minutes,seconds) {
+	var x = hours * 3600;
+	var a = new haxe__$Int64__$_$_$Int64(x >> 31,x);
+	var x1 = minutes * 60;
+	var b = new haxe__$Int64__$_$_$Int64(x1 >> 31,x1);
+	var high = a.high + b.high | 0;
+	var low = a.low + b.low | 0;
+	if(haxe__$Int32_Int32_$Impl_$.ucompare(low,a.low) < 0) {
+		++high;
+		high = high | 0;
+	}
+	var a1 = new haxe__$Int64__$_$_$Int64(high,low);
+	var b1 = new haxe__$Int64__$_$_$Int64(seconds >> 31,seconds);
+	var high1 = a1.high + b1.high | 0;
+	var low1 = a1.low + b1.low | 0;
+	if(haxe__$Int32_Int32_$Impl_$.ucompare(low1,a1.low) < 0) {
+		++high1;
+		high1 = high1 | 0;
+	}
+	var totalSeconds = new haxe__$Int64__$_$_$Int64(high1,low1);
+	var b2 = thx__$DateTimeUtc_DateTimeUtc_$Impl_$.ticksPerSecondI64;
+	var al = totalSeconds.low & 65535;
+	var ah = totalSeconds.low >>> 16;
+	var bl = b2.low & 65535;
+	var bh = b2.low >>> 16;
+	var p00 = haxe__$Int32_Int32_$Impl_$.mul(al,bl);
+	var p10 = haxe__$Int32_Int32_$Impl_$.mul(ah,bl);
+	var p01 = haxe__$Int32_Int32_$Impl_$.mul(al,bh);
+	var p11 = haxe__$Int32_Int32_$Impl_$.mul(ah,bh);
+	var low2 = p00;
+	var high2 = (p11 + (p01 >>> 16) | 0) + (p10 >>> 16) | 0;
+	p01 = p01 << 16;
+	low2 = p00 + p01 | 0;
+	if(haxe__$Int32_Int32_$Impl_$.ucompare(low2,p01) < 0) {
+		++high2;
+		high2 = high2 | 0;
+	}
+	p10 = p10 << 16;
+	low2 = low2 + p10 | 0;
+	if(haxe__$Int32_Int32_$Impl_$.ucompare(low2,p10) < 0) {
+		++high2;
+		high2 = high2 | 0;
+	}
+	high2 = high2 + (haxe__$Int32_Int32_$Impl_$.mul(totalSeconds.low,b2.high) + haxe__$Int32_Int32_$Impl_$.mul(totalSeconds.high,b2.low) | 0) | 0;
+	return new haxe__$Int64__$_$_$Int64(high2,low2);
+};
+thx__$Time_Time_$Impl_$.fromString = function(s) {
+	var pattern = new EReg("^([-+])?(?:(\\d+)[.](\\d{1,2})|(\\d+))[:](\\d{2})(?:[:](\\d{2})(?:\\.(\\d+))?)?$","");
+	if(!pattern.match(s)) {
+		throw new thx_Error("unable to parse Time string: \"" + s + "\"",null,{ fileName : "Time.hx", lineNumber : 32, className : "thx._Time.Time_Impl_", methodName : "fromString"});
+	}
+	var smticks = pattern.matched(7);
+	var mticks = 0;
+	if(null != smticks) {
+		smticks = "1" + thx_Strings.rpad(smticks,"0",7).substring(0,7);
+		mticks = Std.parseInt(smticks) - 10000000;
+	}
+	var days = 0;
+	var hours = 0;
+	var minutes = Std.parseInt(pattern.matched(5));
+	var seconds = Std.parseInt(pattern.matched(6));
+	if(null != pattern.matched(2)) {
+		days = Std.parseInt(pattern.matched(2));
+		hours = Std.parseInt(pattern.matched(3));
+	} else {
+		hours = Std.parseInt(pattern.matched(4));
+	}
+	var this1 = thx__$Time_Time_$Impl_$.create(days * 24 + hours,minutes,seconds);
+	var that = new haxe__$Int64__$_$_$Int64(mticks >> 31,mticks);
+	var high = this1.high + that.high | 0;
+	var low = this1.low + that.low | 0;
+	if(haxe__$Int32_Int32_$Impl_$.ucompare(low,this1.low) < 0) {
+		++high;
+		high = high | 0;
+	}
+	var time = new haxe__$Int64__$_$_$Int64(high,low);
+	if(pattern.matched(1) == "-") {
+		var x = time;
+		var high1 = ~x.high;
+		var low1 = -x.low;
+		if(low1 == 0) {
+			++high1;
+			high1 = high1 | 0;
+		}
+		return new haxe__$Int64__$_$_$Int64(high1,low1);
+	} else {
+		return time;
+	}
+};
+thx__$Time_Time_$Impl_$.compare = function(a,b) {
+	return thx_Int64s.compare(a,b);
+};
+thx__$Time_Time_$Impl_$.create = function(hours,minutes,seconds,milliseconds) {
+	if(milliseconds == null) {
+		milliseconds = 0;
+	}
+	if(seconds == null) {
+		seconds = 0;
+	}
+	if(minutes == null) {
+		minutes = 0;
+	}
+	var a = thx__$Time_Time_$Impl_$.timeToTicks(hours,minutes,seconds);
+	var a1 = new haxe__$Int64__$_$_$Int64(milliseconds >> 31,milliseconds);
+	var b = thx__$DateTimeUtc_DateTimeUtc_$Impl_$.ticksPerMillisecondI64;
+	var al = a1.low & 65535;
+	var ah = a1.low >>> 16;
+	var bl = b.low & 65535;
+	var bh = b.low >>> 16;
+	var p00 = haxe__$Int32_Int32_$Impl_$.mul(al,bl);
+	var p10 = haxe__$Int32_Int32_$Impl_$.mul(ah,bl);
+	var p01 = haxe__$Int32_Int32_$Impl_$.mul(al,bh);
+	var p11 = haxe__$Int32_Int32_$Impl_$.mul(ah,bh);
+	var low = p00;
+	var high = (p11 + (p01 >>> 16) | 0) + (p10 >>> 16) | 0;
+	p01 = p01 << 16;
+	low = p00 + p01 | 0;
+	if(haxe__$Int32_Int32_$Impl_$.ucompare(low,p01) < 0) {
+		++high;
+		high = high | 0;
+	}
+	p10 = p10 << 16;
+	low = low + p10 | 0;
+	if(haxe__$Int32_Int32_$Impl_$.ucompare(low,p10) < 0) {
+		++high;
+		high = high | 0;
+	}
+	high = high + (haxe__$Int32_Int32_$Impl_$.mul(a1.low,b.high) + haxe__$Int32_Int32_$Impl_$.mul(a1.high,b.low) | 0) | 0;
+	var b1 = new haxe__$Int64__$_$_$Int64(high,low);
+	var high1 = a.high + b1.high | 0;
+	var low1 = a.low + b1.low | 0;
+	if(haxe__$Int32_Int32_$Impl_$.ucompare(low1,a.low) < 0) {
+		++high1;
+		high1 = high1 | 0;
+	}
+	return new haxe__$Int64__$_$_$Int64(high1,low1);
+};
+thx__$Time_Time_$Impl_$.createDays = function(days,hours,minutes,seconds,milliseconds) {
+	if(milliseconds == null) {
+		milliseconds = 0;
+	}
+	if(seconds == null) {
+		seconds = 0;
+	}
+	if(minutes == null) {
+		minutes = 0;
+	}
+	if(hours == null) {
+		hours = 0;
+	}
+	return thx__$Time_Time_$Impl_$.create(days * 24 + hours,minutes,seconds,milliseconds);
+};
+thx__$Time_Time_$Impl_$._new = function(ticks) {
+	return ticks;
+};
+thx__$Time_Time_$Impl_$.abs = function(this1) {
+	var b = new haxe__$Int64__$_$_$Int64(0,0);
+	var v = this1.high - b.high | 0;
+	if(v != 0) {
+		v = v;
+	} else {
+		v = haxe__$Int32_Int32_$Impl_$.ucompare(this1.low,b.low);
+	}
+	if((this1.high < 0?b.high < 0?v:-1:b.high >= 0?v:1) < 0) {
+		var high = ~this1.high;
+		var low = -this1.low;
+		if(low == 0) {
+			++high;
+			high = high | 0;
+		}
+		return new haxe__$Int64__$_$_$Int64(high,low);
+	} else {
+		return this1;
+	}
+};
+thx__$Time_Time_$Impl_$.withHours = function(this1,hours) {
+	var x = haxe__$Int64_Int64_$Impl_$.divMod(haxe__$Int64_Int64_$Impl_$.divMod(this1,thx__$DateTimeUtc_DateTimeUtc_$Impl_$.ticksPerMinuteI64).quotient,new haxe__$Int64__$_$_$Int64(0,60)).modulus;
+	if(x.high != x.low >> 31) {
+		throw new js__$Boot_HaxeError("Overflow");
+	}
+	var tmp = x.low;
+	var x1 = haxe__$Int64_Int64_$Impl_$.divMod(haxe__$Int64_Int64_$Impl_$.divMod(this1,thx__$DateTimeUtc_DateTimeUtc_$Impl_$.ticksPerSecondI64).quotient,new haxe__$Int64__$_$_$Int64(0,60)).modulus;
+	if(x1.high != x1.low >> 31) {
+		throw new js__$Boot_HaxeError("Overflow");
+	}
+	var tmp1 = x1.low;
+	var x2 = haxe__$Int64_Int64_$Impl_$.divMod(haxe__$Int64_Int64_$Impl_$.divMod(this1,thx__$DateTimeUtc_DateTimeUtc_$Impl_$.ticksPerMillisecondI64).quotient,thx__$DateTimeUtc_DateTimeUtc_$Impl_$.thousandI64).modulus;
+	if(x2.high != x2.low >> 31) {
+		throw new js__$Boot_HaxeError("Overflow");
+	}
+	return thx__$Time_Time_$Impl_$.create(hours,tmp,tmp1,x2.low);
+};
+thx__$Time_Time_$Impl_$.withMinutes = function(this1,minutes) {
+	var x = haxe__$Int64_Int64_$Impl_$.divMod(haxe__$Int64_Int64_$Impl_$.divMod(this1,thx__$DateTimeUtc_DateTimeUtc_$Impl_$.ticksPerHourI64).quotient,new haxe__$Int64__$_$_$Int64(0,24)).modulus;
+	if(x.high != x.low >> 31) {
+		throw new js__$Boot_HaxeError("Overflow");
+	}
+	var tmp = x.low;
+	var x1 = haxe__$Int64_Int64_$Impl_$.divMod(haxe__$Int64_Int64_$Impl_$.divMod(this1,thx__$DateTimeUtc_DateTimeUtc_$Impl_$.ticksPerSecondI64).quotient,new haxe__$Int64__$_$_$Int64(0,60)).modulus;
+	if(x1.high != x1.low >> 31) {
+		throw new js__$Boot_HaxeError("Overflow");
+	}
+	var tmp1 = x1.low;
+	var x2 = haxe__$Int64_Int64_$Impl_$.divMod(haxe__$Int64_Int64_$Impl_$.divMod(this1,thx__$DateTimeUtc_DateTimeUtc_$Impl_$.ticksPerMillisecondI64).quotient,thx__$DateTimeUtc_DateTimeUtc_$Impl_$.thousandI64).modulus;
+	if(x2.high != x2.low >> 31) {
+		throw new js__$Boot_HaxeError("Overflow");
+	}
+	return thx__$Time_Time_$Impl_$.create(tmp,minutes,tmp1,x2.low);
+};
+thx__$Time_Time_$Impl_$.withSeconds = function(this1,seconds) {
+	var x = haxe__$Int64_Int64_$Impl_$.divMod(haxe__$Int64_Int64_$Impl_$.divMod(this1,thx__$DateTimeUtc_DateTimeUtc_$Impl_$.ticksPerHourI64).quotient,new haxe__$Int64__$_$_$Int64(0,24)).modulus;
+	if(x.high != x.low >> 31) {
+		throw new js__$Boot_HaxeError("Overflow");
+	}
+	var tmp = x.low;
+	var x1 = haxe__$Int64_Int64_$Impl_$.divMod(haxe__$Int64_Int64_$Impl_$.divMod(this1,thx__$DateTimeUtc_DateTimeUtc_$Impl_$.ticksPerMinuteI64).quotient,new haxe__$Int64__$_$_$Int64(0,60)).modulus;
+	if(x1.high != x1.low >> 31) {
+		throw new js__$Boot_HaxeError("Overflow");
+	}
+	var tmp1 = x1.low;
+	var x2 = haxe__$Int64_Int64_$Impl_$.divMod(haxe__$Int64_Int64_$Impl_$.divMod(this1,thx__$DateTimeUtc_DateTimeUtc_$Impl_$.ticksPerMillisecondI64).quotient,thx__$DateTimeUtc_DateTimeUtc_$Impl_$.thousandI64).modulus;
+	if(x2.high != x2.low >> 31) {
+		throw new js__$Boot_HaxeError("Overflow");
+	}
+	return thx__$Time_Time_$Impl_$.create(tmp,tmp1,seconds,x2.low);
+};
+thx__$Time_Time_$Impl_$.withMilliseconds = function(this1,milliseconds) {
+	var x = haxe__$Int64_Int64_$Impl_$.divMod(haxe__$Int64_Int64_$Impl_$.divMod(this1,thx__$DateTimeUtc_DateTimeUtc_$Impl_$.ticksPerHourI64).quotient,new haxe__$Int64__$_$_$Int64(0,24)).modulus;
+	if(x.high != x.low >> 31) {
+		throw new js__$Boot_HaxeError("Overflow");
+	}
+	var tmp = x.low;
+	var x1 = haxe__$Int64_Int64_$Impl_$.divMod(haxe__$Int64_Int64_$Impl_$.divMod(this1,thx__$DateTimeUtc_DateTimeUtc_$Impl_$.ticksPerMinuteI64).quotient,new haxe__$Int64__$_$_$Int64(0,60)).modulus;
+	if(x1.high != x1.low >> 31) {
+		throw new js__$Boot_HaxeError("Overflow");
+	}
+	var tmp1 = x1.low;
+	var x2 = haxe__$Int64_Int64_$Impl_$.divMod(haxe__$Int64_Int64_$Impl_$.divMod(this1,thx__$DateTimeUtc_DateTimeUtc_$Impl_$.ticksPerSecondI64).quotient,new haxe__$Int64__$_$_$Int64(0,60)).modulus;
+	if(x2.high != x2.low >> 31) {
+		throw new js__$Boot_HaxeError("Overflow");
+	}
+	return thx__$Time_Time_$Impl_$.create(tmp,tmp1,x2.low,milliseconds);
+};
+thx__$Time_Time_$Impl_$.negate = function(this1) {
+	var high = ~this1.high;
+	var low = -this1.low;
+	if(low == 0) {
+		++high;
+		high = high | 0;
+	}
+	return new haxe__$Int64__$_$_$Int64(high,low);
+};
+thx__$Time_Time_$Impl_$.add = function(this1,that) {
+	var b = that;
+	var high = this1.high + b.high | 0;
+	var low = this1.low + b.low | 0;
+	if(haxe__$Int32_Int32_$Impl_$.ucompare(low,this1.low) < 0) {
+		++high;
+		high = high | 0;
+	}
+	return new haxe__$Int64__$_$_$Int64(high,low);
+};
+thx__$Time_Time_$Impl_$.addTicks = function(this1,that) {
+	var high = this1.high + that.high | 0;
+	var low = this1.low + that.low | 0;
+	if(haxe__$Int32_Int32_$Impl_$.ucompare(low,this1.low) < 0) {
+		++high;
+		high = high | 0;
+	}
+	return new haxe__$Int64__$_$_$Int64(high,low);
+};
+thx__$Time_Time_$Impl_$.subtract = function(this1,that) {
+	var b = that;
+	var high = this1.high - b.high | 0;
+	var low = this1.low - b.low | 0;
+	if(haxe__$Int32_Int32_$Impl_$.ucompare(this1.low,b.low) < 0) {
+		--high;
+		high = high | 0;
+	}
+	return new haxe__$Int64__$_$_$Int64(high,low);
+};
+thx__$Time_Time_$Impl_$.compareTo = function(this1,that) {
+	return thx_Int64s.compare(this1,that);
+};
+thx__$Time_Time_$Impl_$.equalsTo = function(this1,that) {
+	var b = that;
+	if(this1.high == b.high) {
+		return this1.low == b.low;
+	} else {
+		return false;
+	}
+};
+thx__$Time_Time_$Impl_$.equals = function(self,that) {
+	var a = self;
+	var b = that;
+	if(a.high == b.high) {
+		return a.low == b.low;
+	} else {
+		return false;
+	}
+};
+thx__$Time_Time_$Impl_$.notEqualsTo = function(self,that) {
+	var a = self;
+	var b = that;
+	if(!(a.high != b.high)) {
+		return a.low != b.low;
+	} else {
+		return true;
+	}
+};
+thx__$Time_Time_$Impl_$.notEquals = function(this1,that) {
+	var b = that;
+	if(!(this1.high != b.high)) {
+		return this1.low != b.low;
+	} else {
+		return true;
+	}
+};
+thx__$Time_Time_$Impl_$.greaterThan = function(self,that) {
+	var a = self;
+	var b = that;
+	var v = a.high - b.high | 0;
+	if(v != 0) {
+		v = v;
+	} else {
+		v = haxe__$Int32_Int32_$Impl_$.ucompare(a.low,b.low);
+	}
+	return (a.high < 0?b.high < 0?v:-1:b.high >= 0?v:1) > 0;
+};
+thx__$Time_Time_$Impl_$.greater = function(this1,that) {
+	var b = that;
+	var v = this1.high - b.high | 0;
+	if(v != 0) {
+		v = v;
+	} else {
+		v = haxe__$Int32_Int32_$Impl_$.ucompare(this1.low,b.low);
+	}
+	return (this1.high < 0?b.high < 0?v:-1:b.high >= 0?v:1) > 0;
+};
+thx__$Time_Time_$Impl_$.greaterEqualsTo = function(self,that) {
+	var a = self;
+	var b = that;
+	var v = a.high - b.high | 0;
+	if(v != 0) {
+		v = v;
+	} else {
+		v = haxe__$Int32_Int32_$Impl_$.ucompare(a.low,b.low);
+	}
+	return (a.high < 0?b.high < 0?v:-1:b.high >= 0?v:1) >= 0;
+};
+thx__$Time_Time_$Impl_$.greaterEquals = function(this1,that) {
+	var b = that;
+	var v = this1.high - b.high | 0;
+	if(v != 0) {
+		v = v;
+	} else {
+		v = haxe__$Int32_Int32_$Impl_$.ucompare(this1.low,b.low);
+	}
+	return (this1.high < 0?b.high < 0?v:-1:b.high >= 0?v:1) >= 0;
+};
+thx__$Time_Time_$Impl_$.lessThan = function(self,that) {
+	var a = self;
+	var b = that;
+	var v = a.high - b.high | 0;
+	if(v != 0) {
+		v = v;
+	} else {
+		v = haxe__$Int32_Int32_$Impl_$.ucompare(a.low,b.low);
+	}
+	return (a.high < 0?b.high < 0?v:-1:b.high >= 0?v:1) < 0;
+};
+thx__$Time_Time_$Impl_$.less = function(this1,that) {
+	var b = that;
+	var v = this1.high - b.high | 0;
+	if(v != 0) {
+		v = v;
+	} else {
+		v = haxe__$Int32_Int32_$Impl_$.ucompare(this1.low,b.low);
+	}
+	return (this1.high < 0?b.high < 0?v:-1:b.high >= 0?v:1) < 0;
+};
+thx__$Time_Time_$Impl_$.lessEqualsTo = function(self,that) {
+	var a = self;
+	var b = that;
+	var v = a.high - b.high | 0;
+	if(v != 0) {
+		v = v;
+	} else {
+		v = haxe__$Int32_Int32_$Impl_$.ucompare(a.low,b.low);
+	}
+	return (a.high < 0?b.high < 0?v:-1:b.high >= 0?v:1) <= 0;
+};
+thx__$Time_Time_$Impl_$.lessEquals = function(this1,that) {
+	var b = that;
+	var v = this1.high - b.high | 0;
+	if(v != 0) {
+		v = v;
+	} else {
+		v = haxe__$Int32_Int32_$Impl_$.ucompare(this1.low,b.low);
+	}
+	return (this1.high < 0?b.high < 0?v:-1:b.high >= 0?v:1) <= 0;
+};
+thx__$Time_Time_$Impl_$.toDateTimeUtc = function(this1) {
+	return this1;
+};
+thx__$Time_Time_$Impl_$.toString = function(this1) {
+	var timeAbs = thx__$Time_Time_$Impl_$.abs(this1);
+	var x = haxe__$Int64_Int64_$Impl_$.divMod(timeAbs,thx__$DateTimeUtc_DateTimeUtc_$Impl_$.ticksPerSecondI64).modulus;
+	if(x.high != x.low >> 31) {
+		throw new js__$Boot_HaxeError("Overflow");
+	}
+	var ticksInSecondAbs = x.low;
+	var decimals = ticksInSecondAbs != 0?"." + thx_Strings.trimCharsRight(thx_Ints.lpad(ticksInSecondAbs,"0",7),"0"):"";
+	var tmp;
+	var b = new haxe__$Int64__$_$_$Int64(0,0);
+	var v = this1.high - b.high | 0;
+	if(v != 0) {
+		v = v;
+	} else {
+		v = haxe__$Int32_Int32_$Impl_$.ucompare(this1.low,b.low);
+	}
+	if((this1.high < 0?b.high < 0?v:-1:b.high >= 0?v:1) < 0) {
+		tmp = "-";
+	} else {
+		tmp = "";
+	}
+	var tmp1 = "" + haxe__$Int64_Int64_$Impl_$.toString(haxe__$Int64_Int64_$Impl_$.divMod(timeAbs,thx__$DateTimeUtc_DateTimeUtc_$Impl_$.ticksPerHourI64).quotient) + ":";
+	var x1 = haxe__$Int64_Int64_$Impl_$.divMod(haxe__$Int64_Int64_$Impl_$.divMod(timeAbs,thx__$DateTimeUtc_DateTimeUtc_$Impl_$.ticksPerMinuteI64).quotient,new haxe__$Int64__$_$_$Int64(0,60)).modulus;
+	if(x1.high != x1.low >> 31) {
+		throw new js__$Boot_HaxeError("Overflow");
+	}
+	var tmp2 = tmp1 + thx_Ints.lpad(x1.low,"0",2) + ":";
+	var x2 = haxe__$Int64_Int64_$Impl_$.divMod(haxe__$Int64_Int64_$Impl_$.divMod(timeAbs,thx__$DateTimeUtc_DateTimeUtc_$Impl_$.ticksPerSecondI64).quotient,new haxe__$Int64__$_$_$Int64(0,60)).modulus;
+	if(x2.high != x2.low >> 31) {
+		throw new js__$Boot_HaxeError("Overflow");
+	}
+	return tmp + (tmp2 + thx_Ints.lpad(x2.low,"0",2)) + decimals;
+};
+thx__$Time_Time_$Impl_$.toGmtString = function(this1) {
+	var x = haxe__$Int64_Int64_$Impl_$.divMod(this1,thx__$DateTimeUtc_DateTimeUtc_$Impl_$.ticksPerHourI64).quotient;
+	if(x.high != x.low >> 31) {
+		throw new js__$Boot_HaxeError("Overflow");
+	}
+	var h = thx_Ints.lpad(x.low,"0",2);
+	var b = new haxe__$Int64__$_$_$Int64(0,0);
+	var v = this1.high - b.high | 0;
+	if(v != 0) {
+		v = v;
+	} else {
+		v = haxe__$Int32_Int32_$Impl_$.ucompare(this1.low,b.low);
+	}
+	if((this1.high < 0?b.high < 0?v:-1:b.high >= 0?v:1) >= 0) {
+		h = "+" + h;
+	}
+	var tmp = "" + h + ":";
+	var x1 = haxe__$Int64_Int64_$Impl_$.divMod(haxe__$Int64_Int64_$Impl_$.divMod(this1,thx__$DateTimeUtc_DateTimeUtc_$Impl_$.ticksPerMinuteI64).quotient,new haxe__$Int64__$_$_$Int64(0,60)).modulus;
+	if(x1.high != x1.low >> 31) {
+		throw new js__$Boot_HaxeError("Overflow");
+	}
+	return tmp + thx_Ints.lpad(x1.low,"0",2);
+};
+thx__$Time_Time_$Impl_$.get_ticks = function(this1) {
+	return this1;
+};
+thx__$Time_Time_$Impl_$.get_days = function(this1) {
+	var x = haxe__$Int64_Int64_$Impl_$.divMod(this1,thx__$DateTimeUtc_DateTimeUtc_$Impl_$.ticksPerDayI64).quotient;
+	if(x.high != x.low >> 31) {
+		throw new js__$Boot_HaxeError("Overflow");
+	}
+	return x.low;
+};
+thx__$Time_Time_$Impl_$.get_hours = function(this1) {
+	var x = haxe__$Int64_Int64_$Impl_$.divMod(haxe__$Int64_Int64_$Impl_$.divMod(this1,thx__$DateTimeUtc_DateTimeUtc_$Impl_$.ticksPerHourI64).quotient,new haxe__$Int64__$_$_$Int64(0,24)).modulus;
+	if(x.high != x.low >> 31) {
+		throw new js__$Boot_HaxeError("Overflow");
+	}
+	return x.low;
+};
+thx__$Time_Time_$Impl_$.get_minutes = function(this1) {
+	var x = haxe__$Int64_Int64_$Impl_$.divMod(haxe__$Int64_Int64_$Impl_$.divMod(this1,thx__$DateTimeUtc_DateTimeUtc_$Impl_$.ticksPerMinuteI64).quotient,new haxe__$Int64__$_$_$Int64(0,60)).modulus;
+	if(x.high != x.low >> 31) {
+		throw new js__$Boot_HaxeError("Overflow");
+	}
+	return x.low;
+};
+thx__$Time_Time_$Impl_$.get_seconds = function(this1) {
+	var x = haxe__$Int64_Int64_$Impl_$.divMod(haxe__$Int64_Int64_$Impl_$.divMod(this1,thx__$DateTimeUtc_DateTimeUtc_$Impl_$.ticksPerSecondI64).quotient,new haxe__$Int64__$_$_$Int64(0,60)).modulus;
+	if(x.high != x.low >> 31) {
+		throw new js__$Boot_HaxeError("Overflow");
+	}
+	return x.low;
+};
+thx__$Time_Time_$Impl_$.get_milliseconds = function(this1) {
+	var x = haxe__$Int64_Int64_$Impl_$.divMod(haxe__$Int64_Int64_$Impl_$.divMod(this1,thx__$DateTimeUtc_DateTimeUtc_$Impl_$.ticksPerMillisecondI64).quotient,thx__$DateTimeUtc_DateTimeUtc_$Impl_$.thousandI64).modulus;
+	if(x.high != x.low >> 31) {
+		throw new js__$Boot_HaxeError("Overflow");
+	}
+	return x.low;
+};
+thx__$Time_Time_$Impl_$.get_microseconds = function(this1) {
+	var x = haxe__$Int64_Int64_$Impl_$.divMod(haxe__$Int64_Int64_$Impl_$.divMod(this1,thx__$DateTimeUtc_DateTimeUtc_$Impl_$.ticksPerMicrosecondI64).quotient,thx__$DateTimeUtc_DateTimeUtc_$Impl_$.tenThousandI64).modulus;
+	if(x.high != x.low >> 31) {
+		throw new js__$Boot_HaxeError("Overflow");
+	}
+	return x.low;
+};
+thx__$Time_Time_$Impl_$.get_ticksInSecond = function(this1) {
+	var x = haxe__$Int64_Int64_$Impl_$.divMod(this1,thx__$DateTimeUtc_DateTimeUtc_$Impl_$.ticksPerSecondI64).modulus;
+	if(x.high != x.low >> 31) {
+		throw new js__$Boot_HaxeError("Overflow");
+	}
+	return x.low;
+};
+thx__$Time_Time_$Impl_$.get_totalDays = function(this1) {
+	return haxe__$Int64_Int64_$Impl_$.divMod(this1,thx__$DateTimeUtc_DateTimeUtc_$Impl_$.ticksPerDayI64).quotient;
+};
+thx__$Time_Time_$Impl_$.get_totalHours = function(this1) {
+	return haxe__$Int64_Int64_$Impl_$.divMod(this1,thx__$DateTimeUtc_DateTimeUtc_$Impl_$.ticksPerHourI64).quotient;
+};
+thx__$Time_Time_$Impl_$.get_totalMinutes = function(this1) {
+	return haxe__$Int64_Int64_$Impl_$.divMod(this1,thx__$DateTimeUtc_DateTimeUtc_$Impl_$.ticksPerMinuteI64).quotient;
+};
+thx__$Time_Time_$Impl_$.get_totalSeconds = function(this1) {
+	return haxe__$Int64_Int64_$Impl_$.divMod(this1,thx__$DateTimeUtc_DateTimeUtc_$Impl_$.ticksPerSecondI64).quotient;
+};
+thx__$Time_Time_$Impl_$.get_totalMilliseconds = function(this1) {
+	return haxe__$Int64_Int64_$Impl_$.divMod(this1,thx__$DateTimeUtc_DateTimeUtc_$Impl_$.ticksPerMillisecondI64).quotient;
+};
+thx__$Time_Time_$Impl_$.get_totalMicroseconds = function(this1) {
+	return haxe__$Int64_Int64_$Impl_$.divMod(this1,thx__$DateTimeUtc_DateTimeUtc_$Impl_$.ticksPerMicrosecondI64).quotient;
+};
+thx__$Time_Time_$Impl_$.get_isNegative = function(this1) {
+	var b = new haxe__$Int64__$_$_$Int64(0,0);
+	var v = this1.high - b.high | 0;
+	if(v != 0) {
+		v = v;
+	} else {
+		v = haxe__$Int32_Int32_$Impl_$.ucompare(this1.low,b.low);
+	}
+	return (this1.high < 0?b.high < 0?v:-1:b.high >= 0?v:1) < 0;
 };
 var thx_TimePeriod = { __ename__ : ["thx","TimePeriod"], __constructs__ : ["Second","Minute","Hour","Day","Week","Month","Year"] };
 thx_TimePeriod.Second = ["Second",0];
@@ -13915,6 +21057,17 @@ thx_color_parse_ChannelInfo.CIInt8 = function(value) { var $x = ["CIInt8",3,valu
 thx_color_parse_ChannelInfo.CIInt = function(value) { var $x = ["CIInt",4,value]; $x.__enum__ = thx_color_parse_ChannelInfo; return $x; };
 thx_color_parse_ChannelInfo.CIBool = function(value) { var $x = ["CIBool",5,value]; $x.__enum__ = thx_color_parse_ChannelInfo; return $x; };
 thx_color_parse_ChannelInfo.__empty_constructs__ = [];
+var thx_error_AssertError = function(msg,pos) {
+	if(null == msg) {
+		msg = "expected true";
+	}
+	thx_Error.call(this,msg,null,pos);
+};
+thx_error_AssertError.__name__ = ["thx","error","AssertError"];
+thx_error_AssertError.__super__ = thx_Error;
+thx_error_AssertError.prototype = $extend(thx_Error.prototype,{
+	__class__: thx_error_AssertError
+});
 var thx_error_ErrorWrapper = function(message,innerError,stack,pos) {
 	thx_Error.call(this,message,stack,pos);
 	this.innerError = innerError;
@@ -16197,6 +23350,4381 @@ thx_unit_angle__$Turn_Turn_$Impl_$.normalizeDirection = function(this1) {
 		return normalized;
 	}
 };
+var thx_unit_time__$Day_Day_$Impl_$ = {};
+thx_unit_time__$Day_Day_$Impl_$.__name__ = ["thx","unit","time","_Day","Day_Impl_"];
+thx_unit_time__$Day_Day_$Impl_$.fromDecimal = function(value) {
+	return value;
+};
+thx_unit_time__$Day_Day_$Impl_$.fromInt = function(value) {
+	return thx__$Decimal_Decimal_$Impl_$.fromInt(value);
+};
+thx_unit_time__$Day_Day_$Impl_$.fromFloat = function(value) {
+	return thx_bigint_Decimals.fromFloat(value);
+};
+thx_unit_time__$Day_Day_$Impl_$._new = function(value) {
+	return value;
+};
+thx_unit_time__$Day_Day_$Impl_$.abs = function(this1) {
+	return this1.abs();
+};
+thx_unit_time__$Day_Day_$Impl_$.min = function(this1,that) {
+	var that1 = that;
+	return thx__$Decimal_Decimal_$Impl_$.less(this1,that1)?this1:that1;
+};
+thx_unit_time__$Day_Day_$Impl_$.max = function(this1,that) {
+	var that1 = that;
+	return thx__$Decimal_Decimal_$Impl_$.greater(this1,that1)?this1:that1;
+};
+thx_unit_time__$Day_Day_$Impl_$.negate = function(this1) {
+	return this1.negate();
+};
+thx_unit_time__$Day_Day_$Impl_$.add = function(this1,that) {
+	return this1.add(that);
+};
+thx_unit_time__$Day_Day_$Impl_$.subtract = function(this1,that) {
+	return this1.subtract(that);
+};
+thx_unit_time__$Day_Day_$Impl_$.multiply = function(this1,that) {
+	return this1.multiply(that);
+};
+thx_unit_time__$Day_Day_$Impl_$.divide = function(this1,that) {
+	return this1.divide(that);
+};
+thx_unit_time__$Day_Day_$Impl_$.modulo = function(this1,that) {
+	return this1.modulo(that);
+};
+thx_unit_time__$Day_Day_$Impl_$.equalsTo = function(this1,that) {
+	return thx__$Decimal_Decimal_$Impl_$.equals(this1,that);
+};
+thx_unit_time__$Day_Day_$Impl_$.equals = function(self,that) {
+	return thx__$Decimal_Decimal_$Impl_$.equals(self,that);
+};
+thx_unit_time__$Day_Day_$Impl_$.nearEqualsTo = function(this1,that) {
+	return thx_Floats.nearEquals(this1.toFloat(),that.toFloat());
+};
+thx_unit_time__$Day_Day_$Impl_$.nearEquals = function(self,that) {
+	return thx_Floats.nearEquals(self.toFloat(),that.toFloat());
+};
+thx_unit_time__$Day_Day_$Impl_$.notEqualsTo = function(this1,that) {
+	return thx__$Decimal_Decimal_$Impl_$.notEquals(this1,that);
+};
+thx_unit_time__$Day_Day_$Impl_$.notEquals = function(self,that) {
+	return thx__$Decimal_Decimal_$Impl_$.notEquals(self,that);
+};
+thx_unit_time__$Day_Day_$Impl_$.lessThan = function(this1,that) {
+	return thx__$Decimal_Decimal_$Impl_$.less(this1,that);
+};
+thx_unit_time__$Day_Day_$Impl_$.less = function(self,that) {
+	return thx__$Decimal_Decimal_$Impl_$.less(self,that);
+};
+thx_unit_time__$Day_Day_$Impl_$.lessEqualsTo = function(this1,that) {
+	return thx__$Decimal_Decimal_$Impl_$.lessEquals(this1,that);
+};
+thx_unit_time__$Day_Day_$Impl_$.lessEquals = function(self,that) {
+	return thx__$Decimal_Decimal_$Impl_$.lessEquals(self,that);
+};
+thx_unit_time__$Day_Day_$Impl_$.greaterThan = function(this1,that) {
+	return thx__$Decimal_Decimal_$Impl_$.greater(this1,that);
+};
+thx_unit_time__$Day_Day_$Impl_$.greater = function(self,that) {
+	return thx__$Decimal_Decimal_$Impl_$.greaterEquals(self,that);
+};
+thx_unit_time__$Day_Day_$Impl_$.greaterEqualsTo = function(this1,that) {
+	return thx__$Decimal_Decimal_$Impl_$.greaterEquals(this1,that);
+};
+thx_unit_time__$Day_Day_$Impl_$.greaterEquals = function(self,that) {
+	return thx__$Decimal_Decimal_$Impl_$.greaterEquals(self,that);
+};
+thx_unit_time__$Day_Day_$Impl_$.toDecimal = function(this1) {
+	return this1;
+};
+thx_unit_time__$Day_Day_$Impl_$.toFloat = function(this1) {
+	return this1.toFloat();
+};
+thx_unit_time__$Day_Day_$Impl_$.toPlankTimeUnit = function(this1) {
+	return this1.multiply(thx_unit_time__$Day_Day_$Impl_$.ofUnit).divide(thx_unit_time__$Day_Day_$Impl_$.dividerPlankTimeUnit).trim(null);
+};
+thx_unit_time__$Day_Day_$Impl_$.toJiffyPhysics = function(this1) {
+	return this1.multiply(thx_unit_time__$Day_Day_$Impl_$.ofUnit).divide(thx_unit_time__$Day_Day_$Impl_$.dividerJiffyPhysics).trim(null);
+};
+thx_unit_time__$Day_Day_$Impl_$.toSvedberg = function(this1) {
+	return this1.multiply(thx_unit_time__$Day_Day_$Impl_$.ofUnit).divide(thx_unit_time__$Day_Day_$Impl_$.dividerSvedberg).trim(null);
+};
+thx_unit_time__$Day_Day_$Impl_$.toPicosecond = function(this1) {
+	return this1.multiply(thx_unit_time__$Day_Day_$Impl_$.ofUnit).divide(thx_unit_time__$Day_Day_$Impl_$.dividerPicosecond).trim(null);
+};
+thx_unit_time__$Day_Day_$Impl_$.toNanosecond = function(this1) {
+	return this1.multiply(thx_unit_time__$Day_Day_$Impl_$.ofUnit).divide(thx_unit_time__$Day_Day_$Impl_$.dividerNanosecond).trim(null);
+};
+thx_unit_time__$Day_Day_$Impl_$.toShake = function(this1) {
+	return this1.multiply(thx_unit_time__$Day_Day_$Impl_$.ofUnit).divide(thx_unit_time__$Day_Day_$Impl_$.dividerShake).trim(null);
+};
+thx_unit_time__$Day_Day_$Impl_$.toTick = function(this1) {
+	return this1.multiply(thx_unit_time__$Day_Day_$Impl_$.ofUnit).divide(thx_unit_time__$Day_Day_$Impl_$.dividerTick).trim(null);
+};
+thx_unit_time__$Day_Day_$Impl_$.toMicrosecond = function(this1) {
+	return this1.multiply(thx_unit_time__$Day_Day_$Impl_$.ofUnit).divide(thx_unit_time__$Day_Day_$Impl_$.dividerMicrosecond).trim(null);
+};
+thx_unit_time__$Day_Day_$Impl_$.toFourth = function(this1) {
+	return this1.multiply(thx_unit_time__$Day_Day_$Impl_$.ofUnit).divide(thx_unit_time__$Day_Day_$Impl_$.dividerFourth).trim(null);
+};
+thx_unit_time__$Day_Day_$Impl_$.toMillisecond = function(this1) {
+	return this1.multiply(thx_unit_time__$Day_Day_$Impl_$.ofUnit).divide(thx_unit_time__$Day_Day_$Impl_$.dividerMillisecond).trim(null);
+};
+thx_unit_time__$Day_Day_$Impl_$.toThird = function(this1) {
+	return this1.multiply(thx_unit_time__$Day_Day_$Impl_$.ofUnit).divide(thx_unit_time__$Day_Day_$Impl_$.dividerThird).trim(null);
+};
+thx_unit_time__$Day_Day_$Impl_$.toSecond = function(this1) {
+	return this1.multiply(thx_unit_time__$Day_Day_$Impl_$.ofUnit).divide(thx_unit_time__$Day_Day_$Impl_$.dividerSecond).trim(null);
+};
+thx_unit_time__$Day_Day_$Impl_$.toMinute = function(this1) {
+	return this1.multiply(thx_unit_time__$Day_Day_$Impl_$.ofUnit).divide(thx_unit_time__$Day_Day_$Impl_$.dividerMinute).trim(null);
+};
+thx_unit_time__$Day_Day_$Impl_$.toKe = function(this1) {
+	return this1.multiply(thx_unit_time__$Day_Day_$Impl_$.ofUnit).divide(thx_unit_time__$Day_Day_$Impl_$.dividerKe).trim(null);
+};
+thx_unit_time__$Day_Day_$Impl_$.toKilosecond = function(this1) {
+	return this1.multiply(thx_unit_time__$Day_Day_$Impl_$.ofUnit).divide(thx_unit_time__$Day_Day_$Impl_$.dividerKilosecond).trim(null);
+};
+thx_unit_time__$Day_Day_$Impl_$.toHour = function(this1) {
+	return this1.multiply(thx_unit_time__$Day_Day_$Impl_$.ofUnit).divide(thx_unit_time__$Day_Day_$Impl_$.dividerHour).trim(null);
+};
+thx_unit_time__$Day_Day_$Impl_$.toDay = function(this1) {
+	return this1;
+};
+thx_unit_time__$Day_Day_$Impl_$.toWeek = function(this1) {
+	return this1.multiply(thx_unit_time__$Day_Day_$Impl_$.ofUnit).divide(thx_unit_time__$Day_Day_$Impl_$.dividerWeek).trim(null);
+};
+thx_unit_time__$Day_Day_$Impl_$.toMegasecond = function(this1) {
+	return this1.multiply(thx_unit_time__$Day_Day_$Impl_$.ofUnit).divide(thx_unit_time__$Day_Day_$Impl_$.dividerMegasecond).trim(null);
+};
+thx_unit_time__$Day_Day_$Impl_$.toFortnight = function(this1) {
+	return this1.multiply(thx_unit_time__$Day_Day_$Impl_$.ofUnit).divide(thx_unit_time__$Day_Day_$Impl_$.dividerFortnight).trim(null);
+};
+thx_unit_time__$Day_Day_$Impl_$.toSynodicMonth = function(this1) {
+	return this1.multiply(thx_unit_time__$Day_Day_$Impl_$.ofUnit).divide(thx_unit_time__$Day_Day_$Impl_$.dividerSynodicMonth).trim(null);
+};
+thx_unit_time__$Day_Day_$Impl_$.toTropicalMonth = function(this1) {
+	return this1.multiply(thx_unit_time__$Day_Day_$Impl_$.ofUnit).divide(thx_unit_time__$Day_Day_$Impl_$.dividerTropicalMonth).trim(null);
+};
+thx_unit_time__$Day_Day_$Impl_$.toJulianYear = function(this1) {
+	return this1.multiply(thx_unit_time__$Day_Day_$Impl_$.ofUnit).divide(thx_unit_time__$Day_Day_$Impl_$.dividerJulianYear).trim(null);
+};
+thx_unit_time__$Day_Day_$Impl_$.toGigasecond = function(this1) {
+	return this1.multiply(thx_unit_time__$Day_Day_$Impl_$.ofUnit).divide(thx_unit_time__$Day_Day_$Impl_$.dividerGigasecond).trim(null);
+};
+thx_unit_time__$Day_Day_$Impl_$.toTerasecond = function(this1) {
+	return this1.multiply(thx_unit_time__$Day_Day_$Impl_$.ofUnit).divide(thx_unit_time__$Day_Day_$Impl_$.dividerTerasecond).trim(null);
+};
+thx_unit_time__$Day_Day_$Impl_$.toString = function(this1) {
+	return "" + this1.toString() + "day";
+};
+thx_unit_time__$Day_Day_$Impl_$.fromTime = function(time) {
+	return thx__$Decimal_Decimal_$Impl_$.fromInt64(time).multiply(thx_unit_time__$Tick_Tick_$Impl_$.ofUnit).divide(thx_unit_time__$Tick_Tick_$Impl_$.dividerDay).trim(null);
+};
+thx_unit_time__$Day_Day_$Impl_$.toTime = function(this1) {
+	return thx_bigint_Bigs.toInt64(thx__$Decimal_Decimal_$Impl_$.toBigInt(this1.multiply(thx_unit_time__$Day_Day_$Impl_$.ofUnit).divide(thx_unit_time__$Day_Day_$Impl_$.dividerTick).trim(null)));
+};
+var thx_unit_time__$Fortnight_Fortnight_$Impl_$ = {};
+thx_unit_time__$Fortnight_Fortnight_$Impl_$.__name__ = ["thx","unit","time","_Fortnight","Fortnight_Impl_"];
+thx_unit_time__$Fortnight_Fortnight_$Impl_$.fromDecimal = function(value) {
+	return value;
+};
+thx_unit_time__$Fortnight_Fortnight_$Impl_$.fromInt = function(value) {
+	return thx__$Decimal_Decimal_$Impl_$.fromInt(value);
+};
+thx_unit_time__$Fortnight_Fortnight_$Impl_$.fromFloat = function(value) {
+	return thx_bigint_Decimals.fromFloat(value);
+};
+thx_unit_time__$Fortnight_Fortnight_$Impl_$._new = function(value) {
+	return value;
+};
+thx_unit_time__$Fortnight_Fortnight_$Impl_$.abs = function(this1) {
+	return this1.abs();
+};
+thx_unit_time__$Fortnight_Fortnight_$Impl_$.min = function(this1,that) {
+	var that1 = that;
+	return thx__$Decimal_Decimal_$Impl_$.less(this1,that1)?this1:that1;
+};
+thx_unit_time__$Fortnight_Fortnight_$Impl_$.max = function(this1,that) {
+	var that1 = that;
+	return thx__$Decimal_Decimal_$Impl_$.greater(this1,that1)?this1:that1;
+};
+thx_unit_time__$Fortnight_Fortnight_$Impl_$.negate = function(this1) {
+	return this1.negate();
+};
+thx_unit_time__$Fortnight_Fortnight_$Impl_$.add = function(this1,that) {
+	return this1.add(that);
+};
+thx_unit_time__$Fortnight_Fortnight_$Impl_$.subtract = function(this1,that) {
+	return this1.subtract(that);
+};
+thx_unit_time__$Fortnight_Fortnight_$Impl_$.multiply = function(this1,that) {
+	return this1.multiply(that);
+};
+thx_unit_time__$Fortnight_Fortnight_$Impl_$.divide = function(this1,that) {
+	return this1.divide(that);
+};
+thx_unit_time__$Fortnight_Fortnight_$Impl_$.modulo = function(this1,that) {
+	return this1.modulo(that);
+};
+thx_unit_time__$Fortnight_Fortnight_$Impl_$.equalsTo = function(this1,that) {
+	return thx__$Decimal_Decimal_$Impl_$.equals(this1,that);
+};
+thx_unit_time__$Fortnight_Fortnight_$Impl_$.equals = function(self,that) {
+	return thx__$Decimal_Decimal_$Impl_$.equals(self,that);
+};
+thx_unit_time__$Fortnight_Fortnight_$Impl_$.nearEqualsTo = function(this1,that) {
+	return thx_Floats.nearEquals(this1.toFloat(),that.toFloat());
+};
+thx_unit_time__$Fortnight_Fortnight_$Impl_$.nearEquals = function(self,that) {
+	return thx_Floats.nearEquals(self.toFloat(),that.toFloat());
+};
+thx_unit_time__$Fortnight_Fortnight_$Impl_$.notEqualsTo = function(this1,that) {
+	return thx__$Decimal_Decimal_$Impl_$.notEquals(this1,that);
+};
+thx_unit_time__$Fortnight_Fortnight_$Impl_$.notEquals = function(self,that) {
+	return thx__$Decimal_Decimal_$Impl_$.notEquals(self,that);
+};
+thx_unit_time__$Fortnight_Fortnight_$Impl_$.lessThan = function(this1,that) {
+	return thx__$Decimal_Decimal_$Impl_$.less(this1,that);
+};
+thx_unit_time__$Fortnight_Fortnight_$Impl_$.less = function(self,that) {
+	return thx__$Decimal_Decimal_$Impl_$.less(self,that);
+};
+thx_unit_time__$Fortnight_Fortnight_$Impl_$.lessEqualsTo = function(this1,that) {
+	return thx__$Decimal_Decimal_$Impl_$.lessEquals(this1,that);
+};
+thx_unit_time__$Fortnight_Fortnight_$Impl_$.lessEquals = function(self,that) {
+	return thx__$Decimal_Decimal_$Impl_$.lessEquals(self,that);
+};
+thx_unit_time__$Fortnight_Fortnight_$Impl_$.greaterThan = function(this1,that) {
+	return thx__$Decimal_Decimal_$Impl_$.greater(this1,that);
+};
+thx_unit_time__$Fortnight_Fortnight_$Impl_$.greater = function(self,that) {
+	return thx__$Decimal_Decimal_$Impl_$.greaterEquals(self,that);
+};
+thx_unit_time__$Fortnight_Fortnight_$Impl_$.greaterEqualsTo = function(this1,that) {
+	return thx__$Decimal_Decimal_$Impl_$.greaterEquals(this1,that);
+};
+thx_unit_time__$Fortnight_Fortnight_$Impl_$.greaterEquals = function(self,that) {
+	return thx__$Decimal_Decimal_$Impl_$.greaterEquals(self,that);
+};
+thx_unit_time__$Fortnight_Fortnight_$Impl_$.toDecimal = function(this1) {
+	return this1;
+};
+thx_unit_time__$Fortnight_Fortnight_$Impl_$.toFloat = function(this1) {
+	return this1.toFloat();
+};
+thx_unit_time__$Fortnight_Fortnight_$Impl_$.toPlankTimeUnit = function(this1) {
+	return this1.multiply(thx_unit_time__$Fortnight_Fortnight_$Impl_$.ofUnit).divide(thx_unit_time__$Fortnight_Fortnight_$Impl_$.dividerPlankTimeUnit).trim(null);
+};
+thx_unit_time__$Fortnight_Fortnight_$Impl_$.toJiffyPhysics = function(this1) {
+	return this1.multiply(thx_unit_time__$Fortnight_Fortnight_$Impl_$.ofUnit).divide(thx_unit_time__$Fortnight_Fortnight_$Impl_$.dividerJiffyPhysics).trim(null);
+};
+thx_unit_time__$Fortnight_Fortnight_$Impl_$.toSvedberg = function(this1) {
+	return this1.multiply(thx_unit_time__$Fortnight_Fortnight_$Impl_$.ofUnit).divide(thx_unit_time__$Fortnight_Fortnight_$Impl_$.dividerSvedberg).trim(null);
+};
+thx_unit_time__$Fortnight_Fortnight_$Impl_$.toPicosecond = function(this1) {
+	return this1.multiply(thx_unit_time__$Fortnight_Fortnight_$Impl_$.ofUnit).divide(thx_unit_time__$Fortnight_Fortnight_$Impl_$.dividerPicosecond).trim(null);
+};
+thx_unit_time__$Fortnight_Fortnight_$Impl_$.toNanosecond = function(this1) {
+	return this1.multiply(thx_unit_time__$Fortnight_Fortnight_$Impl_$.ofUnit).divide(thx_unit_time__$Fortnight_Fortnight_$Impl_$.dividerNanosecond).trim(null);
+};
+thx_unit_time__$Fortnight_Fortnight_$Impl_$.toShake = function(this1) {
+	return this1.multiply(thx_unit_time__$Fortnight_Fortnight_$Impl_$.ofUnit).divide(thx_unit_time__$Fortnight_Fortnight_$Impl_$.dividerShake).trim(null);
+};
+thx_unit_time__$Fortnight_Fortnight_$Impl_$.toTick = function(this1) {
+	return this1.multiply(thx_unit_time__$Fortnight_Fortnight_$Impl_$.ofUnit).divide(thx_unit_time__$Fortnight_Fortnight_$Impl_$.dividerTick).trim(null);
+};
+thx_unit_time__$Fortnight_Fortnight_$Impl_$.toMicrosecond = function(this1) {
+	return this1.multiply(thx_unit_time__$Fortnight_Fortnight_$Impl_$.ofUnit).divide(thx_unit_time__$Fortnight_Fortnight_$Impl_$.dividerMicrosecond).trim(null);
+};
+thx_unit_time__$Fortnight_Fortnight_$Impl_$.toFourth = function(this1) {
+	return this1.multiply(thx_unit_time__$Fortnight_Fortnight_$Impl_$.ofUnit).divide(thx_unit_time__$Fortnight_Fortnight_$Impl_$.dividerFourth).trim(null);
+};
+thx_unit_time__$Fortnight_Fortnight_$Impl_$.toMillisecond = function(this1) {
+	return this1.multiply(thx_unit_time__$Fortnight_Fortnight_$Impl_$.ofUnit).divide(thx_unit_time__$Fortnight_Fortnight_$Impl_$.dividerMillisecond).trim(null);
+};
+thx_unit_time__$Fortnight_Fortnight_$Impl_$.toThird = function(this1) {
+	return this1.multiply(thx_unit_time__$Fortnight_Fortnight_$Impl_$.ofUnit).divide(thx_unit_time__$Fortnight_Fortnight_$Impl_$.dividerThird).trim(null);
+};
+thx_unit_time__$Fortnight_Fortnight_$Impl_$.toSecond = function(this1) {
+	return this1.multiply(thx_unit_time__$Fortnight_Fortnight_$Impl_$.ofUnit).divide(thx_unit_time__$Fortnight_Fortnight_$Impl_$.dividerSecond).trim(null);
+};
+thx_unit_time__$Fortnight_Fortnight_$Impl_$.toMinute = function(this1) {
+	return this1.multiply(thx_unit_time__$Fortnight_Fortnight_$Impl_$.ofUnit).divide(thx_unit_time__$Fortnight_Fortnight_$Impl_$.dividerMinute).trim(null);
+};
+thx_unit_time__$Fortnight_Fortnight_$Impl_$.toKe = function(this1) {
+	return this1.multiply(thx_unit_time__$Fortnight_Fortnight_$Impl_$.ofUnit).divide(thx_unit_time__$Fortnight_Fortnight_$Impl_$.dividerKe).trim(null);
+};
+thx_unit_time__$Fortnight_Fortnight_$Impl_$.toKilosecond = function(this1) {
+	return this1.multiply(thx_unit_time__$Fortnight_Fortnight_$Impl_$.ofUnit).divide(thx_unit_time__$Fortnight_Fortnight_$Impl_$.dividerKilosecond).trim(null);
+};
+thx_unit_time__$Fortnight_Fortnight_$Impl_$.toHour = function(this1) {
+	return this1.multiply(thx_unit_time__$Fortnight_Fortnight_$Impl_$.ofUnit).divide(thx_unit_time__$Fortnight_Fortnight_$Impl_$.dividerHour).trim(null);
+};
+thx_unit_time__$Fortnight_Fortnight_$Impl_$.toDay = function(this1) {
+	return this1.multiply(thx_unit_time__$Fortnight_Fortnight_$Impl_$.ofUnit).divide(thx_unit_time__$Fortnight_Fortnight_$Impl_$.dividerDay).trim(null);
+};
+thx_unit_time__$Fortnight_Fortnight_$Impl_$.toWeek = function(this1) {
+	return this1.multiply(thx_unit_time__$Fortnight_Fortnight_$Impl_$.ofUnit).divide(thx_unit_time__$Fortnight_Fortnight_$Impl_$.dividerWeek).trim(null);
+};
+thx_unit_time__$Fortnight_Fortnight_$Impl_$.toMegasecond = function(this1) {
+	return this1.multiply(thx_unit_time__$Fortnight_Fortnight_$Impl_$.ofUnit).divide(thx_unit_time__$Fortnight_Fortnight_$Impl_$.dividerMegasecond).trim(null);
+};
+thx_unit_time__$Fortnight_Fortnight_$Impl_$.toFortnight = function(this1) {
+	return this1;
+};
+thx_unit_time__$Fortnight_Fortnight_$Impl_$.toSynodicMonth = function(this1) {
+	return this1.multiply(thx_unit_time__$Fortnight_Fortnight_$Impl_$.ofUnit).divide(thx_unit_time__$Fortnight_Fortnight_$Impl_$.dividerSynodicMonth).trim(null);
+};
+thx_unit_time__$Fortnight_Fortnight_$Impl_$.toTropicalMonth = function(this1) {
+	return this1.multiply(thx_unit_time__$Fortnight_Fortnight_$Impl_$.ofUnit).divide(thx_unit_time__$Fortnight_Fortnight_$Impl_$.dividerTropicalMonth).trim(null);
+};
+thx_unit_time__$Fortnight_Fortnight_$Impl_$.toJulianYear = function(this1) {
+	return this1.multiply(thx_unit_time__$Fortnight_Fortnight_$Impl_$.ofUnit).divide(thx_unit_time__$Fortnight_Fortnight_$Impl_$.dividerJulianYear).trim(null);
+};
+thx_unit_time__$Fortnight_Fortnight_$Impl_$.toGigasecond = function(this1) {
+	return this1.multiply(thx_unit_time__$Fortnight_Fortnight_$Impl_$.ofUnit).divide(thx_unit_time__$Fortnight_Fortnight_$Impl_$.dividerGigasecond).trim(null);
+};
+thx_unit_time__$Fortnight_Fortnight_$Impl_$.toTerasecond = function(this1) {
+	return this1.multiply(thx_unit_time__$Fortnight_Fortnight_$Impl_$.ofUnit).divide(thx_unit_time__$Fortnight_Fortnight_$Impl_$.dividerTerasecond).trim(null);
+};
+thx_unit_time__$Fortnight_Fortnight_$Impl_$.toString = function(this1) {
+	return "" + this1.toString() + "fortnight";
+};
+thx_unit_time__$Fortnight_Fortnight_$Impl_$.fromTime = function(time) {
+	return thx__$Decimal_Decimal_$Impl_$.fromInt64(time).multiply(thx_unit_time__$Tick_Tick_$Impl_$.ofUnit).divide(thx_unit_time__$Tick_Tick_$Impl_$.dividerFortnight).trim(null);
+};
+thx_unit_time__$Fortnight_Fortnight_$Impl_$.toTime = function(this1) {
+	return thx_bigint_Bigs.toInt64(thx__$Decimal_Decimal_$Impl_$.toBigInt(this1.multiply(thx_unit_time__$Fortnight_Fortnight_$Impl_$.ofUnit).divide(thx_unit_time__$Fortnight_Fortnight_$Impl_$.dividerTick).trim(null)));
+};
+var thx_unit_time__$Fourth_Fourth_$Impl_$ = {};
+thx_unit_time__$Fourth_Fourth_$Impl_$.__name__ = ["thx","unit","time","_Fourth","Fourth_Impl_"];
+thx_unit_time__$Fourth_Fourth_$Impl_$.fromDecimal = function(value) {
+	return value;
+};
+thx_unit_time__$Fourth_Fourth_$Impl_$.fromInt = function(value) {
+	return thx__$Decimal_Decimal_$Impl_$.fromInt(value);
+};
+thx_unit_time__$Fourth_Fourth_$Impl_$.fromFloat = function(value) {
+	return thx_bigint_Decimals.fromFloat(value);
+};
+thx_unit_time__$Fourth_Fourth_$Impl_$._new = function(value) {
+	return value;
+};
+thx_unit_time__$Fourth_Fourth_$Impl_$.abs = function(this1) {
+	return this1.abs();
+};
+thx_unit_time__$Fourth_Fourth_$Impl_$.min = function(this1,that) {
+	var that1 = that;
+	return thx__$Decimal_Decimal_$Impl_$.less(this1,that1)?this1:that1;
+};
+thx_unit_time__$Fourth_Fourth_$Impl_$.max = function(this1,that) {
+	var that1 = that;
+	return thx__$Decimal_Decimal_$Impl_$.greater(this1,that1)?this1:that1;
+};
+thx_unit_time__$Fourth_Fourth_$Impl_$.negate = function(this1) {
+	return this1.negate();
+};
+thx_unit_time__$Fourth_Fourth_$Impl_$.add = function(this1,that) {
+	return this1.add(that);
+};
+thx_unit_time__$Fourth_Fourth_$Impl_$.subtract = function(this1,that) {
+	return this1.subtract(that);
+};
+thx_unit_time__$Fourth_Fourth_$Impl_$.multiply = function(this1,that) {
+	return this1.multiply(that);
+};
+thx_unit_time__$Fourth_Fourth_$Impl_$.divide = function(this1,that) {
+	return this1.divide(that);
+};
+thx_unit_time__$Fourth_Fourth_$Impl_$.modulo = function(this1,that) {
+	return this1.modulo(that);
+};
+thx_unit_time__$Fourth_Fourth_$Impl_$.equalsTo = function(this1,that) {
+	return thx__$Decimal_Decimal_$Impl_$.equals(this1,that);
+};
+thx_unit_time__$Fourth_Fourth_$Impl_$.equals = function(self,that) {
+	return thx__$Decimal_Decimal_$Impl_$.equals(self,that);
+};
+thx_unit_time__$Fourth_Fourth_$Impl_$.nearEqualsTo = function(this1,that) {
+	return thx_Floats.nearEquals(this1.toFloat(),that.toFloat());
+};
+thx_unit_time__$Fourth_Fourth_$Impl_$.nearEquals = function(self,that) {
+	return thx_Floats.nearEquals(self.toFloat(),that.toFloat());
+};
+thx_unit_time__$Fourth_Fourth_$Impl_$.notEqualsTo = function(this1,that) {
+	return thx__$Decimal_Decimal_$Impl_$.notEquals(this1,that);
+};
+thx_unit_time__$Fourth_Fourth_$Impl_$.notEquals = function(self,that) {
+	return thx__$Decimal_Decimal_$Impl_$.notEquals(self,that);
+};
+thx_unit_time__$Fourth_Fourth_$Impl_$.lessThan = function(this1,that) {
+	return thx__$Decimal_Decimal_$Impl_$.less(this1,that);
+};
+thx_unit_time__$Fourth_Fourth_$Impl_$.less = function(self,that) {
+	return thx__$Decimal_Decimal_$Impl_$.less(self,that);
+};
+thx_unit_time__$Fourth_Fourth_$Impl_$.lessEqualsTo = function(this1,that) {
+	return thx__$Decimal_Decimal_$Impl_$.lessEquals(this1,that);
+};
+thx_unit_time__$Fourth_Fourth_$Impl_$.lessEquals = function(self,that) {
+	return thx__$Decimal_Decimal_$Impl_$.lessEquals(self,that);
+};
+thx_unit_time__$Fourth_Fourth_$Impl_$.greaterThan = function(this1,that) {
+	return thx__$Decimal_Decimal_$Impl_$.greater(this1,that);
+};
+thx_unit_time__$Fourth_Fourth_$Impl_$.greater = function(self,that) {
+	return thx__$Decimal_Decimal_$Impl_$.greaterEquals(self,that);
+};
+thx_unit_time__$Fourth_Fourth_$Impl_$.greaterEqualsTo = function(this1,that) {
+	return thx__$Decimal_Decimal_$Impl_$.greaterEquals(this1,that);
+};
+thx_unit_time__$Fourth_Fourth_$Impl_$.greaterEquals = function(self,that) {
+	return thx__$Decimal_Decimal_$Impl_$.greaterEquals(self,that);
+};
+thx_unit_time__$Fourth_Fourth_$Impl_$.toDecimal = function(this1) {
+	return this1;
+};
+thx_unit_time__$Fourth_Fourth_$Impl_$.toFloat = function(this1) {
+	return this1.toFloat();
+};
+thx_unit_time__$Fourth_Fourth_$Impl_$.toPlankTimeUnit = function(this1) {
+	return this1.multiply(thx_unit_time__$Fourth_Fourth_$Impl_$.ofUnit).divide(thx_unit_time__$Fourth_Fourth_$Impl_$.dividerPlankTimeUnit).trim(null);
+};
+thx_unit_time__$Fourth_Fourth_$Impl_$.toJiffyPhysics = function(this1) {
+	return this1.multiply(thx_unit_time__$Fourth_Fourth_$Impl_$.ofUnit).divide(thx_unit_time__$Fourth_Fourth_$Impl_$.dividerJiffyPhysics).trim(null);
+};
+thx_unit_time__$Fourth_Fourth_$Impl_$.toSvedberg = function(this1) {
+	return this1.multiply(thx_unit_time__$Fourth_Fourth_$Impl_$.ofUnit).divide(thx_unit_time__$Fourth_Fourth_$Impl_$.dividerSvedberg).trim(null);
+};
+thx_unit_time__$Fourth_Fourth_$Impl_$.toPicosecond = function(this1) {
+	return this1.multiply(thx_unit_time__$Fourth_Fourth_$Impl_$.ofUnit).divide(thx_unit_time__$Fourth_Fourth_$Impl_$.dividerPicosecond).trim(null);
+};
+thx_unit_time__$Fourth_Fourth_$Impl_$.toNanosecond = function(this1) {
+	return this1.multiply(thx_unit_time__$Fourth_Fourth_$Impl_$.ofUnit).divide(thx_unit_time__$Fourth_Fourth_$Impl_$.dividerNanosecond).trim(null);
+};
+thx_unit_time__$Fourth_Fourth_$Impl_$.toShake = function(this1) {
+	return this1.multiply(thx_unit_time__$Fourth_Fourth_$Impl_$.ofUnit).divide(thx_unit_time__$Fourth_Fourth_$Impl_$.dividerShake).trim(null);
+};
+thx_unit_time__$Fourth_Fourth_$Impl_$.toTick = function(this1) {
+	return this1.multiply(thx_unit_time__$Fourth_Fourth_$Impl_$.ofUnit).divide(thx_unit_time__$Fourth_Fourth_$Impl_$.dividerTick).trim(null);
+};
+thx_unit_time__$Fourth_Fourth_$Impl_$.toMicrosecond = function(this1) {
+	return this1.multiply(thx_unit_time__$Fourth_Fourth_$Impl_$.ofUnit).divide(thx_unit_time__$Fourth_Fourth_$Impl_$.dividerMicrosecond).trim(null);
+};
+thx_unit_time__$Fourth_Fourth_$Impl_$.toFourth = function(this1) {
+	return this1;
+};
+thx_unit_time__$Fourth_Fourth_$Impl_$.toMillisecond = function(this1) {
+	return this1.multiply(thx_unit_time__$Fourth_Fourth_$Impl_$.ofUnit).divide(thx_unit_time__$Fourth_Fourth_$Impl_$.dividerMillisecond).trim(null);
+};
+thx_unit_time__$Fourth_Fourth_$Impl_$.toThird = function(this1) {
+	return this1.multiply(thx_unit_time__$Fourth_Fourth_$Impl_$.ofUnit).divide(thx_unit_time__$Fourth_Fourth_$Impl_$.dividerThird).trim(null);
+};
+thx_unit_time__$Fourth_Fourth_$Impl_$.toSecond = function(this1) {
+	return this1.multiply(thx_unit_time__$Fourth_Fourth_$Impl_$.ofUnit).divide(thx_unit_time__$Fourth_Fourth_$Impl_$.dividerSecond).trim(null);
+};
+thx_unit_time__$Fourth_Fourth_$Impl_$.toMinute = function(this1) {
+	return this1.multiply(thx_unit_time__$Fourth_Fourth_$Impl_$.ofUnit).divide(thx_unit_time__$Fourth_Fourth_$Impl_$.dividerMinute).trim(null);
+};
+thx_unit_time__$Fourth_Fourth_$Impl_$.toKe = function(this1) {
+	return this1.multiply(thx_unit_time__$Fourth_Fourth_$Impl_$.ofUnit).divide(thx_unit_time__$Fourth_Fourth_$Impl_$.dividerKe).trim(null);
+};
+thx_unit_time__$Fourth_Fourth_$Impl_$.toKilosecond = function(this1) {
+	return this1.multiply(thx_unit_time__$Fourth_Fourth_$Impl_$.ofUnit).divide(thx_unit_time__$Fourth_Fourth_$Impl_$.dividerKilosecond).trim(null);
+};
+thx_unit_time__$Fourth_Fourth_$Impl_$.toHour = function(this1) {
+	return this1.multiply(thx_unit_time__$Fourth_Fourth_$Impl_$.ofUnit).divide(thx_unit_time__$Fourth_Fourth_$Impl_$.dividerHour).trim(null);
+};
+thx_unit_time__$Fourth_Fourth_$Impl_$.toDay = function(this1) {
+	return this1.multiply(thx_unit_time__$Fourth_Fourth_$Impl_$.ofUnit).divide(thx_unit_time__$Fourth_Fourth_$Impl_$.dividerDay).trim(null);
+};
+thx_unit_time__$Fourth_Fourth_$Impl_$.toWeek = function(this1) {
+	return this1.multiply(thx_unit_time__$Fourth_Fourth_$Impl_$.ofUnit).divide(thx_unit_time__$Fourth_Fourth_$Impl_$.dividerWeek).trim(null);
+};
+thx_unit_time__$Fourth_Fourth_$Impl_$.toMegasecond = function(this1) {
+	return this1.multiply(thx_unit_time__$Fourth_Fourth_$Impl_$.ofUnit).divide(thx_unit_time__$Fourth_Fourth_$Impl_$.dividerMegasecond).trim(null);
+};
+thx_unit_time__$Fourth_Fourth_$Impl_$.toFortnight = function(this1) {
+	return this1.multiply(thx_unit_time__$Fourth_Fourth_$Impl_$.ofUnit).divide(thx_unit_time__$Fourth_Fourth_$Impl_$.dividerFortnight).trim(null);
+};
+thx_unit_time__$Fourth_Fourth_$Impl_$.toSynodicMonth = function(this1) {
+	return this1.multiply(thx_unit_time__$Fourth_Fourth_$Impl_$.ofUnit).divide(thx_unit_time__$Fourth_Fourth_$Impl_$.dividerSynodicMonth).trim(null);
+};
+thx_unit_time__$Fourth_Fourth_$Impl_$.toTropicalMonth = function(this1) {
+	return this1.multiply(thx_unit_time__$Fourth_Fourth_$Impl_$.ofUnit).divide(thx_unit_time__$Fourth_Fourth_$Impl_$.dividerTropicalMonth).trim(null);
+};
+thx_unit_time__$Fourth_Fourth_$Impl_$.toJulianYear = function(this1) {
+	return this1.multiply(thx_unit_time__$Fourth_Fourth_$Impl_$.ofUnit).divide(thx_unit_time__$Fourth_Fourth_$Impl_$.dividerJulianYear).trim(null);
+};
+thx_unit_time__$Fourth_Fourth_$Impl_$.toGigasecond = function(this1) {
+	return this1.multiply(thx_unit_time__$Fourth_Fourth_$Impl_$.ofUnit).divide(thx_unit_time__$Fourth_Fourth_$Impl_$.dividerGigasecond).trim(null);
+};
+thx_unit_time__$Fourth_Fourth_$Impl_$.toTerasecond = function(this1) {
+	return this1.multiply(thx_unit_time__$Fourth_Fourth_$Impl_$.ofUnit).divide(thx_unit_time__$Fourth_Fourth_$Impl_$.dividerTerasecond).trim(null);
+};
+thx_unit_time__$Fourth_Fourth_$Impl_$.toString = function(this1) {
+	return "" + this1.toString() + "fourth";
+};
+thx_unit_time__$Fourth_Fourth_$Impl_$.fromTime = function(time) {
+	return thx__$Decimal_Decimal_$Impl_$.fromInt64(time).multiply(thx_unit_time__$Tick_Tick_$Impl_$.ofUnit).divide(thx_unit_time__$Tick_Tick_$Impl_$.dividerFourth).trim(null);
+};
+thx_unit_time__$Fourth_Fourth_$Impl_$.toTime = function(this1) {
+	return thx_bigint_Bigs.toInt64(thx__$Decimal_Decimal_$Impl_$.toBigInt(this1.multiply(thx_unit_time__$Fourth_Fourth_$Impl_$.ofUnit).divide(thx_unit_time__$Fourth_Fourth_$Impl_$.dividerTick).trim(null)));
+};
+var thx_unit_time__$Gigasecond_Gigasecond_$Impl_$ = {};
+thx_unit_time__$Gigasecond_Gigasecond_$Impl_$.__name__ = ["thx","unit","time","_Gigasecond","Gigasecond_Impl_"];
+thx_unit_time__$Gigasecond_Gigasecond_$Impl_$.fromDecimal = function(value) {
+	return value;
+};
+thx_unit_time__$Gigasecond_Gigasecond_$Impl_$.fromInt = function(value) {
+	return thx__$Decimal_Decimal_$Impl_$.fromInt(value);
+};
+thx_unit_time__$Gigasecond_Gigasecond_$Impl_$.fromFloat = function(value) {
+	return thx_bigint_Decimals.fromFloat(value);
+};
+thx_unit_time__$Gigasecond_Gigasecond_$Impl_$._new = function(value) {
+	return value;
+};
+thx_unit_time__$Gigasecond_Gigasecond_$Impl_$.abs = function(this1) {
+	return this1.abs();
+};
+thx_unit_time__$Gigasecond_Gigasecond_$Impl_$.min = function(this1,that) {
+	var that1 = that;
+	return thx__$Decimal_Decimal_$Impl_$.less(this1,that1)?this1:that1;
+};
+thx_unit_time__$Gigasecond_Gigasecond_$Impl_$.max = function(this1,that) {
+	var that1 = that;
+	return thx__$Decimal_Decimal_$Impl_$.greater(this1,that1)?this1:that1;
+};
+thx_unit_time__$Gigasecond_Gigasecond_$Impl_$.negate = function(this1) {
+	return this1.negate();
+};
+thx_unit_time__$Gigasecond_Gigasecond_$Impl_$.add = function(this1,that) {
+	return this1.add(that);
+};
+thx_unit_time__$Gigasecond_Gigasecond_$Impl_$.subtract = function(this1,that) {
+	return this1.subtract(that);
+};
+thx_unit_time__$Gigasecond_Gigasecond_$Impl_$.multiply = function(this1,that) {
+	return this1.multiply(that);
+};
+thx_unit_time__$Gigasecond_Gigasecond_$Impl_$.divide = function(this1,that) {
+	return this1.divide(that);
+};
+thx_unit_time__$Gigasecond_Gigasecond_$Impl_$.modulo = function(this1,that) {
+	return this1.modulo(that);
+};
+thx_unit_time__$Gigasecond_Gigasecond_$Impl_$.equalsTo = function(this1,that) {
+	return thx__$Decimal_Decimal_$Impl_$.equals(this1,that);
+};
+thx_unit_time__$Gigasecond_Gigasecond_$Impl_$.equals = function(self,that) {
+	return thx__$Decimal_Decimal_$Impl_$.equals(self,that);
+};
+thx_unit_time__$Gigasecond_Gigasecond_$Impl_$.nearEqualsTo = function(this1,that) {
+	return thx_Floats.nearEquals(this1.toFloat(),that.toFloat());
+};
+thx_unit_time__$Gigasecond_Gigasecond_$Impl_$.nearEquals = function(self,that) {
+	return thx_Floats.nearEquals(self.toFloat(),that.toFloat());
+};
+thx_unit_time__$Gigasecond_Gigasecond_$Impl_$.notEqualsTo = function(this1,that) {
+	return thx__$Decimal_Decimal_$Impl_$.notEquals(this1,that);
+};
+thx_unit_time__$Gigasecond_Gigasecond_$Impl_$.notEquals = function(self,that) {
+	return thx__$Decimal_Decimal_$Impl_$.notEquals(self,that);
+};
+thx_unit_time__$Gigasecond_Gigasecond_$Impl_$.lessThan = function(this1,that) {
+	return thx__$Decimal_Decimal_$Impl_$.less(this1,that);
+};
+thx_unit_time__$Gigasecond_Gigasecond_$Impl_$.less = function(self,that) {
+	return thx__$Decimal_Decimal_$Impl_$.less(self,that);
+};
+thx_unit_time__$Gigasecond_Gigasecond_$Impl_$.lessEqualsTo = function(this1,that) {
+	return thx__$Decimal_Decimal_$Impl_$.lessEquals(this1,that);
+};
+thx_unit_time__$Gigasecond_Gigasecond_$Impl_$.lessEquals = function(self,that) {
+	return thx__$Decimal_Decimal_$Impl_$.lessEquals(self,that);
+};
+thx_unit_time__$Gigasecond_Gigasecond_$Impl_$.greaterThan = function(this1,that) {
+	return thx__$Decimal_Decimal_$Impl_$.greater(this1,that);
+};
+thx_unit_time__$Gigasecond_Gigasecond_$Impl_$.greater = function(self,that) {
+	return thx__$Decimal_Decimal_$Impl_$.greaterEquals(self,that);
+};
+thx_unit_time__$Gigasecond_Gigasecond_$Impl_$.greaterEqualsTo = function(this1,that) {
+	return thx__$Decimal_Decimal_$Impl_$.greaterEquals(this1,that);
+};
+thx_unit_time__$Gigasecond_Gigasecond_$Impl_$.greaterEquals = function(self,that) {
+	return thx__$Decimal_Decimal_$Impl_$.greaterEquals(self,that);
+};
+thx_unit_time__$Gigasecond_Gigasecond_$Impl_$.toDecimal = function(this1) {
+	return this1;
+};
+thx_unit_time__$Gigasecond_Gigasecond_$Impl_$.toFloat = function(this1) {
+	return this1.toFloat();
+};
+thx_unit_time__$Gigasecond_Gigasecond_$Impl_$.toPlankTimeUnit = function(this1) {
+	return this1.multiply(thx_unit_time__$Gigasecond_Gigasecond_$Impl_$.ofUnit).divide(thx_unit_time__$Gigasecond_Gigasecond_$Impl_$.dividerPlankTimeUnit).trim(null);
+};
+thx_unit_time__$Gigasecond_Gigasecond_$Impl_$.toJiffyPhysics = function(this1) {
+	return this1.multiply(thx_unit_time__$Gigasecond_Gigasecond_$Impl_$.ofUnit).divide(thx_unit_time__$Gigasecond_Gigasecond_$Impl_$.dividerJiffyPhysics).trim(null);
+};
+thx_unit_time__$Gigasecond_Gigasecond_$Impl_$.toSvedberg = function(this1) {
+	return this1.multiply(thx_unit_time__$Gigasecond_Gigasecond_$Impl_$.ofUnit).divide(thx_unit_time__$Gigasecond_Gigasecond_$Impl_$.dividerSvedberg).trim(null);
+};
+thx_unit_time__$Gigasecond_Gigasecond_$Impl_$.toPicosecond = function(this1) {
+	return this1.multiply(thx_unit_time__$Gigasecond_Gigasecond_$Impl_$.ofUnit).divide(thx_unit_time__$Gigasecond_Gigasecond_$Impl_$.dividerPicosecond).trim(null);
+};
+thx_unit_time__$Gigasecond_Gigasecond_$Impl_$.toNanosecond = function(this1) {
+	return this1.multiply(thx_unit_time__$Gigasecond_Gigasecond_$Impl_$.ofUnit).divide(thx_unit_time__$Gigasecond_Gigasecond_$Impl_$.dividerNanosecond).trim(null);
+};
+thx_unit_time__$Gigasecond_Gigasecond_$Impl_$.toShake = function(this1) {
+	return this1.multiply(thx_unit_time__$Gigasecond_Gigasecond_$Impl_$.ofUnit).divide(thx_unit_time__$Gigasecond_Gigasecond_$Impl_$.dividerShake).trim(null);
+};
+thx_unit_time__$Gigasecond_Gigasecond_$Impl_$.toTick = function(this1) {
+	return this1.multiply(thx_unit_time__$Gigasecond_Gigasecond_$Impl_$.ofUnit).divide(thx_unit_time__$Gigasecond_Gigasecond_$Impl_$.dividerTick).trim(null);
+};
+thx_unit_time__$Gigasecond_Gigasecond_$Impl_$.toMicrosecond = function(this1) {
+	return this1.multiply(thx_unit_time__$Gigasecond_Gigasecond_$Impl_$.ofUnit).divide(thx_unit_time__$Gigasecond_Gigasecond_$Impl_$.dividerMicrosecond).trim(null);
+};
+thx_unit_time__$Gigasecond_Gigasecond_$Impl_$.toFourth = function(this1) {
+	return this1.multiply(thx_unit_time__$Gigasecond_Gigasecond_$Impl_$.ofUnit).divide(thx_unit_time__$Gigasecond_Gigasecond_$Impl_$.dividerFourth).trim(null);
+};
+thx_unit_time__$Gigasecond_Gigasecond_$Impl_$.toMillisecond = function(this1) {
+	return this1.multiply(thx_unit_time__$Gigasecond_Gigasecond_$Impl_$.ofUnit).divide(thx_unit_time__$Gigasecond_Gigasecond_$Impl_$.dividerMillisecond).trim(null);
+};
+thx_unit_time__$Gigasecond_Gigasecond_$Impl_$.toThird = function(this1) {
+	return this1.multiply(thx_unit_time__$Gigasecond_Gigasecond_$Impl_$.ofUnit).divide(thx_unit_time__$Gigasecond_Gigasecond_$Impl_$.dividerThird).trim(null);
+};
+thx_unit_time__$Gigasecond_Gigasecond_$Impl_$.toSecond = function(this1) {
+	return this1.multiply(thx_unit_time__$Gigasecond_Gigasecond_$Impl_$.ofUnit).divide(thx_unit_time__$Gigasecond_Gigasecond_$Impl_$.dividerSecond).trim(null);
+};
+thx_unit_time__$Gigasecond_Gigasecond_$Impl_$.toMinute = function(this1) {
+	return this1.multiply(thx_unit_time__$Gigasecond_Gigasecond_$Impl_$.ofUnit).divide(thx_unit_time__$Gigasecond_Gigasecond_$Impl_$.dividerMinute).trim(null);
+};
+thx_unit_time__$Gigasecond_Gigasecond_$Impl_$.toKe = function(this1) {
+	return this1.multiply(thx_unit_time__$Gigasecond_Gigasecond_$Impl_$.ofUnit).divide(thx_unit_time__$Gigasecond_Gigasecond_$Impl_$.dividerKe).trim(null);
+};
+thx_unit_time__$Gigasecond_Gigasecond_$Impl_$.toKilosecond = function(this1) {
+	return this1.multiply(thx_unit_time__$Gigasecond_Gigasecond_$Impl_$.ofUnit).divide(thx_unit_time__$Gigasecond_Gigasecond_$Impl_$.dividerKilosecond).trim(null);
+};
+thx_unit_time__$Gigasecond_Gigasecond_$Impl_$.toHour = function(this1) {
+	return this1.multiply(thx_unit_time__$Gigasecond_Gigasecond_$Impl_$.ofUnit).divide(thx_unit_time__$Gigasecond_Gigasecond_$Impl_$.dividerHour).trim(null);
+};
+thx_unit_time__$Gigasecond_Gigasecond_$Impl_$.toDay = function(this1) {
+	return this1.multiply(thx_unit_time__$Gigasecond_Gigasecond_$Impl_$.ofUnit).divide(thx_unit_time__$Gigasecond_Gigasecond_$Impl_$.dividerDay).trim(null);
+};
+thx_unit_time__$Gigasecond_Gigasecond_$Impl_$.toWeek = function(this1) {
+	return this1.multiply(thx_unit_time__$Gigasecond_Gigasecond_$Impl_$.ofUnit).divide(thx_unit_time__$Gigasecond_Gigasecond_$Impl_$.dividerWeek).trim(null);
+};
+thx_unit_time__$Gigasecond_Gigasecond_$Impl_$.toMegasecond = function(this1) {
+	return this1.multiply(thx_unit_time__$Gigasecond_Gigasecond_$Impl_$.ofUnit).divide(thx_unit_time__$Gigasecond_Gigasecond_$Impl_$.dividerMegasecond).trim(null);
+};
+thx_unit_time__$Gigasecond_Gigasecond_$Impl_$.toFortnight = function(this1) {
+	return this1.multiply(thx_unit_time__$Gigasecond_Gigasecond_$Impl_$.ofUnit).divide(thx_unit_time__$Gigasecond_Gigasecond_$Impl_$.dividerFortnight).trim(null);
+};
+thx_unit_time__$Gigasecond_Gigasecond_$Impl_$.toSynodicMonth = function(this1) {
+	return this1.multiply(thx_unit_time__$Gigasecond_Gigasecond_$Impl_$.ofUnit).divide(thx_unit_time__$Gigasecond_Gigasecond_$Impl_$.dividerSynodicMonth).trim(null);
+};
+thx_unit_time__$Gigasecond_Gigasecond_$Impl_$.toTropicalMonth = function(this1) {
+	return this1.multiply(thx_unit_time__$Gigasecond_Gigasecond_$Impl_$.ofUnit).divide(thx_unit_time__$Gigasecond_Gigasecond_$Impl_$.dividerTropicalMonth).trim(null);
+};
+thx_unit_time__$Gigasecond_Gigasecond_$Impl_$.toJulianYear = function(this1) {
+	return this1.multiply(thx_unit_time__$Gigasecond_Gigasecond_$Impl_$.ofUnit).divide(thx_unit_time__$Gigasecond_Gigasecond_$Impl_$.dividerJulianYear).trim(null);
+};
+thx_unit_time__$Gigasecond_Gigasecond_$Impl_$.toGigasecond = function(this1) {
+	return this1;
+};
+thx_unit_time__$Gigasecond_Gigasecond_$Impl_$.toTerasecond = function(this1) {
+	return this1.multiply(thx_unit_time__$Gigasecond_Gigasecond_$Impl_$.ofUnit).divide(thx_unit_time__$Gigasecond_Gigasecond_$Impl_$.dividerTerasecond).trim(null);
+};
+thx_unit_time__$Gigasecond_Gigasecond_$Impl_$.toString = function(this1) {
+	return "" + this1.toString() + "Gs";
+};
+thx_unit_time__$Gigasecond_Gigasecond_$Impl_$.fromTime = function(time) {
+	return thx__$Decimal_Decimal_$Impl_$.fromInt64(time).multiply(thx_unit_time__$Tick_Tick_$Impl_$.ofUnit).divide(thx_unit_time__$Tick_Tick_$Impl_$.dividerGigasecond).trim(null);
+};
+thx_unit_time__$Gigasecond_Gigasecond_$Impl_$.toTime = function(this1) {
+	return thx_bigint_Bigs.toInt64(thx__$Decimal_Decimal_$Impl_$.toBigInt(this1.multiply(thx_unit_time__$Gigasecond_Gigasecond_$Impl_$.ofUnit).divide(thx_unit_time__$Gigasecond_Gigasecond_$Impl_$.dividerTick).trim(null)));
+};
+var thx_unit_time__$Hour_Hour_$Impl_$ = {};
+thx_unit_time__$Hour_Hour_$Impl_$.__name__ = ["thx","unit","time","_Hour","Hour_Impl_"];
+thx_unit_time__$Hour_Hour_$Impl_$.fromDecimal = function(value) {
+	return value;
+};
+thx_unit_time__$Hour_Hour_$Impl_$.fromInt = function(value) {
+	return thx__$Decimal_Decimal_$Impl_$.fromInt(value);
+};
+thx_unit_time__$Hour_Hour_$Impl_$.fromFloat = function(value) {
+	return thx_bigint_Decimals.fromFloat(value);
+};
+thx_unit_time__$Hour_Hour_$Impl_$._new = function(value) {
+	return value;
+};
+thx_unit_time__$Hour_Hour_$Impl_$.abs = function(this1) {
+	return this1.abs();
+};
+thx_unit_time__$Hour_Hour_$Impl_$.min = function(this1,that) {
+	var that1 = that;
+	return thx__$Decimal_Decimal_$Impl_$.less(this1,that1)?this1:that1;
+};
+thx_unit_time__$Hour_Hour_$Impl_$.max = function(this1,that) {
+	var that1 = that;
+	return thx__$Decimal_Decimal_$Impl_$.greater(this1,that1)?this1:that1;
+};
+thx_unit_time__$Hour_Hour_$Impl_$.negate = function(this1) {
+	return this1.negate();
+};
+thx_unit_time__$Hour_Hour_$Impl_$.add = function(this1,that) {
+	return this1.add(that);
+};
+thx_unit_time__$Hour_Hour_$Impl_$.subtract = function(this1,that) {
+	return this1.subtract(that);
+};
+thx_unit_time__$Hour_Hour_$Impl_$.multiply = function(this1,that) {
+	return this1.multiply(that);
+};
+thx_unit_time__$Hour_Hour_$Impl_$.divide = function(this1,that) {
+	return this1.divide(that);
+};
+thx_unit_time__$Hour_Hour_$Impl_$.modulo = function(this1,that) {
+	return this1.modulo(that);
+};
+thx_unit_time__$Hour_Hour_$Impl_$.equalsTo = function(this1,that) {
+	return thx__$Decimal_Decimal_$Impl_$.equals(this1,that);
+};
+thx_unit_time__$Hour_Hour_$Impl_$.equals = function(self,that) {
+	return thx__$Decimal_Decimal_$Impl_$.equals(self,that);
+};
+thx_unit_time__$Hour_Hour_$Impl_$.nearEqualsTo = function(this1,that) {
+	return thx_Floats.nearEquals(this1.toFloat(),that.toFloat());
+};
+thx_unit_time__$Hour_Hour_$Impl_$.nearEquals = function(self,that) {
+	return thx_Floats.nearEquals(self.toFloat(),that.toFloat());
+};
+thx_unit_time__$Hour_Hour_$Impl_$.notEqualsTo = function(this1,that) {
+	return thx__$Decimal_Decimal_$Impl_$.notEquals(this1,that);
+};
+thx_unit_time__$Hour_Hour_$Impl_$.notEquals = function(self,that) {
+	return thx__$Decimal_Decimal_$Impl_$.notEquals(self,that);
+};
+thx_unit_time__$Hour_Hour_$Impl_$.lessThan = function(this1,that) {
+	return thx__$Decimal_Decimal_$Impl_$.less(this1,that);
+};
+thx_unit_time__$Hour_Hour_$Impl_$.less = function(self,that) {
+	return thx__$Decimal_Decimal_$Impl_$.less(self,that);
+};
+thx_unit_time__$Hour_Hour_$Impl_$.lessEqualsTo = function(this1,that) {
+	return thx__$Decimal_Decimal_$Impl_$.lessEquals(this1,that);
+};
+thx_unit_time__$Hour_Hour_$Impl_$.lessEquals = function(self,that) {
+	return thx__$Decimal_Decimal_$Impl_$.lessEquals(self,that);
+};
+thx_unit_time__$Hour_Hour_$Impl_$.greaterThan = function(this1,that) {
+	return thx__$Decimal_Decimal_$Impl_$.greater(this1,that);
+};
+thx_unit_time__$Hour_Hour_$Impl_$.greater = function(self,that) {
+	return thx__$Decimal_Decimal_$Impl_$.greaterEquals(self,that);
+};
+thx_unit_time__$Hour_Hour_$Impl_$.greaterEqualsTo = function(this1,that) {
+	return thx__$Decimal_Decimal_$Impl_$.greaterEquals(this1,that);
+};
+thx_unit_time__$Hour_Hour_$Impl_$.greaterEquals = function(self,that) {
+	return thx__$Decimal_Decimal_$Impl_$.greaterEquals(self,that);
+};
+thx_unit_time__$Hour_Hour_$Impl_$.toDecimal = function(this1) {
+	return this1;
+};
+thx_unit_time__$Hour_Hour_$Impl_$.toFloat = function(this1) {
+	return this1.toFloat();
+};
+thx_unit_time__$Hour_Hour_$Impl_$.toPlankTimeUnit = function(this1) {
+	return this1.multiply(thx_unit_time__$Hour_Hour_$Impl_$.ofUnit).divide(thx_unit_time__$Hour_Hour_$Impl_$.dividerPlankTimeUnit).trim(null);
+};
+thx_unit_time__$Hour_Hour_$Impl_$.toJiffyPhysics = function(this1) {
+	return this1.multiply(thx_unit_time__$Hour_Hour_$Impl_$.ofUnit).divide(thx_unit_time__$Hour_Hour_$Impl_$.dividerJiffyPhysics).trim(null);
+};
+thx_unit_time__$Hour_Hour_$Impl_$.toSvedberg = function(this1) {
+	return this1.multiply(thx_unit_time__$Hour_Hour_$Impl_$.ofUnit).divide(thx_unit_time__$Hour_Hour_$Impl_$.dividerSvedberg).trim(null);
+};
+thx_unit_time__$Hour_Hour_$Impl_$.toPicosecond = function(this1) {
+	return this1.multiply(thx_unit_time__$Hour_Hour_$Impl_$.ofUnit).divide(thx_unit_time__$Hour_Hour_$Impl_$.dividerPicosecond).trim(null);
+};
+thx_unit_time__$Hour_Hour_$Impl_$.toNanosecond = function(this1) {
+	return this1.multiply(thx_unit_time__$Hour_Hour_$Impl_$.ofUnit).divide(thx_unit_time__$Hour_Hour_$Impl_$.dividerNanosecond).trim(null);
+};
+thx_unit_time__$Hour_Hour_$Impl_$.toShake = function(this1) {
+	return this1.multiply(thx_unit_time__$Hour_Hour_$Impl_$.ofUnit).divide(thx_unit_time__$Hour_Hour_$Impl_$.dividerShake).trim(null);
+};
+thx_unit_time__$Hour_Hour_$Impl_$.toTick = function(this1) {
+	return this1.multiply(thx_unit_time__$Hour_Hour_$Impl_$.ofUnit).divide(thx_unit_time__$Hour_Hour_$Impl_$.dividerTick).trim(null);
+};
+thx_unit_time__$Hour_Hour_$Impl_$.toMicrosecond = function(this1) {
+	return this1.multiply(thx_unit_time__$Hour_Hour_$Impl_$.ofUnit).divide(thx_unit_time__$Hour_Hour_$Impl_$.dividerMicrosecond).trim(null);
+};
+thx_unit_time__$Hour_Hour_$Impl_$.toFourth = function(this1) {
+	return this1.multiply(thx_unit_time__$Hour_Hour_$Impl_$.ofUnit).divide(thx_unit_time__$Hour_Hour_$Impl_$.dividerFourth).trim(null);
+};
+thx_unit_time__$Hour_Hour_$Impl_$.toMillisecond = function(this1) {
+	return this1.multiply(thx_unit_time__$Hour_Hour_$Impl_$.ofUnit).divide(thx_unit_time__$Hour_Hour_$Impl_$.dividerMillisecond).trim(null);
+};
+thx_unit_time__$Hour_Hour_$Impl_$.toThird = function(this1) {
+	return this1.multiply(thx_unit_time__$Hour_Hour_$Impl_$.ofUnit).divide(thx_unit_time__$Hour_Hour_$Impl_$.dividerThird).trim(null);
+};
+thx_unit_time__$Hour_Hour_$Impl_$.toSecond = function(this1) {
+	return this1.multiply(thx_unit_time__$Hour_Hour_$Impl_$.ofUnit).divide(thx_unit_time__$Hour_Hour_$Impl_$.dividerSecond).trim(null);
+};
+thx_unit_time__$Hour_Hour_$Impl_$.toMinute = function(this1) {
+	return this1.multiply(thx_unit_time__$Hour_Hour_$Impl_$.ofUnit).divide(thx_unit_time__$Hour_Hour_$Impl_$.dividerMinute).trim(null);
+};
+thx_unit_time__$Hour_Hour_$Impl_$.toKe = function(this1) {
+	return this1.multiply(thx_unit_time__$Hour_Hour_$Impl_$.ofUnit).divide(thx_unit_time__$Hour_Hour_$Impl_$.dividerKe).trim(null);
+};
+thx_unit_time__$Hour_Hour_$Impl_$.toKilosecond = function(this1) {
+	return this1.multiply(thx_unit_time__$Hour_Hour_$Impl_$.ofUnit).divide(thx_unit_time__$Hour_Hour_$Impl_$.dividerKilosecond).trim(null);
+};
+thx_unit_time__$Hour_Hour_$Impl_$.toHour = function(this1) {
+	return this1;
+};
+thx_unit_time__$Hour_Hour_$Impl_$.toDay = function(this1) {
+	return this1.multiply(thx_unit_time__$Hour_Hour_$Impl_$.ofUnit).divide(thx_unit_time__$Hour_Hour_$Impl_$.dividerDay).trim(null);
+};
+thx_unit_time__$Hour_Hour_$Impl_$.toWeek = function(this1) {
+	return this1.multiply(thx_unit_time__$Hour_Hour_$Impl_$.ofUnit).divide(thx_unit_time__$Hour_Hour_$Impl_$.dividerWeek).trim(null);
+};
+thx_unit_time__$Hour_Hour_$Impl_$.toMegasecond = function(this1) {
+	return this1.multiply(thx_unit_time__$Hour_Hour_$Impl_$.ofUnit).divide(thx_unit_time__$Hour_Hour_$Impl_$.dividerMegasecond).trim(null);
+};
+thx_unit_time__$Hour_Hour_$Impl_$.toFortnight = function(this1) {
+	return this1.multiply(thx_unit_time__$Hour_Hour_$Impl_$.ofUnit).divide(thx_unit_time__$Hour_Hour_$Impl_$.dividerFortnight).trim(null);
+};
+thx_unit_time__$Hour_Hour_$Impl_$.toSynodicMonth = function(this1) {
+	return this1.multiply(thx_unit_time__$Hour_Hour_$Impl_$.ofUnit).divide(thx_unit_time__$Hour_Hour_$Impl_$.dividerSynodicMonth).trim(null);
+};
+thx_unit_time__$Hour_Hour_$Impl_$.toTropicalMonth = function(this1) {
+	return this1.multiply(thx_unit_time__$Hour_Hour_$Impl_$.ofUnit).divide(thx_unit_time__$Hour_Hour_$Impl_$.dividerTropicalMonth).trim(null);
+};
+thx_unit_time__$Hour_Hour_$Impl_$.toJulianYear = function(this1) {
+	return this1.multiply(thx_unit_time__$Hour_Hour_$Impl_$.ofUnit).divide(thx_unit_time__$Hour_Hour_$Impl_$.dividerJulianYear).trim(null);
+};
+thx_unit_time__$Hour_Hour_$Impl_$.toGigasecond = function(this1) {
+	return this1.multiply(thx_unit_time__$Hour_Hour_$Impl_$.ofUnit).divide(thx_unit_time__$Hour_Hour_$Impl_$.dividerGigasecond).trim(null);
+};
+thx_unit_time__$Hour_Hour_$Impl_$.toTerasecond = function(this1) {
+	return this1.multiply(thx_unit_time__$Hour_Hour_$Impl_$.ofUnit).divide(thx_unit_time__$Hour_Hour_$Impl_$.dividerTerasecond).trim(null);
+};
+thx_unit_time__$Hour_Hour_$Impl_$.toString = function(this1) {
+	return "" + this1.toString() + "h";
+};
+thx_unit_time__$Hour_Hour_$Impl_$.fromTime = function(time) {
+	return thx__$Decimal_Decimal_$Impl_$.fromInt64(time).multiply(thx_unit_time__$Tick_Tick_$Impl_$.ofUnit).divide(thx_unit_time__$Tick_Tick_$Impl_$.dividerHour).trim(null);
+};
+thx_unit_time__$Hour_Hour_$Impl_$.toTime = function(this1) {
+	return thx_bigint_Bigs.toInt64(thx__$Decimal_Decimal_$Impl_$.toBigInt(this1.multiply(thx_unit_time__$Hour_Hour_$Impl_$.ofUnit).divide(thx_unit_time__$Hour_Hour_$Impl_$.dividerTick).trim(null)));
+};
+var thx_unit_time__$JiffyPhysics_JiffyPhysics_$Impl_$ = {};
+thx_unit_time__$JiffyPhysics_JiffyPhysics_$Impl_$.__name__ = ["thx","unit","time","_JiffyPhysics","JiffyPhysics_Impl_"];
+thx_unit_time__$JiffyPhysics_JiffyPhysics_$Impl_$.fromDecimal = function(value) {
+	return value;
+};
+thx_unit_time__$JiffyPhysics_JiffyPhysics_$Impl_$.fromInt = function(value) {
+	return thx__$Decimal_Decimal_$Impl_$.fromInt(value);
+};
+thx_unit_time__$JiffyPhysics_JiffyPhysics_$Impl_$.fromFloat = function(value) {
+	return thx_bigint_Decimals.fromFloat(value);
+};
+thx_unit_time__$JiffyPhysics_JiffyPhysics_$Impl_$._new = function(value) {
+	return value;
+};
+thx_unit_time__$JiffyPhysics_JiffyPhysics_$Impl_$.abs = function(this1) {
+	return this1.abs();
+};
+thx_unit_time__$JiffyPhysics_JiffyPhysics_$Impl_$.min = function(this1,that) {
+	var that1 = that;
+	return thx__$Decimal_Decimal_$Impl_$.less(this1,that1)?this1:that1;
+};
+thx_unit_time__$JiffyPhysics_JiffyPhysics_$Impl_$.max = function(this1,that) {
+	var that1 = that;
+	return thx__$Decimal_Decimal_$Impl_$.greater(this1,that1)?this1:that1;
+};
+thx_unit_time__$JiffyPhysics_JiffyPhysics_$Impl_$.negate = function(this1) {
+	return this1.negate();
+};
+thx_unit_time__$JiffyPhysics_JiffyPhysics_$Impl_$.add = function(this1,that) {
+	return this1.add(that);
+};
+thx_unit_time__$JiffyPhysics_JiffyPhysics_$Impl_$.subtract = function(this1,that) {
+	return this1.subtract(that);
+};
+thx_unit_time__$JiffyPhysics_JiffyPhysics_$Impl_$.multiply = function(this1,that) {
+	return this1.multiply(that);
+};
+thx_unit_time__$JiffyPhysics_JiffyPhysics_$Impl_$.divide = function(this1,that) {
+	return this1.divide(that);
+};
+thx_unit_time__$JiffyPhysics_JiffyPhysics_$Impl_$.modulo = function(this1,that) {
+	return this1.modulo(that);
+};
+thx_unit_time__$JiffyPhysics_JiffyPhysics_$Impl_$.equalsTo = function(this1,that) {
+	return thx__$Decimal_Decimal_$Impl_$.equals(this1,that);
+};
+thx_unit_time__$JiffyPhysics_JiffyPhysics_$Impl_$.equals = function(self,that) {
+	return thx__$Decimal_Decimal_$Impl_$.equals(self,that);
+};
+thx_unit_time__$JiffyPhysics_JiffyPhysics_$Impl_$.nearEqualsTo = function(this1,that) {
+	return thx_Floats.nearEquals(this1.toFloat(),that.toFloat());
+};
+thx_unit_time__$JiffyPhysics_JiffyPhysics_$Impl_$.nearEquals = function(self,that) {
+	return thx_Floats.nearEquals(self.toFloat(),that.toFloat());
+};
+thx_unit_time__$JiffyPhysics_JiffyPhysics_$Impl_$.notEqualsTo = function(this1,that) {
+	return thx__$Decimal_Decimal_$Impl_$.notEquals(this1,that);
+};
+thx_unit_time__$JiffyPhysics_JiffyPhysics_$Impl_$.notEquals = function(self,that) {
+	return thx__$Decimal_Decimal_$Impl_$.notEquals(self,that);
+};
+thx_unit_time__$JiffyPhysics_JiffyPhysics_$Impl_$.lessThan = function(this1,that) {
+	return thx__$Decimal_Decimal_$Impl_$.less(this1,that);
+};
+thx_unit_time__$JiffyPhysics_JiffyPhysics_$Impl_$.less = function(self,that) {
+	return thx__$Decimal_Decimal_$Impl_$.less(self,that);
+};
+thx_unit_time__$JiffyPhysics_JiffyPhysics_$Impl_$.lessEqualsTo = function(this1,that) {
+	return thx__$Decimal_Decimal_$Impl_$.lessEquals(this1,that);
+};
+thx_unit_time__$JiffyPhysics_JiffyPhysics_$Impl_$.lessEquals = function(self,that) {
+	return thx__$Decimal_Decimal_$Impl_$.lessEquals(self,that);
+};
+thx_unit_time__$JiffyPhysics_JiffyPhysics_$Impl_$.greaterThan = function(this1,that) {
+	return thx__$Decimal_Decimal_$Impl_$.greater(this1,that);
+};
+thx_unit_time__$JiffyPhysics_JiffyPhysics_$Impl_$.greater = function(self,that) {
+	return thx__$Decimal_Decimal_$Impl_$.greaterEquals(self,that);
+};
+thx_unit_time__$JiffyPhysics_JiffyPhysics_$Impl_$.greaterEqualsTo = function(this1,that) {
+	return thx__$Decimal_Decimal_$Impl_$.greaterEquals(this1,that);
+};
+thx_unit_time__$JiffyPhysics_JiffyPhysics_$Impl_$.greaterEquals = function(self,that) {
+	return thx__$Decimal_Decimal_$Impl_$.greaterEquals(self,that);
+};
+thx_unit_time__$JiffyPhysics_JiffyPhysics_$Impl_$.toDecimal = function(this1) {
+	return this1;
+};
+thx_unit_time__$JiffyPhysics_JiffyPhysics_$Impl_$.toFloat = function(this1) {
+	return this1.toFloat();
+};
+thx_unit_time__$JiffyPhysics_JiffyPhysics_$Impl_$.toPlankTimeUnit = function(this1) {
+	return this1.multiply(thx_unit_time__$JiffyPhysics_JiffyPhysics_$Impl_$.ofUnit).divide(thx_unit_time__$JiffyPhysics_JiffyPhysics_$Impl_$.dividerPlankTimeUnit).trim(null);
+};
+thx_unit_time__$JiffyPhysics_JiffyPhysics_$Impl_$.toJiffyPhysics = function(this1) {
+	return this1;
+};
+thx_unit_time__$JiffyPhysics_JiffyPhysics_$Impl_$.toSvedberg = function(this1) {
+	return this1.multiply(thx_unit_time__$JiffyPhysics_JiffyPhysics_$Impl_$.ofUnit).divide(thx_unit_time__$JiffyPhysics_JiffyPhysics_$Impl_$.dividerSvedberg).trim(null);
+};
+thx_unit_time__$JiffyPhysics_JiffyPhysics_$Impl_$.toPicosecond = function(this1) {
+	return this1.multiply(thx_unit_time__$JiffyPhysics_JiffyPhysics_$Impl_$.ofUnit).divide(thx_unit_time__$JiffyPhysics_JiffyPhysics_$Impl_$.dividerPicosecond).trim(null);
+};
+thx_unit_time__$JiffyPhysics_JiffyPhysics_$Impl_$.toNanosecond = function(this1) {
+	return this1.multiply(thx_unit_time__$JiffyPhysics_JiffyPhysics_$Impl_$.ofUnit).divide(thx_unit_time__$JiffyPhysics_JiffyPhysics_$Impl_$.dividerNanosecond).trim(null);
+};
+thx_unit_time__$JiffyPhysics_JiffyPhysics_$Impl_$.toShake = function(this1) {
+	return this1.multiply(thx_unit_time__$JiffyPhysics_JiffyPhysics_$Impl_$.ofUnit).divide(thx_unit_time__$JiffyPhysics_JiffyPhysics_$Impl_$.dividerShake).trim(null);
+};
+thx_unit_time__$JiffyPhysics_JiffyPhysics_$Impl_$.toTick = function(this1) {
+	return this1.multiply(thx_unit_time__$JiffyPhysics_JiffyPhysics_$Impl_$.ofUnit).divide(thx_unit_time__$JiffyPhysics_JiffyPhysics_$Impl_$.dividerTick).trim(null);
+};
+thx_unit_time__$JiffyPhysics_JiffyPhysics_$Impl_$.toMicrosecond = function(this1) {
+	return this1.multiply(thx_unit_time__$JiffyPhysics_JiffyPhysics_$Impl_$.ofUnit).divide(thx_unit_time__$JiffyPhysics_JiffyPhysics_$Impl_$.dividerMicrosecond).trim(null);
+};
+thx_unit_time__$JiffyPhysics_JiffyPhysics_$Impl_$.toFourth = function(this1) {
+	return this1.multiply(thx_unit_time__$JiffyPhysics_JiffyPhysics_$Impl_$.ofUnit).divide(thx_unit_time__$JiffyPhysics_JiffyPhysics_$Impl_$.dividerFourth).trim(null);
+};
+thx_unit_time__$JiffyPhysics_JiffyPhysics_$Impl_$.toMillisecond = function(this1) {
+	return this1.multiply(thx_unit_time__$JiffyPhysics_JiffyPhysics_$Impl_$.ofUnit).divide(thx_unit_time__$JiffyPhysics_JiffyPhysics_$Impl_$.dividerMillisecond).trim(null);
+};
+thx_unit_time__$JiffyPhysics_JiffyPhysics_$Impl_$.toThird = function(this1) {
+	return this1.multiply(thx_unit_time__$JiffyPhysics_JiffyPhysics_$Impl_$.ofUnit).divide(thx_unit_time__$JiffyPhysics_JiffyPhysics_$Impl_$.dividerThird).trim(null);
+};
+thx_unit_time__$JiffyPhysics_JiffyPhysics_$Impl_$.toSecond = function(this1) {
+	return this1.multiply(thx_unit_time__$JiffyPhysics_JiffyPhysics_$Impl_$.ofUnit).divide(thx_unit_time__$JiffyPhysics_JiffyPhysics_$Impl_$.dividerSecond).trim(null);
+};
+thx_unit_time__$JiffyPhysics_JiffyPhysics_$Impl_$.toMinute = function(this1) {
+	return this1.multiply(thx_unit_time__$JiffyPhysics_JiffyPhysics_$Impl_$.ofUnit).divide(thx_unit_time__$JiffyPhysics_JiffyPhysics_$Impl_$.dividerMinute).trim(null);
+};
+thx_unit_time__$JiffyPhysics_JiffyPhysics_$Impl_$.toKe = function(this1) {
+	return this1.multiply(thx_unit_time__$JiffyPhysics_JiffyPhysics_$Impl_$.ofUnit).divide(thx_unit_time__$JiffyPhysics_JiffyPhysics_$Impl_$.dividerKe).trim(null);
+};
+thx_unit_time__$JiffyPhysics_JiffyPhysics_$Impl_$.toKilosecond = function(this1) {
+	return this1.multiply(thx_unit_time__$JiffyPhysics_JiffyPhysics_$Impl_$.ofUnit).divide(thx_unit_time__$JiffyPhysics_JiffyPhysics_$Impl_$.dividerKilosecond).trim(null);
+};
+thx_unit_time__$JiffyPhysics_JiffyPhysics_$Impl_$.toHour = function(this1) {
+	return this1.multiply(thx_unit_time__$JiffyPhysics_JiffyPhysics_$Impl_$.ofUnit).divide(thx_unit_time__$JiffyPhysics_JiffyPhysics_$Impl_$.dividerHour).trim(null);
+};
+thx_unit_time__$JiffyPhysics_JiffyPhysics_$Impl_$.toDay = function(this1) {
+	return this1.multiply(thx_unit_time__$JiffyPhysics_JiffyPhysics_$Impl_$.ofUnit).divide(thx_unit_time__$JiffyPhysics_JiffyPhysics_$Impl_$.dividerDay).trim(null);
+};
+thx_unit_time__$JiffyPhysics_JiffyPhysics_$Impl_$.toWeek = function(this1) {
+	return this1.multiply(thx_unit_time__$JiffyPhysics_JiffyPhysics_$Impl_$.ofUnit).divide(thx_unit_time__$JiffyPhysics_JiffyPhysics_$Impl_$.dividerWeek).trim(null);
+};
+thx_unit_time__$JiffyPhysics_JiffyPhysics_$Impl_$.toMegasecond = function(this1) {
+	return this1.multiply(thx_unit_time__$JiffyPhysics_JiffyPhysics_$Impl_$.ofUnit).divide(thx_unit_time__$JiffyPhysics_JiffyPhysics_$Impl_$.dividerMegasecond).trim(null);
+};
+thx_unit_time__$JiffyPhysics_JiffyPhysics_$Impl_$.toFortnight = function(this1) {
+	return this1.multiply(thx_unit_time__$JiffyPhysics_JiffyPhysics_$Impl_$.ofUnit).divide(thx_unit_time__$JiffyPhysics_JiffyPhysics_$Impl_$.dividerFortnight).trim(null);
+};
+thx_unit_time__$JiffyPhysics_JiffyPhysics_$Impl_$.toSynodicMonth = function(this1) {
+	return this1.multiply(thx_unit_time__$JiffyPhysics_JiffyPhysics_$Impl_$.ofUnit).divide(thx_unit_time__$JiffyPhysics_JiffyPhysics_$Impl_$.dividerSynodicMonth).trim(null);
+};
+thx_unit_time__$JiffyPhysics_JiffyPhysics_$Impl_$.toTropicalMonth = function(this1) {
+	return this1.multiply(thx_unit_time__$JiffyPhysics_JiffyPhysics_$Impl_$.ofUnit).divide(thx_unit_time__$JiffyPhysics_JiffyPhysics_$Impl_$.dividerTropicalMonth).trim(null);
+};
+thx_unit_time__$JiffyPhysics_JiffyPhysics_$Impl_$.toJulianYear = function(this1) {
+	return this1.multiply(thx_unit_time__$JiffyPhysics_JiffyPhysics_$Impl_$.ofUnit).divide(thx_unit_time__$JiffyPhysics_JiffyPhysics_$Impl_$.dividerJulianYear).trim(null);
+};
+thx_unit_time__$JiffyPhysics_JiffyPhysics_$Impl_$.toGigasecond = function(this1) {
+	return this1.multiply(thx_unit_time__$JiffyPhysics_JiffyPhysics_$Impl_$.ofUnit).divide(thx_unit_time__$JiffyPhysics_JiffyPhysics_$Impl_$.dividerGigasecond).trim(null);
+};
+thx_unit_time__$JiffyPhysics_JiffyPhysics_$Impl_$.toTerasecond = function(this1) {
+	return this1.multiply(thx_unit_time__$JiffyPhysics_JiffyPhysics_$Impl_$.ofUnit).divide(thx_unit_time__$JiffyPhysics_JiffyPhysics_$Impl_$.dividerTerasecond).trim(null);
+};
+thx_unit_time__$JiffyPhysics_JiffyPhysics_$Impl_$.toString = function(this1) {
+	return "" + this1.toString() + "jiffy";
+};
+thx_unit_time__$JiffyPhysics_JiffyPhysics_$Impl_$.fromTime = function(time) {
+	return thx__$Decimal_Decimal_$Impl_$.fromInt64(time).multiply(thx_unit_time__$Tick_Tick_$Impl_$.ofUnit).divide(thx_unit_time__$Tick_Tick_$Impl_$.dividerJiffyPhysics).trim(null);
+};
+thx_unit_time__$JiffyPhysics_JiffyPhysics_$Impl_$.toTime = function(this1) {
+	return thx_bigint_Bigs.toInt64(thx__$Decimal_Decimal_$Impl_$.toBigInt(this1.multiply(thx_unit_time__$JiffyPhysics_JiffyPhysics_$Impl_$.ofUnit).divide(thx_unit_time__$JiffyPhysics_JiffyPhysics_$Impl_$.dividerTick).trim(null)));
+};
+var thx_unit_time__$JulianYear_JulianYear_$Impl_$ = {};
+thx_unit_time__$JulianYear_JulianYear_$Impl_$.__name__ = ["thx","unit","time","_JulianYear","JulianYear_Impl_"];
+thx_unit_time__$JulianYear_JulianYear_$Impl_$.fromDecimal = function(value) {
+	return value;
+};
+thx_unit_time__$JulianYear_JulianYear_$Impl_$.fromInt = function(value) {
+	return thx__$Decimal_Decimal_$Impl_$.fromInt(value);
+};
+thx_unit_time__$JulianYear_JulianYear_$Impl_$.fromFloat = function(value) {
+	return thx_bigint_Decimals.fromFloat(value);
+};
+thx_unit_time__$JulianYear_JulianYear_$Impl_$._new = function(value) {
+	return value;
+};
+thx_unit_time__$JulianYear_JulianYear_$Impl_$.abs = function(this1) {
+	return this1.abs();
+};
+thx_unit_time__$JulianYear_JulianYear_$Impl_$.min = function(this1,that) {
+	var that1 = that;
+	return thx__$Decimal_Decimal_$Impl_$.less(this1,that1)?this1:that1;
+};
+thx_unit_time__$JulianYear_JulianYear_$Impl_$.max = function(this1,that) {
+	var that1 = that;
+	return thx__$Decimal_Decimal_$Impl_$.greater(this1,that1)?this1:that1;
+};
+thx_unit_time__$JulianYear_JulianYear_$Impl_$.negate = function(this1) {
+	return this1.negate();
+};
+thx_unit_time__$JulianYear_JulianYear_$Impl_$.add = function(this1,that) {
+	return this1.add(that);
+};
+thx_unit_time__$JulianYear_JulianYear_$Impl_$.subtract = function(this1,that) {
+	return this1.subtract(that);
+};
+thx_unit_time__$JulianYear_JulianYear_$Impl_$.multiply = function(this1,that) {
+	return this1.multiply(that);
+};
+thx_unit_time__$JulianYear_JulianYear_$Impl_$.divide = function(this1,that) {
+	return this1.divide(that);
+};
+thx_unit_time__$JulianYear_JulianYear_$Impl_$.modulo = function(this1,that) {
+	return this1.modulo(that);
+};
+thx_unit_time__$JulianYear_JulianYear_$Impl_$.equalsTo = function(this1,that) {
+	return thx__$Decimal_Decimal_$Impl_$.equals(this1,that);
+};
+thx_unit_time__$JulianYear_JulianYear_$Impl_$.equals = function(self,that) {
+	return thx__$Decimal_Decimal_$Impl_$.equals(self,that);
+};
+thx_unit_time__$JulianYear_JulianYear_$Impl_$.nearEqualsTo = function(this1,that) {
+	return thx_Floats.nearEquals(this1.toFloat(),that.toFloat());
+};
+thx_unit_time__$JulianYear_JulianYear_$Impl_$.nearEquals = function(self,that) {
+	return thx_Floats.nearEquals(self.toFloat(),that.toFloat());
+};
+thx_unit_time__$JulianYear_JulianYear_$Impl_$.notEqualsTo = function(this1,that) {
+	return thx__$Decimal_Decimal_$Impl_$.notEquals(this1,that);
+};
+thx_unit_time__$JulianYear_JulianYear_$Impl_$.notEquals = function(self,that) {
+	return thx__$Decimal_Decimal_$Impl_$.notEquals(self,that);
+};
+thx_unit_time__$JulianYear_JulianYear_$Impl_$.lessThan = function(this1,that) {
+	return thx__$Decimal_Decimal_$Impl_$.less(this1,that);
+};
+thx_unit_time__$JulianYear_JulianYear_$Impl_$.less = function(self,that) {
+	return thx__$Decimal_Decimal_$Impl_$.less(self,that);
+};
+thx_unit_time__$JulianYear_JulianYear_$Impl_$.lessEqualsTo = function(this1,that) {
+	return thx__$Decimal_Decimal_$Impl_$.lessEquals(this1,that);
+};
+thx_unit_time__$JulianYear_JulianYear_$Impl_$.lessEquals = function(self,that) {
+	return thx__$Decimal_Decimal_$Impl_$.lessEquals(self,that);
+};
+thx_unit_time__$JulianYear_JulianYear_$Impl_$.greaterThan = function(this1,that) {
+	return thx__$Decimal_Decimal_$Impl_$.greater(this1,that);
+};
+thx_unit_time__$JulianYear_JulianYear_$Impl_$.greater = function(self,that) {
+	return thx__$Decimal_Decimal_$Impl_$.greaterEquals(self,that);
+};
+thx_unit_time__$JulianYear_JulianYear_$Impl_$.greaterEqualsTo = function(this1,that) {
+	return thx__$Decimal_Decimal_$Impl_$.greaterEquals(this1,that);
+};
+thx_unit_time__$JulianYear_JulianYear_$Impl_$.greaterEquals = function(self,that) {
+	return thx__$Decimal_Decimal_$Impl_$.greaterEquals(self,that);
+};
+thx_unit_time__$JulianYear_JulianYear_$Impl_$.toDecimal = function(this1) {
+	return this1;
+};
+thx_unit_time__$JulianYear_JulianYear_$Impl_$.toFloat = function(this1) {
+	return this1.toFloat();
+};
+thx_unit_time__$JulianYear_JulianYear_$Impl_$.toPlankTimeUnit = function(this1) {
+	return this1.multiply(thx_unit_time__$JulianYear_JulianYear_$Impl_$.ofUnit).divide(thx_unit_time__$JulianYear_JulianYear_$Impl_$.dividerPlankTimeUnit).trim(null);
+};
+thx_unit_time__$JulianYear_JulianYear_$Impl_$.toJiffyPhysics = function(this1) {
+	return this1.multiply(thx_unit_time__$JulianYear_JulianYear_$Impl_$.ofUnit).divide(thx_unit_time__$JulianYear_JulianYear_$Impl_$.dividerJiffyPhysics).trim(null);
+};
+thx_unit_time__$JulianYear_JulianYear_$Impl_$.toSvedberg = function(this1) {
+	return this1.multiply(thx_unit_time__$JulianYear_JulianYear_$Impl_$.ofUnit).divide(thx_unit_time__$JulianYear_JulianYear_$Impl_$.dividerSvedberg).trim(null);
+};
+thx_unit_time__$JulianYear_JulianYear_$Impl_$.toPicosecond = function(this1) {
+	return this1.multiply(thx_unit_time__$JulianYear_JulianYear_$Impl_$.ofUnit).divide(thx_unit_time__$JulianYear_JulianYear_$Impl_$.dividerPicosecond).trim(null);
+};
+thx_unit_time__$JulianYear_JulianYear_$Impl_$.toNanosecond = function(this1) {
+	return this1.multiply(thx_unit_time__$JulianYear_JulianYear_$Impl_$.ofUnit).divide(thx_unit_time__$JulianYear_JulianYear_$Impl_$.dividerNanosecond).trim(null);
+};
+thx_unit_time__$JulianYear_JulianYear_$Impl_$.toShake = function(this1) {
+	return this1.multiply(thx_unit_time__$JulianYear_JulianYear_$Impl_$.ofUnit).divide(thx_unit_time__$JulianYear_JulianYear_$Impl_$.dividerShake).trim(null);
+};
+thx_unit_time__$JulianYear_JulianYear_$Impl_$.toTick = function(this1) {
+	return this1.multiply(thx_unit_time__$JulianYear_JulianYear_$Impl_$.ofUnit).divide(thx_unit_time__$JulianYear_JulianYear_$Impl_$.dividerTick).trim(null);
+};
+thx_unit_time__$JulianYear_JulianYear_$Impl_$.toMicrosecond = function(this1) {
+	return this1.multiply(thx_unit_time__$JulianYear_JulianYear_$Impl_$.ofUnit).divide(thx_unit_time__$JulianYear_JulianYear_$Impl_$.dividerMicrosecond).trim(null);
+};
+thx_unit_time__$JulianYear_JulianYear_$Impl_$.toFourth = function(this1) {
+	return this1.multiply(thx_unit_time__$JulianYear_JulianYear_$Impl_$.ofUnit).divide(thx_unit_time__$JulianYear_JulianYear_$Impl_$.dividerFourth).trim(null);
+};
+thx_unit_time__$JulianYear_JulianYear_$Impl_$.toMillisecond = function(this1) {
+	return this1.multiply(thx_unit_time__$JulianYear_JulianYear_$Impl_$.ofUnit).divide(thx_unit_time__$JulianYear_JulianYear_$Impl_$.dividerMillisecond).trim(null);
+};
+thx_unit_time__$JulianYear_JulianYear_$Impl_$.toThird = function(this1) {
+	return this1.multiply(thx_unit_time__$JulianYear_JulianYear_$Impl_$.ofUnit).divide(thx_unit_time__$JulianYear_JulianYear_$Impl_$.dividerThird).trim(null);
+};
+thx_unit_time__$JulianYear_JulianYear_$Impl_$.toSecond = function(this1) {
+	return this1.multiply(thx_unit_time__$JulianYear_JulianYear_$Impl_$.ofUnit).divide(thx_unit_time__$JulianYear_JulianYear_$Impl_$.dividerSecond).trim(null);
+};
+thx_unit_time__$JulianYear_JulianYear_$Impl_$.toMinute = function(this1) {
+	return this1.multiply(thx_unit_time__$JulianYear_JulianYear_$Impl_$.ofUnit).divide(thx_unit_time__$JulianYear_JulianYear_$Impl_$.dividerMinute).trim(null);
+};
+thx_unit_time__$JulianYear_JulianYear_$Impl_$.toKe = function(this1) {
+	return this1.multiply(thx_unit_time__$JulianYear_JulianYear_$Impl_$.ofUnit).divide(thx_unit_time__$JulianYear_JulianYear_$Impl_$.dividerKe).trim(null);
+};
+thx_unit_time__$JulianYear_JulianYear_$Impl_$.toKilosecond = function(this1) {
+	return this1.multiply(thx_unit_time__$JulianYear_JulianYear_$Impl_$.ofUnit).divide(thx_unit_time__$JulianYear_JulianYear_$Impl_$.dividerKilosecond).trim(null);
+};
+thx_unit_time__$JulianYear_JulianYear_$Impl_$.toHour = function(this1) {
+	return this1.multiply(thx_unit_time__$JulianYear_JulianYear_$Impl_$.ofUnit).divide(thx_unit_time__$JulianYear_JulianYear_$Impl_$.dividerHour).trim(null);
+};
+thx_unit_time__$JulianYear_JulianYear_$Impl_$.toDay = function(this1) {
+	return this1.multiply(thx_unit_time__$JulianYear_JulianYear_$Impl_$.ofUnit).divide(thx_unit_time__$JulianYear_JulianYear_$Impl_$.dividerDay).trim(null);
+};
+thx_unit_time__$JulianYear_JulianYear_$Impl_$.toWeek = function(this1) {
+	return this1.multiply(thx_unit_time__$JulianYear_JulianYear_$Impl_$.ofUnit).divide(thx_unit_time__$JulianYear_JulianYear_$Impl_$.dividerWeek).trim(null);
+};
+thx_unit_time__$JulianYear_JulianYear_$Impl_$.toMegasecond = function(this1) {
+	return this1.multiply(thx_unit_time__$JulianYear_JulianYear_$Impl_$.ofUnit).divide(thx_unit_time__$JulianYear_JulianYear_$Impl_$.dividerMegasecond).trim(null);
+};
+thx_unit_time__$JulianYear_JulianYear_$Impl_$.toFortnight = function(this1) {
+	return this1.multiply(thx_unit_time__$JulianYear_JulianYear_$Impl_$.ofUnit).divide(thx_unit_time__$JulianYear_JulianYear_$Impl_$.dividerFortnight).trim(null);
+};
+thx_unit_time__$JulianYear_JulianYear_$Impl_$.toSynodicMonth = function(this1) {
+	return this1.multiply(thx_unit_time__$JulianYear_JulianYear_$Impl_$.ofUnit).divide(thx_unit_time__$JulianYear_JulianYear_$Impl_$.dividerSynodicMonth).trim(null);
+};
+thx_unit_time__$JulianYear_JulianYear_$Impl_$.toTropicalMonth = function(this1) {
+	return this1.multiply(thx_unit_time__$JulianYear_JulianYear_$Impl_$.ofUnit).divide(thx_unit_time__$JulianYear_JulianYear_$Impl_$.dividerTropicalMonth).trim(null);
+};
+thx_unit_time__$JulianYear_JulianYear_$Impl_$.toJulianYear = function(this1) {
+	return this1;
+};
+thx_unit_time__$JulianYear_JulianYear_$Impl_$.toGigasecond = function(this1) {
+	return this1.multiply(thx_unit_time__$JulianYear_JulianYear_$Impl_$.ofUnit).divide(thx_unit_time__$JulianYear_JulianYear_$Impl_$.dividerGigasecond).trim(null);
+};
+thx_unit_time__$JulianYear_JulianYear_$Impl_$.toTerasecond = function(this1) {
+	return this1.multiply(thx_unit_time__$JulianYear_JulianYear_$Impl_$.ofUnit).divide(thx_unit_time__$JulianYear_JulianYear_$Impl_$.dividerTerasecond).trim(null);
+};
+thx_unit_time__$JulianYear_JulianYear_$Impl_$.toString = function(this1) {
+	return "" + this1.toString() + "julian year";
+};
+thx_unit_time__$JulianYear_JulianYear_$Impl_$.fromTime = function(time) {
+	return thx__$Decimal_Decimal_$Impl_$.fromInt64(time).multiply(thx_unit_time__$Tick_Tick_$Impl_$.ofUnit).divide(thx_unit_time__$Tick_Tick_$Impl_$.dividerJulianYear).trim(null);
+};
+thx_unit_time__$JulianYear_JulianYear_$Impl_$.toTime = function(this1) {
+	return thx_bigint_Bigs.toInt64(thx__$Decimal_Decimal_$Impl_$.toBigInt(this1.multiply(thx_unit_time__$JulianYear_JulianYear_$Impl_$.ofUnit).divide(thx_unit_time__$JulianYear_JulianYear_$Impl_$.dividerTick).trim(null)));
+};
+var thx_unit_time__$Ke_Ke_$Impl_$ = {};
+thx_unit_time__$Ke_Ke_$Impl_$.__name__ = ["thx","unit","time","_Ke","Ke_Impl_"];
+thx_unit_time__$Ke_Ke_$Impl_$.fromDecimal = function(value) {
+	return value;
+};
+thx_unit_time__$Ke_Ke_$Impl_$.fromInt = function(value) {
+	return thx__$Decimal_Decimal_$Impl_$.fromInt(value);
+};
+thx_unit_time__$Ke_Ke_$Impl_$.fromFloat = function(value) {
+	return thx_bigint_Decimals.fromFloat(value);
+};
+thx_unit_time__$Ke_Ke_$Impl_$._new = function(value) {
+	return value;
+};
+thx_unit_time__$Ke_Ke_$Impl_$.abs = function(this1) {
+	return this1.abs();
+};
+thx_unit_time__$Ke_Ke_$Impl_$.min = function(this1,that) {
+	var that1 = that;
+	return thx__$Decimal_Decimal_$Impl_$.less(this1,that1)?this1:that1;
+};
+thx_unit_time__$Ke_Ke_$Impl_$.max = function(this1,that) {
+	var that1 = that;
+	return thx__$Decimal_Decimal_$Impl_$.greater(this1,that1)?this1:that1;
+};
+thx_unit_time__$Ke_Ke_$Impl_$.negate = function(this1) {
+	return this1.negate();
+};
+thx_unit_time__$Ke_Ke_$Impl_$.add = function(this1,that) {
+	return this1.add(that);
+};
+thx_unit_time__$Ke_Ke_$Impl_$.subtract = function(this1,that) {
+	return this1.subtract(that);
+};
+thx_unit_time__$Ke_Ke_$Impl_$.multiply = function(this1,that) {
+	return this1.multiply(that);
+};
+thx_unit_time__$Ke_Ke_$Impl_$.divide = function(this1,that) {
+	return this1.divide(that);
+};
+thx_unit_time__$Ke_Ke_$Impl_$.modulo = function(this1,that) {
+	return this1.modulo(that);
+};
+thx_unit_time__$Ke_Ke_$Impl_$.equalsTo = function(this1,that) {
+	return thx__$Decimal_Decimal_$Impl_$.equals(this1,that);
+};
+thx_unit_time__$Ke_Ke_$Impl_$.equals = function(self,that) {
+	return thx__$Decimal_Decimal_$Impl_$.equals(self,that);
+};
+thx_unit_time__$Ke_Ke_$Impl_$.nearEqualsTo = function(this1,that) {
+	return thx_Floats.nearEquals(this1.toFloat(),that.toFloat());
+};
+thx_unit_time__$Ke_Ke_$Impl_$.nearEquals = function(self,that) {
+	return thx_Floats.nearEquals(self.toFloat(),that.toFloat());
+};
+thx_unit_time__$Ke_Ke_$Impl_$.notEqualsTo = function(this1,that) {
+	return thx__$Decimal_Decimal_$Impl_$.notEquals(this1,that);
+};
+thx_unit_time__$Ke_Ke_$Impl_$.notEquals = function(self,that) {
+	return thx__$Decimal_Decimal_$Impl_$.notEquals(self,that);
+};
+thx_unit_time__$Ke_Ke_$Impl_$.lessThan = function(this1,that) {
+	return thx__$Decimal_Decimal_$Impl_$.less(this1,that);
+};
+thx_unit_time__$Ke_Ke_$Impl_$.less = function(self,that) {
+	return thx__$Decimal_Decimal_$Impl_$.less(self,that);
+};
+thx_unit_time__$Ke_Ke_$Impl_$.lessEqualsTo = function(this1,that) {
+	return thx__$Decimal_Decimal_$Impl_$.lessEquals(this1,that);
+};
+thx_unit_time__$Ke_Ke_$Impl_$.lessEquals = function(self,that) {
+	return thx__$Decimal_Decimal_$Impl_$.lessEquals(self,that);
+};
+thx_unit_time__$Ke_Ke_$Impl_$.greaterThan = function(this1,that) {
+	return thx__$Decimal_Decimal_$Impl_$.greater(this1,that);
+};
+thx_unit_time__$Ke_Ke_$Impl_$.greater = function(self,that) {
+	return thx__$Decimal_Decimal_$Impl_$.greaterEquals(self,that);
+};
+thx_unit_time__$Ke_Ke_$Impl_$.greaterEqualsTo = function(this1,that) {
+	return thx__$Decimal_Decimal_$Impl_$.greaterEquals(this1,that);
+};
+thx_unit_time__$Ke_Ke_$Impl_$.greaterEquals = function(self,that) {
+	return thx__$Decimal_Decimal_$Impl_$.greaterEquals(self,that);
+};
+thx_unit_time__$Ke_Ke_$Impl_$.toDecimal = function(this1) {
+	return this1;
+};
+thx_unit_time__$Ke_Ke_$Impl_$.toFloat = function(this1) {
+	return this1.toFloat();
+};
+thx_unit_time__$Ke_Ke_$Impl_$.toPlankTimeUnit = function(this1) {
+	return this1.multiply(thx_unit_time__$Ke_Ke_$Impl_$.ofUnit).divide(thx_unit_time__$Ke_Ke_$Impl_$.dividerPlankTimeUnit).trim(null);
+};
+thx_unit_time__$Ke_Ke_$Impl_$.toJiffyPhysics = function(this1) {
+	return this1.multiply(thx_unit_time__$Ke_Ke_$Impl_$.ofUnit).divide(thx_unit_time__$Ke_Ke_$Impl_$.dividerJiffyPhysics).trim(null);
+};
+thx_unit_time__$Ke_Ke_$Impl_$.toSvedberg = function(this1) {
+	return this1.multiply(thx_unit_time__$Ke_Ke_$Impl_$.ofUnit).divide(thx_unit_time__$Ke_Ke_$Impl_$.dividerSvedberg).trim(null);
+};
+thx_unit_time__$Ke_Ke_$Impl_$.toPicosecond = function(this1) {
+	return this1.multiply(thx_unit_time__$Ke_Ke_$Impl_$.ofUnit).divide(thx_unit_time__$Ke_Ke_$Impl_$.dividerPicosecond).trim(null);
+};
+thx_unit_time__$Ke_Ke_$Impl_$.toNanosecond = function(this1) {
+	return this1.multiply(thx_unit_time__$Ke_Ke_$Impl_$.ofUnit).divide(thx_unit_time__$Ke_Ke_$Impl_$.dividerNanosecond).trim(null);
+};
+thx_unit_time__$Ke_Ke_$Impl_$.toShake = function(this1) {
+	return this1.multiply(thx_unit_time__$Ke_Ke_$Impl_$.ofUnit).divide(thx_unit_time__$Ke_Ke_$Impl_$.dividerShake).trim(null);
+};
+thx_unit_time__$Ke_Ke_$Impl_$.toTick = function(this1) {
+	return this1.multiply(thx_unit_time__$Ke_Ke_$Impl_$.ofUnit).divide(thx_unit_time__$Ke_Ke_$Impl_$.dividerTick).trim(null);
+};
+thx_unit_time__$Ke_Ke_$Impl_$.toMicrosecond = function(this1) {
+	return this1.multiply(thx_unit_time__$Ke_Ke_$Impl_$.ofUnit).divide(thx_unit_time__$Ke_Ke_$Impl_$.dividerMicrosecond).trim(null);
+};
+thx_unit_time__$Ke_Ke_$Impl_$.toFourth = function(this1) {
+	return this1.multiply(thx_unit_time__$Ke_Ke_$Impl_$.ofUnit).divide(thx_unit_time__$Ke_Ke_$Impl_$.dividerFourth).trim(null);
+};
+thx_unit_time__$Ke_Ke_$Impl_$.toMillisecond = function(this1) {
+	return this1.multiply(thx_unit_time__$Ke_Ke_$Impl_$.ofUnit).divide(thx_unit_time__$Ke_Ke_$Impl_$.dividerMillisecond).trim(null);
+};
+thx_unit_time__$Ke_Ke_$Impl_$.toThird = function(this1) {
+	return this1.multiply(thx_unit_time__$Ke_Ke_$Impl_$.ofUnit).divide(thx_unit_time__$Ke_Ke_$Impl_$.dividerThird).trim(null);
+};
+thx_unit_time__$Ke_Ke_$Impl_$.toSecond = function(this1) {
+	return this1.multiply(thx_unit_time__$Ke_Ke_$Impl_$.ofUnit).divide(thx_unit_time__$Ke_Ke_$Impl_$.dividerSecond).trim(null);
+};
+thx_unit_time__$Ke_Ke_$Impl_$.toMinute = function(this1) {
+	return this1.multiply(thx_unit_time__$Ke_Ke_$Impl_$.ofUnit).divide(thx_unit_time__$Ke_Ke_$Impl_$.dividerMinute).trim(null);
+};
+thx_unit_time__$Ke_Ke_$Impl_$.toKe = function(this1) {
+	return this1;
+};
+thx_unit_time__$Ke_Ke_$Impl_$.toKilosecond = function(this1) {
+	return this1.multiply(thx_unit_time__$Ke_Ke_$Impl_$.ofUnit).divide(thx_unit_time__$Ke_Ke_$Impl_$.dividerKilosecond).trim(null);
+};
+thx_unit_time__$Ke_Ke_$Impl_$.toHour = function(this1) {
+	return this1.multiply(thx_unit_time__$Ke_Ke_$Impl_$.ofUnit).divide(thx_unit_time__$Ke_Ke_$Impl_$.dividerHour).trim(null);
+};
+thx_unit_time__$Ke_Ke_$Impl_$.toDay = function(this1) {
+	return this1.multiply(thx_unit_time__$Ke_Ke_$Impl_$.ofUnit).divide(thx_unit_time__$Ke_Ke_$Impl_$.dividerDay).trim(null);
+};
+thx_unit_time__$Ke_Ke_$Impl_$.toWeek = function(this1) {
+	return this1.multiply(thx_unit_time__$Ke_Ke_$Impl_$.ofUnit).divide(thx_unit_time__$Ke_Ke_$Impl_$.dividerWeek).trim(null);
+};
+thx_unit_time__$Ke_Ke_$Impl_$.toMegasecond = function(this1) {
+	return this1.multiply(thx_unit_time__$Ke_Ke_$Impl_$.ofUnit).divide(thx_unit_time__$Ke_Ke_$Impl_$.dividerMegasecond).trim(null);
+};
+thx_unit_time__$Ke_Ke_$Impl_$.toFortnight = function(this1) {
+	return this1.multiply(thx_unit_time__$Ke_Ke_$Impl_$.ofUnit).divide(thx_unit_time__$Ke_Ke_$Impl_$.dividerFortnight).trim(null);
+};
+thx_unit_time__$Ke_Ke_$Impl_$.toSynodicMonth = function(this1) {
+	return this1.multiply(thx_unit_time__$Ke_Ke_$Impl_$.ofUnit).divide(thx_unit_time__$Ke_Ke_$Impl_$.dividerSynodicMonth).trim(null);
+};
+thx_unit_time__$Ke_Ke_$Impl_$.toTropicalMonth = function(this1) {
+	return this1.multiply(thx_unit_time__$Ke_Ke_$Impl_$.ofUnit).divide(thx_unit_time__$Ke_Ke_$Impl_$.dividerTropicalMonth).trim(null);
+};
+thx_unit_time__$Ke_Ke_$Impl_$.toJulianYear = function(this1) {
+	return this1.multiply(thx_unit_time__$Ke_Ke_$Impl_$.ofUnit).divide(thx_unit_time__$Ke_Ke_$Impl_$.dividerJulianYear).trim(null);
+};
+thx_unit_time__$Ke_Ke_$Impl_$.toGigasecond = function(this1) {
+	return this1.multiply(thx_unit_time__$Ke_Ke_$Impl_$.ofUnit).divide(thx_unit_time__$Ke_Ke_$Impl_$.dividerGigasecond).trim(null);
+};
+thx_unit_time__$Ke_Ke_$Impl_$.toTerasecond = function(this1) {
+	return this1.multiply(thx_unit_time__$Ke_Ke_$Impl_$.ofUnit).divide(thx_unit_time__$Ke_Ke_$Impl_$.dividerTerasecond).trim(null);
+};
+thx_unit_time__$Ke_Ke_$Impl_$.toString = function(this1) {
+	return "" + this1.toString() + "ke";
+};
+thx_unit_time__$Ke_Ke_$Impl_$.fromTime = function(time) {
+	return thx__$Decimal_Decimal_$Impl_$.fromInt64(time).multiply(thx_unit_time__$Tick_Tick_$Impl_$.ofUnit).divide(thx_unit_time__$Tick_Tick_$Impl_$.dividerKe).trim(null);
+};
+thx_unit_time__$Ke_Ke_$Impl_$.toTime = function(this1) {
+	return thx_bigint_Bigs.toInt64(thx__$Decimal_Decimal_$Impl_$.toBigInt(this1.multiply(thx_unit_time__$Ke_Ke_$Impl_$.ofUnit).divide(thx_unit_time__$Ke_Ke_$Impl_$.dividerTick).trim(null)));
+};
+var thx_unit_time__$Kilosecond_Kilosecond_$Impl_$ = {};
+thx_unit_time__$Kilosecond_Kilosecond_$Impl_$.__name__ = ["thx","unit","time","_Kilosecond","Kilosecond_Impl_"];
+thx_unit_time__$Kilosecond_Kilosecond_$Impl_$.fromDecimal = function(value) {
+	return value;
+};
+thx_unit_time__$Kilosecond_Kilosecond_$Impl_$.fromInt = function(value) {
+	return thx__$Decimal_Decimal_$Impl_$.fromInt(value);
+};
+thx_unit_time__$Kilosecond_Kilosecond_$Impl_$.fromFloat = function(value) {
+	return thx_bigint_Decimals.fromFloat(value);
+};
+thx_unit_time__$Kilosecond_Kilosecond_$Impl_$._new = function(value) {
+	return value;
+};
+thx_unit_time__$Kilosecond_Kilosecond_$Impl_$.abs = function(this1) {
+	return this1.abs();
+};
+thx_unit_time__$Kilosecond_Kilosecond_$Impl_$.min = function(this1,that) {
+	var that1 = that;
+	return thx__$Decimal_Decimal_$Impl_$.less(this1,that1)?this1:that1;
+};
+thx_unit_time__$Kilosecond_Kilosecond_$Impl_$.max = function(this1,that) {
+	var that1 = that;
+	return thx__$Decimal_Decimal_$Impl_$.greater(this1,that1)?this1:that1;
+};
+thx_unit_time__$Kilosecond_Kilosecond_$Impl_$.negate = function(this1) {
+	return this1.negate();
+};
+thx_unit_time__$Kilosecond_Kilosecond_$Impl_$.add = function(this1,that) {
+	return this1.add(that);
+};
+thx_unit_time__$Kilosecond_Kilosecond_$Impl_$.subtract = function(this1,that) {
+	return this1.subtract(that);
+};
+thx_unit_time__$Kilosecond_Kilosecond_$Impl_$.multiply = function(this1,that) {
+	return this1.multiply(that);
+};
+thx_unit_time__$Kilosecond_Kilosecond_$Impl_$.divide = function(this1,that) {
+	return this1.divide(that);
+};
+thx_unit_time__$Kilosecond_Kilosecond_$Impl_$.modulo = function(this1,that) {
+	return this1.modulo(that);
+};
+thx_unit_time__$Kilosecond_Kilosecond_$Impl_$.equalsTo = function(this1,that) {
+	return thx__$Decimal_Decimal_$Impl_$.equals(this1,that);
+};
+thx_unit_time__$Kilosecond_Kilosecond_$Impl_$.equals = function(self,that) {
+	return thx__$Decimal_Decimal_$Impl_$.equals(self,that);
+};
+thx_unit_time__$Kilosecond_Kilosecond_$Impl_$.nearEqualsTo = function(this1,that) {
+	return thx_Floats.nearEquals(this1.toFloat(),that.toFloat());
+};
+thx_unit_time__$Kilosecond_Kilosecond_$Impl_$.nearEquals = function(self,that) {
+	return thx_Floats.nearEquals(self.toFloat(),that.toFloat());
+};
+thx_unit_time__$Kilosecond_Kilosecond_$Impl_$.notEqualsTo = function(this1,that) {
+	return thx__$Decimal_Decimal_$Impl_$.notEquals(this1,that);
+};
+thx_unit_time__$Kilosecond_Kilosecond_$Impl_$.notEquals = function(self,that) {
+	return thx__$Decimal_Decimal_$Impl_$.notEquals(self,that);
+};
+thx_unit_time__$Kilosecond_Kilosecond_$Impl_$.lessThan = function(this1,that) {
+	return thx__$Decimal_Decimal_$Impl_$.less(this1,that);
+};
+thx_unit_time__$Kilosecond_Kilosecond_$Impl_$.less = function(self,that) {
+	return thx__$Decimal_Decimal_$Impl_$.less(self,that);
+};
+thx_unit_time__$Kilosecond_Kilosecond_$Impl_$.lessEqualsTo = function(this1,that) {
+	return thx__$Decimal_Decimal_$Impl_$.lessEquals(this1,that);
+};
+thx_unit_time__$Kilosecond_Kilosecond_$Impl_$.lessEquals = function(self,that) {
+	return thx__$Decimal_Decimal_$Impl_$.lessEquals(self,that);
+};
+thx_unit_time__$Kilosecond_Kilosecond_$Impl_$.greaterThan = function(this1,that) {
+	return thx__$Decimal_Decimal_$Impl_$.greater(this1,that);
+};
+thx_unit_time__$Kilosecond_Kilosecond_$Impl_$.greater = function(self,that) {
+	return thx__$Decimal_Decimal_$Impl_$.greaterEquals(self,that);
+};
+thx_unit_time__$Kilosecond_Kilosecond_$Impl_$.greaterEqualsTo = function(this1,that) {
+	return thx__$Decimal_Decimal_$Impl_$.greaterEquals(this1,that);
+};
+thx_unit_time__$Kilosecond_Kilosecond_$Impl_$.greaterEquals = function(self,that) {
+	return thx__$Decimal_Decimal_$Impl_$.greaterEquals(self,that);
+};
+thx_unit_time__$Kilosecond_Kilosecond_$Impl_$.toDecimal = function(this1) {
+	return this1;
+};
+thx_unit_time__$Kilosecond_Kilosecond_$Impl_$.toFloat = function(this1) {
+	return this1.toFloat();
+};
+thx_unit_time__$Kilosecond_Kilosecond_$Impl_$.toPlankTimeUnit = function(this1) {
+	return this1.multiply(thx_unit_time__$Kilosecond_Kilosecond_$Impl_$.ofUnit).divide(thx_unit_time__$Kilosecond_Kilosecond_$Impl_$.dividerPlankTimeUnit).trim(null);
+};
+thx_unit_time__$Kilosecond_Kilosecond_$Impl_$.toJiffyPhysics = function(this1) {
+	return this1.multiply(thx_unit_time__$Kilosecond_Kilosecond_$Impl_$.ofUnit).divide(thx_unit_time__$Kilosecond_Kilosecond_$Impl_$.dividerJiffyPhysics).trim(null);
+};
+thx_unit_time__$Kilosecond_Kilosecond_$Impl_$.toSvedberg = function(this1) {
+	return this1.multiply(thx_unit_time__$Kilosecond_Kilosecond_$Impl_$.ofUnit).divide(thx_unit_time__$Kilosecond_Kilosecond_$Impl_$.dividerSvedberg).trim(null);
+};
+thx_unit_time__$Kilosecond_Kilosecond_$Impl_$.toPicosecond = function(this1) {
+	return this1.multiply(thx_unit_time__$Kilosecond_Kilosecond_$Impl_$.ofUnit).divide(thx_unit_time__$Kilosecond_Kilosecond_$Impl_$.dividerPicosecond).trim(null);
+};
+thx_unit_time__$Kilosecond_Kilosecond_$Impl_$.toNanosecond = function(this1) {
+	return this1.multiply(thx_unit_time__$Kilosecond_Kilosecond_$Impl_$.ofUnit).divide(thx_unit_time__$Kilosecond_Kilosecond_$Impl_$.dividerNanosecond).trim(null);
+};
+thx_unit_time__$Kilosecond_Kilosecond_$Impl_$.toShake = function(this1) {
+	return this1.multiply(thx_unit_time__$Kilosecond_Kilosecond_$Impl_$.ofUnit).divide(thx_unit_time__$Kilosecond_Kilosecond_$Impl_$.dividerShake).trim(null);
+};
+thx_unit_time__$Kilosecond_Kilosecond_$Impl_$.toTick = function(this1) {
+	return this1.multiply(thx_unit_time__$Kilosecond_Kilosecond_$Impl_$.ofUnit).divide(thx_unit_time__$Kilosecond_Kilosecond_$Impl_$.dividerTick).trim(null);
+};
+thx_unit_time__$Kilosecond_Kilosecond_$Impl_$.toMicrosecond = function(this1) {
+	return this1.multiply(thx_unit_time__$Kilosecond_Kilosecond_$Impl_$.ofUnit).divide(thx_unit_time__$Kilosecond_Kilosecond_$Impl_$.dividerMicrosecond).trim(null);
+};
+thx_unit_time__$Kilosecond_Kilosecond_$Impl_$.toFourth = function(this1) {
+	return this1.multiply(thx_unit_time__$Kilosecond_Kilosecond_$Impl_$.ofUnit).divide(thx_unit_time__$Kilosecond_Kilosecond_$Impl_$.dividerFourth).trim(null);
+};
+thx_unit_time__$Kilosecond_Kilosecond_$Impl_$.toMillisecond = function(this1) {
+	return this1.multiply(thx_unit_time__$Kilosecond_Kilosecond_$Impl_$.ofUnit).divide(thx_unit_time__$Kilosecond_Kilosecond_$Impl_$.dividerMillisecond).trim(null);
+};
+thx_unit_time__$Kilosecond_Kilosecond_$Impl_$.toThird = function(this1) {
+	return this1.multiply(thx_unit_time__$Kilosecond_Kilosecond_$Impl_$.ofUnit).divide(thx_unit_time__$Kilosecond_Kilosecond_$Impl_$.dividerThird).trim(null);
+};
+thx_unit_time__$Kilosecond_Kilosecond_$Impl_$.toSecond = function(this1) {
+	return this1.multiply(thx_unit_time__$Kilosecond_Kilosecond_$Impl_$.ofUnit).divide(thx_unit_time__$Kilosecond_Kilosecond_$Impl_$.dividerSecond).trim(null);
+};
+thx_unit_time__$Kilosecond_Kilosecond_$Impl_$.toMinute = function(this1) {
+	return this1.multiply(thx_unit_time__$Kilosecond_Kilosecond_$Impl_$.ofUnit).divide(thx_unit_time__$Kilosecond_Kilosecond_$Impl_$.dividerMinute).trim(null);
+};
+thx_unit_time__$Kilosecond_Kilosecond_$Impl_$.toKe = function(this1) {
+	return this1.multiply(thx_unit_time__$Kilosecond_Kilosecond_$Impl_$.ofUnit).divide(thx_unit_time__$Kilosecond_Kilosecond_$Impl_$.dividerKe).trim(null);
+};
+thx_unit_time__$Kilosecond_Kilosecond_$Impl_$.toKilosecond = function(this1) {
+	return this1;
+};
+thx_unit_time__$Kilosecond_Kilosecond_$Impl_$.toHour = function(this1) {
+	return this1.multiply(thx_unit_time__$Kilosecond_Kilosecond_$Impl_$.ofUnit).divide(thx_unit_time__$Kilosecond_Kilosecond_$Impl_$.dividerHour).trim(null);
+};
+thx_unit_time__$Kilosecond_Kilosecond_$Impl_$.toDay = function(this1) {
+	return this1.multiply(thx_unit_time__$Kilosecond_Kilosecond_$Impl_$.ofUnit).divide(thx_unit_time__$Kilosecond_Kilosecond_$Impl_$.dividerDay).trim(null);
+};
+thx_unit_time__$Kilosecond_Kilosecond_$Impl_$.toWeek = function(this1) {
+	return this1.multiply(thx_unit_time__$Kilosecond_Kilosecond_$Impl_$.ofUnit).divide(thx_unit_time__$Kilosecond_Kilosecond_$Impl_$.dividerWeek).trim(null);
+};
+thx_unit_time__$Kilosecond_Kilosecond_$Impl_$.toMegasecond = function(this1) {
+	return this1.multiply(thx_unit_time__$Kilosecond_Kilosecond_$Impl_$.ofUnit).divide(thx_unit_time__$Kilosecond_Kilosecond_$Impl_$.dividerMegasecond).trim(null);
+};
+thx_unit_time__$Kilosecond_Kilosecond_$Impl_$.toFortnight = function(this1) {
+	return this1.multiply(thx_unit_time__$Kilosecond_Kilosecond_$Impl_$.ofUnit).divide(thx_unit_time__$Kilosecond_Kilosecond_$Impl_$.dividerFortnight).trim(null);
+};
+thx_unit_time__$Kilosecond_Kilosecond_$Impl_$.toSynodicMonth = function(this1) {
+	return this1.multiply(thx_unit_time__$Kilosecond_Kilosecond_$Impl_$.ofUnit).divide(thx_unit_time__$Kilosecond_Kilosecond_$Impl_$.dividerSynodicMonth).trim(null);
+};
+thx_unit_time__$Kilosecond_Kilosecond_$Impl_$.toTropicalMonth = function(this1) {
+	return this1.multiply(thx_unit_time__$Kilosecond_Kilosecond_$Impl_$.ofUnit).divide(thx_unit_time__$Kilosecond_Kilosecond_$Impl_$.dividerTropicalMonth).trim(null);
+};
+thx_unit_time__$Kilosecond_Kilosecond_$Impl_$.toJulianYear = function(this1) {
+	return this1.multiply(thx_unit_time__$Kilosecond_Kilosecond_$Impl_$.ofUnit).divide(thx_unit_time__$Kilosecond_Kilosecond_$Impl_$.dividerJulianYear).trim(null);
+};
+thx_unit_time__$Kilosecond_Kilosecond_$Impl_$.toGigasecond = function(this1) {
+	return this1.multiply(thx_unit_time__$Kilosecond_Kilosecond_$Impl_$.ofUnit).divide(thx_unit_time__$Kilosecond_Kilosecond_$Impl_$.dividerGigasecond).trim(null);
+};
+thx_unit_time__$Kilosecond_Kilosecond_$Impl_$.toTerasecond = function(this1) {
+	return this1.multiply(thx_unit_time__$Kilosecond_Kilosecond_$Impl_$.ofUnit).divide(thx_unit_time__$Kilosecond_Kilosecond_$Impl_$.dividerTerasecond).trim(null);
+};
+thx_unit_time__$Kilosecond_Kilosecond_$Impl_$.toString = function(this1) {
+	return "" + this1.toString() + "ks";
+};
+thx_unit_time__$Kilosecond_Kilosecond_$Impl_$.fromTime = function(time) {
+	return thx__$Decimal_Decimal_$Impl_$.fromInt64(time).multiply(thx_unit_time__$Tick_Tick_$Impl_$.ofUnit).divide(thx_unit_time__$Tick_Tick_$Impl_$.dividerKilosecond).trim(null);
+};
+thx_unit_time__$Kilosecond_Kilosecond_$Impl_$.toTime = function(this1) {
+	return thx_bigint_Bigs.toInt64(thx__$Decimal_Decimal_$Impl_$.toBigInt(this1.multiply(thx_unit_time__$Kilosecond_Kilosecond_$Impl_$.ofUnit).divide(thx_unit_time__$Kilosecond_Kilosecond_$Impl_$.dividerTick).trim(null)));
+};
+var thx_unit_time__$Megasecond_Megasecond_$Impl_$ = {};
+thx_unit_time__$Megasecond_Megasecond_$Impl_$.__name__ = ["thx","unit","time","_Megasecond","Megasecond_Impl_"];
+thx_unit_time__$Megasecond_Megasecond_$Impl_$.fromDecimal = function(value) {
+	return value;
+};
+thx_unit_time__$Megasecond_Megasecond_$Impl_$.fromInt = function(value) {
+	return thx__$Decimal_Decimal_$Impl_$.fromInt(value);
+};
+thx_unit_time__$Megasecond_Megasecond_$Impl_$.fromFloat = function(value) {
+	return thx_bigint_Decimals.fromFloat(value);
+};
+thx_unit_time__$Megasecond_Megasecond_$Impl_$._new = function(value) {
+	return value;
+};
+thx_unit_time__$Megasecond_Megasecond_$Impl_$.abs = function(this1) {
+	return this1.abs();
+};
+thx_unit_time__$Megasecond_Megasecond_$Impl_$.min = function(this1,that) {
+	var that1 = that;
+	return thx__$Decimal_Decimal_$Impl_$.less(this1,that1)?this1:that1;
+};
+thx_unit_time__$Megasecond_Megasecond_$Impl_$.max = function(this1,that) {
+	var that1 = that;
+	return thx__$Decimal_Decimal_$Impl_$.greater(this1,that1)?this1:that1;
+};
+thx_unit_time__$Megasecond_Megasecond_$Impl_$.negate = function(this1) {
+	return this1.negate();
+};
+thx_unit_time__$Megasecond_Megasecond_$Impl_$.add = function(this1,that) {
+	return this1.add(that);
+};
+thx_unit_time__$Megasecond_Megasecond_$Impl_$.subtract = function(this1,that) {
+	return this1.subtract(that);
+};
+thx_unit_time__$Megasecond_Megasecond_$Impl_$.multiply = function(this1,that) {
+	return this1.multiply(that);
+};
+thx_unit_time__$Megasecond_Megasecond_$Impl_$.divide = function(this1,that) {
+	return this1.divide(that);
+};
+thx_unit_time__$Megasecond_Megasecond_$Impl_$.modulo = function(this1,that) {
+	return this1.modulo(that);
+};
+thx_unit_time__$Megasecond_Megasecond_$Impl_$.equalsTo = function(this1,that) {
+	return thx__$Decimal_Decimal_$Impl_$.equals(this1,that);
+};
+thx_unit_time__$Megasecond_Megasecond_$Impl_$.equals = function(self,that) {
+	return thx__$Decimal_Decimal_$Impl_$.equals(self,that);
+};
+thx_unit_time__$Megasecond_Megasecond_$Impl_$.nearEqualsTo = function(this1,that) {
+	return thx_Floats.nearEquals(this1.toFloat(),that.toFloat());
+};
+thx_unit_time__$Megasecond_Megasecond_$Impl_$.nearEquals = function(self,that) {
+	return thx_Floats.nearEquals(self.toFloat(),that.toFloat());
+};
+thx_unit_time__$Megasecond_Megasecond_$Impl_$.notEqualsTo = function(this1,that) {
+	return thx__$Decimal_Decimal_$Impl_$.notEquals(this1,that);
+};
+thx_unit_time__$Megasecond_Megasecond_$Impl_$.notEquals = function(self,that) {
+	return thx__$Decimal_Decimal_$Impl_$.notEquals(self,that);
+};
+thx_unit_time__$Megasecond_Megasecond_$Impl_$.lessThan = function(this1,that) {
+	return thx__$Decimal_Decimal_$Impl_$.less(this1,that);
+};
+thx_unit_time__$Megasecond_Megasecond_$Impl_$.less = function(self,that) {
+	return thx__$Decimal_Decimal_$Impl_$.less(self,that);
+};
+thx_unit_time__$Megasecond_Megasecond_$Impl_$.lessEqualsTo = function(this1,that) {
+	return thx__$Decimal_Decimal_$Impl_$.lessEquals(this1,that);
+};
+thx_unit_time__$Megasecond_Megasecond_$Impl_$.lessEquals = function(self,that) {
+	return thx__$Decimal_Decimal_$Impl_$.lessEquals(self,that);
+};
+thx_unit_time__$Megasecond_Megasecond_$Impl_$.greaterThan = function(this1,that) {
+	return thx__$Decimal_Decimal_$Impl_$.greater(this1,that);
+};
+thx_unit_time__$Megasecond_Megasecond_$Impl_$.greater = function(self,that) {
+	return thx__$Decimal_Decimal_$Impl_$.greaterEquals(self,that);
+};
+thx_unit_time__$Megasecond_Megasecond_$Impl_$.greaterEqualsTo = function(this1,that) {
+	return thx__$Decimal_Decimal_$Impl_$.greaterEquals(this1,that);
+};
+thx_unit_time__$Megasecond_Megasecond_$Impl_$.greaterEquals = function(self,that) {
+	return thx__$Decimal_Decimal_$Impl_$.greaterEquals(self,that);
+};
+thx_unit_time__$Megasecond_Megasecond_$Impl_$.toDecimal = function(this1) {
+	return this1;
+};
+thx_unit_time__$Megasecond_Megasecond_$Impl_$.toFloat = function(this1) {
+	return this1.toFloat();
+};
+thx_unit_time__$Megasecond_Megasecond_$Impl_$.toPlankTimeUnit = function(this1) {
+	return this1.multiply(thx_unit_time__$Megasecond_Megasecond_$Impl_$.ofUnit).divide(thx_unit_time__$Megasecond_Megasecond_$Impl_$.dividerPlankTimeUnit).trim(null);
+};
+thx_unit_time__$Megasecond_Megasecond_$Impl_$.toJiffyPhysics = function(this1) {
+	return this1.multiply(thx_unit_time__$Megasecond_Megasecond_$Impl_$.ofUnit).divide(thx_unit_time__$Megasecond_Megasecond_$Impl_$.dividerJiffyPhysics).trim(null);
+};
+thx_unit_time__$Megasecond_Megasecond_$Impl_$.toSvedberg = function(this1) {
+	return this1.multiply(thx_unit_time__$Megasecond_Megasecond_$Impl_$.ofUnit).divide(thx_unit_time__$Megasecond_Megasecond_$Impl_$.dividerSvedberg).trim(null);
+};
+thx_unit_time__$Megasecond_Megasecond_$Impl_$.toPicosecond = function(this1) {
+	return this1.multiply(thx_unit_time__$Megasecond_Megasecond_$Impl_$.ofUnit).divide(thx_unit_time__$Megasecond_Megasecond_$Impl_$.dividerPicosecond).trim(null);
+};
+thx_unit_time__$Megasecond_Megasecond_$Impl_$.toNanosecond = function(this1) {
+	return this1.multiply(thx_unit_time__$Megasecond_Megasecond_$Impl_$.ofUnit).divide(thx_unit_time__$Megasecond_Megasecond_$Impl_$.dividerNanosecond).trim(null);
+};
+thx_unit_time__$Megasecond_Megasecond_$Impl_$.toShake = function(this1) {
+	return this1.multiply(thx_unit_time__$Megasecond_Megasecond_$Impl_$.ofUnit).divide(thx_unit_time__$Megasecond_Megasecond_$Impl_$.dividerShake).trim(null);
+};
+thx_unit_time__$Megasecond_Megasecond_$Impl_$.toTick = function(this1) {
+	return this1.multiply(thx_unit_time__$Megasecond_Megasecond_$Impl_$.ofUnit).divide(thx_unit_time__$Megasecond_Megasecond_$Impl_$.dividerTick).trim(null);
+};
+thx_unit_time__$Megasecond_Megasecond_$Impl_$.toMicrosecond = function(this1) {
+	return this1.multiply(thx_unit_time__$Megasecond_Megasecond_$Impl_$.ofUnit).divide(thx_unit_time__$Megasecond_Megasecond_$Impl_$.dividerMicrosecond).trim(null);
+};
+thx_unit_time__$Megasecond_Megasecond_$Impl_$.toFourth = function(this1) {
+	return this1.multiply(thx_unit_time__$Megasecond_Megasecond_$Impl_$.ofUnit).divide(thx_unit_time__$Megasecond_Megasecond_$Impl_$.dividerFourth).trim(null);
+};
+thx_unit_time__$Megasecond_Megasecond_$Impl_$.toMillisecond = function(this1) {
+	return this1.multiply(thx_unit_time__$Megasecond_Megasecond_$Impl_$.ofUnit).divide(thx_unit_time__$Megasecond_Megasecond_$Impl_$.dividerMillisecond).trim(null);
+};
+thx_unit_time__$Megasecond_Megasecond_$Impl_$.toThird = function(this1) {
+	return this1.multiply(thx_unit_time__$Megasecond_Megasecond_$Impl_$.ofUnit).divide(thx_unit_time__$Megasecond_Megasecond_$Impl_$.dividerThird).trim(null);
+};
+thx_unit_time__$Megasecond_Megasecond_$Impl_$.toSecond = function(this1) {
+	return this1.multiply(thx_unit_time__$Megasecond_Megasecond_$Impl_$.ofUnit).divide(thx_unit_time__$Megasecond_Megasecond_$Impl_$.dividerSecond).trim(null);
+};
+thx_unit_time__$Megasecond_Megasecond_$Impl_$.toMinute = function(this1) {
+	return this1.multiply(thx_unit_time__$Megasecond_Megasecond_$Impl_$.ofUnit).divide(thx_unit_time__$Megasecond_Megasecond_$Impl_$.dividerMinute).trim(null);
+};
+thx_unit_time__$Megasecond_Megasecond_$Impl_$.toKe = function(this1) {
+	return this1.multiply(thx_unit_time__$Megasecond_Megasecond_$Impl_$.ofUnit).divide(thx_unit_time__$Megasecond_Megasecond_$Impl_$.dividerKe).trim(null);
+};
+thx_unit_time__$Megasecond_Megasecond_$Impl_$.toKilosecond = function(this1) {
+	return this1.multiply(thx_unit_time__$Megasecond_Megasecond_$Impl_$.ofUnit).divide(thx_unit_time__$Megasecond_Megasecond_$Impl_$.dividerKilosecond).trim(null);
+};
+thx_unit_time__$Megasecond_Megasecond_$Impl_$.toHour = function(this1) {
+	return this1.multiply(thx_unit_time__$Megasecond_Megasecond_$Impl_$.ofUnit).divide(thx_unit_time__$Megasecond_Megasecond_$Impl_$.dividerHour).trim(null);
+};
+thx_unit_time__$Megasecond_Megasecond_$Impl_$.toDay = function(this1) {
+	return this1.multiply(thx_unit_time__$Megasecond_Megasecond_$Impl_$.ofUnit).divide(thx_unit_time__$Megasecond_Megasecond_$Impl_$.dividerDay).trim(null);
+};
+thx_unit_time__$Megasecond_Megasecond_$Impl_$.toWeek = function(this1) {
+	return this1.multiply(thx_unit_time__$Megasecond_Megasecond_$Impl_$.ofUnit).divide(thx_unit_time__$Megasecond_Megasecond_$Impl_$.dividerWeek).trim(null);
+};
+thx_unit_time__$Megasecond_Megasecond_$Impl_$.toMegasecond = function(this1) {
+	return this1;
+};
+thx_unit_time__$Megasecond_Megasecond_$Impl_$.toFortnight = function(this1) {
+	return this1.multiply(thx_unit_time__$Megasecond_Megasecond_$Impl_$.ofUnit).divide(thx_unit_time__$Megasecond_Megasecond_$Impl_$.dividerFortnight).trim(null);
+};
+thx_unit_time__$Megasecond_Megasecond_$Impl_$.toSynodicMonth = function(this1) {
+	return this1.multiply(thx_unit_time__$Megasecond_Megasecond_$Impl_$.ofUnit).divide(thx_unit_time__$Megasecond_Megasecond_$Impl_$.dividerSynodicMonth).trim(null);
+};
+thx_unit_time__$Megasecond_Megasecond_$Impl_$.toTropicalMonth = function(this1) {
+	return this1.multiply(thx_unit_time__$Megasecond_Megasecond_$Impl_$.ofUnit).divide(thx_unit_time__$Megasecond_Megasecond_$Impl_$.dividerTropicalMonth).trim(null);
+};
+thx_unit_time__$Megasecond_Megasecond_$Impl_$.toJulianYear = function(this1) {
+	return this1.multiply(thx_unit_time__$Megasecond_Megasecond_$Impl_$.ofUnit).divide(thx_unit_time__$Megasecond_Megasecond_$Impl_$.dividerJulianYear).trim(null);
+};
+thx_unit_time__$Megasecond_Megasecond_$Impl_$.toGigasecond = function(this1) {
+	return this1.multiply(thx_unit_time__$Megasecond_Megasecond_$Impl_$.ofUnit).divide(thx_unit_time__$Megasecond_Megasecond_$Impl_$.dividerGigasecond).trim(null);
+};
+thx_unit_time__$Megasecond_Megasecond_$Impl_$.toTerasecond = function(this1) {
+	return this1.multiply(thx_unit_time__$Megasecond_Megasecond_$Impl_$.ofUnit).divide(thx_unit_time__$Megasecond_Megasecond_$Impl_$.dividerTerasecond).trim(null);
+};
+thx_unit_time__$Megasecond_Megasecond_$Impl_$.toString = function(this1) {
+	return "" + this1.toString() + "Ms";
+};
+thx_unit_time__$Megasecond_Megasecond_$Impl_$.fromTime = function(time) {
+	return thx__$Decimal_Decimal_$Impl_$.fromInt64(time).multiply(thx_unit_time__$Tick_Tick_$Impl_$.ofUnit).divide(thx_unit_time__$Tick_Tick_$Impl_$.dividerMegasecond).trim(null);
+};
+thx_unit_time__$Megasecond_Megasecond_$Impl_$.toTime = function(this1) {
+	return thx_bigint_Bigs.toInt64(thx__$Decimal_Decimal_$Impl_$.toBigInt(this1.multiply(thx_unit_time__$Megasecond_Megasecond_$Impl_$.ofUnit).divide(thx_unit_time__$Megasecond_Megasecond_$Impl_$.dividerTick).trim(null)));
+};
+var thx_unit_time__$Microsecond_Microsecond_$Impl_$ = {};
+thx_unit_time__$Microsecond_Microsecond_$Impl_$.__name__ = ["thx","unit","time","_Microsecond","Microsecond_Impl_"];
+thx_unit_time__$Microsecond_Microsecond_$Impl_$.fromDecimal = function(value) {
+	return value;
+};
+thx_unit_time__$Microsecond_Microsecond_$Impl_$.fromInt = function(value) {
+	return thx__$Decimal_Decimal_$Impl_$.fromInt(value);
+};
+thx_unit_time__$Microsecond_Microsecond_$Impl_$.fromFloat = function(value) {
+	return thx_bigint_Decimals.fromFloat(value);
+};
+thx_unit_time__$Microsecond_Microsecond_$Impl_$._new = function(value) {
+	return value;
+};
+thx_unit_time__$Microsecond_Microsecond_$Impl_$.abs = function(this1) {
+	return this1.abs();
+};
+thx_unit_time__$Microsecond_Microsecond_$Impl_$.min = function(this1,that) {
+	var that1 = that;
+	return thx__$Decimal_Decimal_$Impl_$.less(this1,that1)?this1:that1;
+};
+thx_unit_time__$Microsecond_Microsecond_$Impl_$.max = function(this1,that) {
+	var that1 = that;
+	return thx__$Decimal_Decimal_$Impl_$.greater(this1,that1)?this1:that1;
+};
+thx_unit_time__$Microsecond_Microsecond_$Impl_$.negate = function(this1) {
+	return this1.negate();
+};
+thx_unit_time__$Microsecond_Microsecond_$Impl_$.add = function(this1,that) {
+	return this1.add(that);
+};
+thx_unit_time__$Microsecond_Microsecond_$Impl_$.subtract = function(this1,that) {
+	return this1.subtract(that);
+};
+thx_unit_time__$Microsecond_Microsecond_$Impl_$.multiply = function(this1,that) {
+	return this1.multiply(that);
+};
+thx_unit_time__$Microsecond_Microsecond_$Impl_$.divide = function(this1,that) {
+	return this1.divide(that);
+};
+thx_unit_time__$Microsecond_Microsecond_$Impl_$.modulo = function(this1,that) {
+	return this1.modulo(that);
+};
+thx_unit_time__$Microsecond_Microsecond_$Impl_$.equalsTo = function(this1,that) {
+	return thx__$Decimal_Decimal_$Impl_$.equals(this1,that);
+};
+thx_unit_time__$Microsecond_Microsecond_$Impl_$.equals = function(self,that) {
+	return thx__$Decimal_Decimal_$Impl_$.equals(self,that);
+};
+thx_unit_time__$Microsecond_Microsecond_$Impl_$.nearEqualsTo = function(this1,that) {
+	return thx_Floats.nearEquals(this1.toFloat(),that.toFloat());
+};
+thx_unit_time__$Microsecond_Microsecond_$Impl_$.nearEquals = function(self,that) {
+	return thx_Floats.nearEquals(self.toFloat(),that.toFloat());
+};
+thx_unit_time__$Microsecond_Microsecond_$Impl_$.notEqualsTo = function(this1,that) {
+	return thx__$Decimal_Decimal_$Impl_$.notEquals(this1,that);
+};
+thx_unit_time__$Microsecond_Microsecond_$Impl_$.notEquals = function(self,that) {
+	return thx__$Decimal_Decimal_$Impl_$.notEquals(self,that);
+};
+thx_unit_time__$Microsecond_Microsecond_$Impl_$.lessThan = function(this1,that) {
+	return thx__$Decimal_Decimal_$Impl_$.less(this1,that);
+};
+thx_unit_time__$Microsecond_Microsecond_$Impl_$.less = function(self,that) {
+	return thx__$Decimal_Decimal_$Impl_$.less(self,that);
+};
+thx_unit_time__$Microsecond_Microsecond_$Impl_$.lessEqualsTo = function(this1,that) {
+	return thx__$Decimal_Decimal_$Impl_$.lessEquals(this1,that);
+};
+thx_unit_time__$Microsecond_Microsecond_$Impl_$.lessEquals = function(self,that) {
+	return thx__$Decimal_Decimal_$Impl_$.lessEquals(self,that);
+};
+thx_unit_time__$Microsecond_Microsecond_$Impl_$.greaterThan = function(this1,that) {
+	return thx__$Decimal_Decimal_$Impl_$.greater(this1,that);
+};
+thx_unit_time__$Microsecond_Microsecond_$Impl_$.greater = function(self,that) {
+	return thx__$Decimal_Decimal_$Impl_$.greaterEquals(self,that);
+};
+thx_unit_time__$Microsecond_Microsecond_$Impl_$.greaterEqualsTo = function(this1,that) {
+	return thx__$Decimal_Decimal_$Impl_$.greaterEquals(this1,that);
+};
+thx_unit_time__$Microsecond_Microsecond_$Impl_$.greaterEquals = function(self,that) {
+	return thx__$Decimal_Decimal_$Impl_$.greaterEquals(self,that);
+};
+thx_unit_time__$Microsecond_Microsecond_$Impl_$.toDecimal = function(this1) {
+	return this1;
+};
+thx_unit_time__$Microsecond_Microsecond_$Impl_$.toFloat = function(this1) {
+	return this1.toFloat();
+};
+thx_unit_time__$Microsecond_Microsecond_$Impl_$.toPlankTimeUnit = function(this1) {
+	return this1.multiply(thx_unit_time__$Microsecond_Microsecond_$Impl_$.ofUnit).divide(thx_unit_time__$Microsecond_Microsecond_$Impl_$.dividerPlankTimeUnit).trim(null);
+};
+thx_unit_time__$Microsecond_Microsecond_$Impl_$.toJiffyPhysics = function(this1) {
+	return this1.multiply(thx_unit_time__$Microsecond_Microsecond_$Impl_$.ofUnit).divide(thx_unit_time__$Microsecond_Microsecond_$Impl_$.dividerJiffyPhysics).trim(null);
+};
+thx_unit_time__$Microsecond_Microsecond_$Impl_$.toSvedberg = function(this1) {
+	return this1.multiply(thx_unit_time__$Microsecond_Microsecond_$Impl_$.ofUnit).divide(thx_unit_time__$Microsecond_Microsecond_$Impl_$.dividerSvedberg).trim(null);
+};
+thx_unit_time__$Microsecond_Microsecond_$Impl_$.toPicosecond = function(this1) {
+	return this1.multiply(thx_unit_time__$Microsecond_Microsecond_$Impl_$.ofUnit).divide(thx_unit_time__$Microsecond_Microsecond_$Impl_$.dividerPicosecond).trim(null);
+};
+thx_unit_time__$Microsecond_Microsecond_$Impl_$.toNanosecond = function(this1) {
+	return this1.multiply(thx_unit_time__$Microsecond_Microsecond_$Impl_$.ofUnit).divide(thx_unit_time__$Microsecond_Microsecond_$Impl_$.dividerNanosecond).trim(null);
+};
+thx_unit_time__$Microsecond_Microsecond_$Impl_$.toShake = function(this1) {
+	return this1.multiply(thx_unit_time__$Microsecond_Microsecond_$Impl_$.ofUnit).divide(thx_unit_time__$Microsecond_Microsecond_$Impl_$.dividerShake).trim(null);
+};
+thx_unit_time__$Microsecond_Microsecond_$Impl_$.toTick = function(this1) {
+	return this1.multiply(thx_unit_time__$Microsecond_Microsecond_$Impl_$.ofUnit).divide(thx_unit_time__$Microsecond_Microsecond_$Impl_$.dividerTick).trim(null);
+};
+thx_unit_time__$Microsecond_Microsecond_$Impl_$.toMicrosecond = function(this1) {
+	return this1;
+};
+thx_unit_time__$Microsecond_Microsecond_$Impl_$.toFourth = function(this1) {
+	return this1.multiply(thx_unit_time__$Microsecond_Microsecond_$Impl_$.ofUnit).divide(thx_unit_time__$Microsecond_Microsecond_$Impl_$.dividerFourth).trim(null);
+};
+thx_unit_time__$Microsecond_Microsecond_$Impl_$.toMillisecond = function(this1) {
+	return this1.multiply(thx_unit_time__$Microsecond_Microsecond_$Impl_$.ofUnit).divide(thx_unit_time__$Microsecond_Microsecond_$Impl_$.dividerMillisecond).trim(null);
+};
+thx_unit_time__$Microsecond_Microsecond_$Impl_$.toThird = function(this1) {
+	return this1.multiply(thx_unit_time__$Microsecond_Microsecond_$Impl_$.ofUnit).divide(thx_unit_time__$Microsecond_Microsecond_$Impl_$.dividerThird).trim(null);
+};
+thx_unit_time__$Microsecond_Microsecond_$Impl_$.toSecond = function(this1) {
+	return this1.multiply(thx_unit_time__$Microsecond_Microsecond_$Impl_$.ofUnit).divide(thx_unit_time__$Microsecond_Microsecond_$Impl_$.dividerSecond).trim(null);
+};
+thx_unit_time__$Microsecond_Microsecond_$Impl_$.toMinute = function(this1) {
+	return this1.multiply(thx_unit_time__$Microsecond_Microsecond_$Impl_$.ofUnit).divide(thx_unit_time__$Microsecond_Microsecond_$Impl_$.dividerMinute).trim(null);
+};
+thx_unit_time__$Microsecond_Microsecond_$Impl_$.toKe = function(this1) {
+	return this1.multiply(thx_unit_time__$Microsecond_Microsecond_$Impl_$.ofUnit).divide(thx_unit_time__$Microsecond_Microsecond_$Impl_$.dividerKe).trim(null);
+};
+thx_unit_time__$Microsecond_Microsecond_$Impl_$.toKilosecond = function(this1) {
+	return this1.multiply(thx_unit_time__$Microsecond_Microsecond_$Impl_$.ofUnit).divide(thx_unit_time__$Microsecond_Microsecond_$Impl_$.dividerKilosecond).trim(null);
+};
+thx_unit_time__$Microsecond_Microsecond_$Impl_$.toHour = function(this1) {
+	return this1.multiply(thx_unit_time__$Microsecond_Microsecond_$Impl_$.ofUnit).divide(thx_unit_time__$Microsecond_Microsecond_$Impl_$.dividerHour).trim(null);
+};
+thx_unit_time__$Microsecond_Microsecond_$Impl_$.toDay = function(this1) {
+	return this1.multiply(thx_unit_time__$Microsecond_Microsecond_$Impl_$.ofUnit).divide(thx_unit_time__$Microsecond_Microsecond_$Impl_$.dividerDay).trim(null);
+};
+thx_unit_time__$Microsecond_Microsecond_$Impl_$.toWeek = function(this1) {
+	return this1.multiply(thx_unit_time__$Microsecond_Microsecond_$Impl_$.ofUnit).divide(thx_unit_time__$Microsecond_Microsecond_$Impl_$.dividerWeek).trim(null);
+};
+thx_unit_time__$Microsecond_Microsecond_$Impl_$.toMegasecond = function(this1) {
+	return this1.multiply(thx_unit_time__$Microsecond_Microsecond_$Impl_$.ofUnit).divide(thx_unit_time__$Microsecond_Microsecond_$Impl_$.dividerMegasecond).trim(null);
+};
+thx_unit_time__$Microsecond_Microsecond_$Impl_$.toFortnight = function(this1) {
+	return this1.multiply(thx_unit_time__$Microsecond_Microsecond_$Impl_$.ofUnit).divide(thx_unit_time__$Microsecond_Microsecond_$Impl_$.dividerFortnight).trim(null);
+};
+thx_unit_time__$Microsecond_Microsecond_$Impl_$.toSynodicMonth = function(this1) {
+	return this1.multiply(thx_unit_time__$Microsecond_Microsecond_$Impl_$.ofUnit).divide(thx_unit_time__$Microsecond_Microsecond_$Impl_$.dividerSynodicMonth).trim(null);
+};
+thx_unit_time__$Microsecond_Microsecond_$Impl_$.toTropicalMonth = function(this1) {
+	return this1.multiply(thx_unit_time__$Microsecond_Microsecond_$Impl_$.ofUnit).divide(thx_unit_time__$Microsecond_Microsecond_$Impl_$.dividerTropicalMonth).trim(null);
+};
+thx_unit_time__$Microsecond_Microsecond_$Impl_$.toJulianYear = function(this1) {
+	return this1.multiply(thx_unit_time__$Microsecond_Microsecond_$Impl_$.ofUnit).divide(thx_unit_time__$Microsecond_Microsecond_$Impl_$.dividerJulianYear).trim(null);
+};
+thx_unit_time__$Microsecond_Microsecond_$Impl_$.toGigasecond = function(this1) {
+	return this1.multiply(thx_unit_time__$Microsecond_Microsecond_$Impl_$.ofUnit).divide(thx_unit_time__$Microsecond_Microsecond_$Impl_$.dividerGigasecond).trim(null);
+};
+thx_unit_time__$Microsecond_Microsecond_$Impl_$.toTerasecond = function(this1) {
+	return this1.multiply(thx_unit_time__$Microsecond_Microsecond_$Impl_$.ofUnit).divide(thx_unit_time__$Microsecond_Microsecond_$Impl_$.dividerTerasecond).trim(null);
+};
+thx_unit_time__$Microsecond_Microsecond_$Impl_$.toString = function(this1) {
+	return "" + this1.toString() + "μs";
+};
+thx_unit_time__$Microsecond_Microsecond_$Impl_$.fromTime = function(time) {
+	return thx__$Decimal_Decimal_$Impl_$.fromInt64(time).multiply(thx_unit_time__$Tick_Tick_$Impl_$.ofUnit).divide(thx_unit_time__$Tick_Tick_$Impl_$.dividerMicrosecond).trim(null);
+};
+thx_unit_time__$Microsecond_Microsecond_$Impl_$.toTime = function(this1) {
+	return thx_bigint_Bigs.toInt64(thx__$Decimal_Decimal_$Impl_$.toBigInt(this1.multiply(thx_unit_time__$Microsecond_Microsecond_$Impl_$.ofUnit).divide(thx_unit_time__$Microsecond_Microsecond_$Impl_$.dividerTick).trim(null)));
+};
+var thx_unit_time__$Millisecond_Millisecond_$Impl_$ = {};
+thx_unit_time__$Millisecond_Millisecond_$Impl_$.__name__ = ["thx","unit","time","_Millisecond","Millisecond_Impl_"];
+thx_unit_time__$Millisecond_Millisecond_$Impl_$.fromDecimal = function(value) {
+	return value;
+};
+thx_unit_time__$Millisecond_Millisecond_$Impl_$.fromInt = function(value) {
+	return thx__$Decimal_Decimal_$Impl_$.fromInt(value);
+};
+thx_unit_time__$Millisecond_Millisecond_$Impl_$.fromFloat = function(value) {
+	return thx_bigint_Decimals.fromFloat(value);
+};
+thx_unit_time__$Millisecond_Millisecond_$Impl_$._new = function(value) {
+	return value;
+};
+thx_unit_time__$Millisecond_Millisecond_$Impl_$.abs = function(this1) {
+	return this1.abs();
+};
+thx_unit_time__$Millisecond_Millisecond_$Impl_$.min = function(this1,that) {
+	var that1 = that;
+	return thx__$Decimal_Decimal_$Impl_$.less(this1,that1)?this1:that1;
+};
+thx_unit_time__$Millisecond_Millisecond_$Impl_$.max = function(this1,that) {
+	var that1 = that;
+	return thx__$Decimal_Decimal_$Impl_$.greater(this1,that1)?this1:that1;
+};
+thx_unit_time__$Millisecond_Millisecond_$Impl_$.negate = function(this1) {
+	return this1.negate();
+};
+thx_unit_time__$Millisecond_Millisecond_$Impl_$.add = function(this1,that) {
+	return this1.add(that);
+};
+thx_unit_time__$Millisecond_Millisecond_$Impl_$.subtract = function(this1,that) {
+	return this1.subtract(that);
+};
+thx_unit_time__$Millisecond_Millisecond_$Impl_$.multiply = function(this1,that) {
+	return this1.multiply(that);
+};
+thx_unit_time__$Millisecond_Millisecond_$Impl_$.divide = function(this1,that) {
+	return this1.divide(that);
+};
+thx_unit_time__$Millisecond_Millisecond_$Impl_$.modulo = function(this1,that) {
+	return this1.modulo(that);
+};
+thx_unit_time__$Millisecond_Millisecond_$Impl_$.equalsTo = function(this1,that) {
+	return thx__$Decimal_Decimal_$Impl_$.equals(this1,that);
+};
+thx_unit_time__$Millisecond_Millisecond_$Impl_$.equals = function(self,that) {
+	return thx__$Decimal_Decimal_$Impl_$.equals(self,that);
+};
+thx_unit_time__$Millisecond_Millisecond_$Impl_$.nearEqualsTo = function(this1,that) {
+	return thx_Floats.nearEquals(this1.toFloat(),that.toFloat());
+};
+thx_unit_time__$Millisecond_Millisecond_$Impl_$.nearEquals = function(self,that) {
+	return thx_Floats.nearEquals(self.toFloat(),that.toFloat());
+};
+thx_unit_time__$Millisecond_Millisecond_$Impl_$.notEqualsTo = function(this1,that) {
+	return thx__$Decimal_Decimal_$Impl_$.notEquals(this1,that);
+};
+thx_unit_time__$Millisecond_Millisecond_$Impl_$.notEquals = function(self,that) {
+	return thx__$Decimal_Decimal_$Impl_$.notEquals(self,that);
+};
+thx_unit_time__$Millisecond_Millisecond_$Impl_$.lessThan = function(this1,that) {
+	return thx__$Decimal_Decimal_$Impl_$.less(this1,that);
+};
+thx_unit_time__$Millisecond_Millisecond_$Impl_$.less = function(self,that) {
+	return thx__$Decimal_Decimal_$Impl_$.less(self,that);
+};
+thx_unit_time__$Millisecond_Millisecond_$Impl_$.lessEqualsTo = function(this1,that) {
+	return thx__$Decimal_Decimal_$Impl_$.lessEquals(this1,that);
+};
+thx_unit_time__$Millisecond_Millisecond_$Impl_$.lessEquals = function(self,that) {
+	return thx__$Decimal_Decimal_$Impl_$.lessEquals(self,that);
+};
+thx_unit_time__$Millisecond_Millisecond_$Impl_$.greaterThan = function(this1,that) {
+	return thx__$Decimal_Decimal_$Impl_$.greater(this1,that);
+};
+thx_unit_time__$Millisecond_Millisecond_$Impl_$.greater = function(self,that) {
+	return thx__$Decimal_Decimal_$Impl_$.greaterEquals(self,that);
+};
+thx_unit_time__$Millisecond_Millisecond_$Impl_$.greaterEqualsTo = function(this1,that) {
+	return thx__$Decimal_Decimal_$Impl_$.greaterEquals(this1,that);
+};
+thx_unit_time__$Millisecond_Millisecond_$Impl_$.greaterEquals = function(self,that) {
+	return thx__$Decimal_Decimal_$Impl_$.greaterEquals(self,that);
+};
+thx_unit_time__$Millisecond_Millisecond_$Impl_$.toDecimal = function(this1) {
+	return this1;
+};
+thx_unit_time__$Millisecond_Millisecond_$Impl_$.toFloat = function(this1) {
+	return this1.toFloat();
+};
+thx_unit_time__$Millisecond_Millisecond_$Impl_$.toPlankTimeUnit = function(this1) {
+	return this1.multiply(thx_unit_time__$Millisecond_Millisecond_$Impl_$.ofUnit).divide(thx_unit_time__$Millisecond_Millisecond_$Impl_$.dividerPlankTimeUnit).trim(null);
+};
+thx_unit_time__$Millisecond_Millisecond_$Impl_$.toJiffyPhysics = function(this1) {
+	return this1.multiply(thx_unit_time__$Millisecond_Millisecond_$Impl_$.ofUnit).divide(thx_unit_time__$Millisecond_Millisecond_$Impl_$.dividerJiffyPhysics).trim(null);
+};
+thx_unit_time__$Millisecond_Millisecond_$Impl_$.toSvedberg = function(this1) {
+	return this1.multiply(thx_unit_time__$Millisecond_Millisecond_$Impl_$.ofUnit).divide(thx_unit_time__$Millisecond_Millisecond_$Impl_$.dividerSvedberg).trim(null);
+};
+thx_unit_time__$Millisecond_Millisecond_$Impl_$.toPicosecond = function(this1) {
+	return this1.multiply(thx_unit_time__$Millisecond_Millisecond_$Impl_$.ofUnit).divide(thx_unit_time__$Millisecond_Millisecond_$Impl_$.dividerPicosecond).trim(null);
+};
+thx_unit_time__$Millisecond_Millisecond_$Impl_$.toNanosecond = function(this1) {
+	return this1.multiply(thx_unit_time__$Millisecond_Millisecond_$Impl_$.ofUnit).divide(thx_unit_time__$Millisecond_Millisecond_$Impl_$.dividerNanosecond).trim(null);
+};
+thx_unit_time__$Millisecond_Millisecond_$Impl_$.toShake = function(this1) {
+	return this1.multiply(thx_unit_time__$Millisecond_Millisecond_$Impl_$.ofUnit).divide(thx_unit_time__$Millisecond_Millisecond_$Impl_$.dividerShake).trim(null);
+};
+thx_unit_time__$Millisecond_Millisecond_$Impl_$.toTick = function(this1) {
+	return this1.multiply(thx_unit_time__$Millisecond_Millisecond_$Impl_$.ofUnit).divide(thx_unit_time__$Millisecond_Millisecond_$Impl_$.dividerTick).trim(null);
+};
+thx_unit_time__$Millisecond_Millisecond_$Impl_$.toMicrosecond = function(this1) {
+	return this1.multiply(thx_unit_time__$Millisecond_Millisecond_$Impl_$.ofUnit).divide(thx_unit_time__$Millisecond_Millisecond_$Impl_$.dividerMicrosecond).trim(null);
+};
+thx_unit_time__$Millisecond_Millisecond_$Impl_$.toFourth = function(this1) {
+	return this1.multiply(thx_unit_time__$Millisecond_Millisecond_$Impl_$.ofUnit).divide(thx_unit_time__$Millisecond_Millisecond_$Impl_$.dividerFourth).trim(null);
+};
+thx_unit_time__$Millisecond_Millisecond_$Impl_$.toMillisecond = function(this1) {
+	return this1;
+};
+thx_unit_time__$Millisecond_Millisecond_$Impl_$.toThird = function(this1) {
+	return this1.multiply(thx_unit_time__$Millisecond_Millisecond_$Impl_$.ofUnit).divide(thx_unit_time__$Millisecond_Millisecond_$Impl_$.dividerThird).trim(null);
+};
+thx_unit_time__$Millisecond_Millisecond_$Impl_$.toSecond = function(this1) {
+	return this1.multiply(thx_unit_time__$Millisecond_Millisecond_$Impl_$.ofUnit).divide(thx_unit_time__$Millisecond_Millisecond_$Impl_$.dividerSecond).trim(null);
+};
+thx_unit_time__$Millisecond_Millisecond_$Impl_$.toMinute = function(this1) {
+	return this1.multiply(thx_unit_time__$Millisecond_Millisecond_$Impl_$.ofUnit).divide(thx_unit_time__$Millisecond_Millisecond_$Impl_$.dividerMinute).trim(null);
+};
+thx_unit_time__$Millisecond_Millisecond_$Impl_$.toKe = function(this1) {
+	return this1.multiply(thx_unit_time__$Millisecond_Millisecond_$Impl_$.ofUnit).divide(thx_unit_time__$Millisecond_Millisecond_$Impl_$.dividerKe).trim(null);
+};
+thx_unit_time__$Millisecond_Millisecond_$Impl_$.toKilosecond = function(this1) {
+	return this1.multiply(thx_unit_time__$Millisecond_Millisecond_$Impl_$.ofUnit).divide(thx_unit_time__$Millisecond_Millisecond_$Impl_$.dividerKilosecond).trim(null);
+};
+thx_unit_time__$Millisecond_Millisecond_$Impl_$.toHour = function(this1) {
+	return this1.multiply(thx_unit_time__$Millisecond_Millisecond_$Impl_$.ofUnit).divide(thx_unit_time__$Millisecond_Millisecond_$Impl_$.dividerHour).trim(null);
+};
+thx_unit_time__$Millisecond_Millisecond_$Impl_$.toDay = function(this1) {
+	return this1.multiply(thx_unit_time__$Millisecond_Millisecond_$Impl_$.ofUnit).divide(thx_unit_time__$Millisecond_Millisecond_$Impl_$.dividerDay).trim(null);
+};
+thx_unit_time__$Millisecond_Millisecond_$Impl_$.toWeek = function(this1) {
+	return this1.multiply(thx_unit_time__$Millisecond_Millisecond_$Impl_$.ofUnit).divide(thx_unit_time__$Millisecond_Millisecond_$Impl_$.dividerWeek).trim(null);
+};
+thx_unit_time__$Millisecond_Millisecond_$Impl_$.toMegasecond = function(this1) {
+	return this1.multiply(thx_unit_time__$Millisecond_Millisecond_$Impl_$.ofUnit).divide(thx_unit_time__$Millisecond_Millisecond_$Impl_$.dividerMegasecond).trim(null);
+};
+thx_unit_time__$Millisecond_Millisecond_$Impl_$.toFortnight = function(this1) {
+	return this1.multiply(thx_unit_time__$Millisecond_Millisecond_$Impl_$.ofUnit).divide(thx_unit_time__$Millisecond_Millisecond_$Impl_$.dividerFortnight).trim(null);
+};
+thx_unit_time__$Millisecond_Millisecond_$Impl_$.toSynodicMonth = function(this1) {
+	return this1.multiply(thx_unit_time__$Millisecond_Millisecond_$Impl_$.ofUnit).divide(thx_unit_time__$Millisecond_Millisecond_$Impl_$.dividerSynodicMonth).trim(null);
+};
+thx_unit_time__$Millisecond_Millisecond_$Impl_$.toTropicalMonth = function(this1) {
+	return this1.multiply(thx_unit_time__$Millisecond_Millisecond_$Impl_$.ofUnit).divide(thx_unit_time__$Millisecond_Millisecond_$Impl_$.dividerTropicalMonth).trim(null);
+};
+thx_unit_time__$Millisecond_Millisecond_$Impl_$.toJulianYear = function(this1) {
+	return this1.multiply(thx_unit_time__$Millisecond_Millisecond_$Impl_$.ofUnit).divide(thx_unit_time__$Millisecond_Millisecond_$Impl_$.dividerJulianYear).trim(null);
+};
+thx_unit_time__$Millisecond_Millisecond_$Impl_$.toGigasecond = function(this1) {
+	return this1.multiply(thx_unit_time__$Millisecond_Millisecond_$Impl_$.ofUnit).divide(thx_unit_time__$Millisecond_Millisecond_$Impl_$.dividerGigasecond).trim(null);
+};
+thx_unit_time__$Millisecond_Millisecond_$Impl_$.toTerasecond = function(this1) {
+	return this1.multiply(thx_unit_time__$Millisecond_Millisecond_$Impl_$.ofUnit).divide(thx_unit_time__$Millisecond_Millisecond_$Impl_$.dividerTerasecond).trim(null);
+};
+thx_unit_time__$Millisecond_Millisecond_$Impl_$.toString = function(this1) {
+	return "" + this1.toString() + "ms";
+};
+thx_unit_time__$Millisecond_Millisecond_$Impl_$.fromTime = function(time) {
+	return thx__$Decimal_Decimal_$Impl_$.fromInt64(time).multiply(thx_unit_time__$Tick_Tick_$Impl_$.ofUnit).divide(thx_unit_time__$Tick_Tick_$Impl_$.dividerMillisecond).trim(null);
+};
+thx_unit_time__$Millisecond_Millisecond_$Impl_$.toTime = function(this1) {
+	return thx_bigint_Bigs.toInt64(thx__$Decimal_Decimal_$Impl_$.toBigInt(this1.multiply(thx_unit_time__$Millisecond_Millisecond_$Impl_$.ofUnit).divide(thx_unit_time__$Millisecond_Millisecond_$Impl_$.dividerTick).trim(null)));
+};
+var thx_unit_time__$Minute_Minute_$Impl_$ = {};
+thx_unit_time__$Minute_Minute_$Impl_$.__name__ = ["thx","unit","time","_Minute","Minute_Impl_"];
+thx_unit_time__$Minute_Minute_$Impl_$.fromDecimal = function(value) {
+	return value;
+};
+thx_unit_time__$Minute_Minute_$Impl_$.fromInt = function(value) {
+	return thx__$Decimal_Decimal_$Impl_$.fromInt(value);
+};
+thx_unit_time__$Minute_Minute_$Impl_$.fromFloat = function(value) {
+	return thx_bigint_Decimals.fromFloat(value);
+};
+thx_unit_time__$Minute_Minute_$Impl_$._new = function(value) {
+	return value;
+};
+thx_unit_time__$Minute_Minute_$Impl_$.abs = function(this1) {
+	return this1.abs();
+};
+thx_unit_time__$Minute_Minute_$Impl_$.min = function(this1,that) {
+	var that1 = that;
+	return thx__$Decimal_Decimal_$Impl_$.less(this1,that1)?this1:that1;
+};
+thx_unit_time__$Minute_Minute_$Impl_$.max = function(this1,that) {
+	var that1 = that;
+	return thx__$Decimal_Decimal_$Impl_$.greater(this1,that1)?this1:that1;
+};
+thx_unit_time__$Minute_Minute_$Impl_$.negate = function(this1) {
+	return this1.negate();
+};
+thx_unit_time__$Minute_Minute_$Impl_$.add = function(this1,that) {
+	return this1.add(that);
+};
+thx_unit_time__$Minute_Minute_$Impl_$.subtract = function(this1,that) {
+	return this1.subtract(that);
+};
+thx_unit_time__$Minute_Minute_$Impl_$.multiply = function(this1,that) {
+	return this1.multiply(that);
+};
+thx_unit_time__$Minute_Minute_$Impl_$.divide = function(this1,that) {
+	return this1.divide(that);
+};
+thx_unit_time__$Minute_Minute_$Impl_$.modulo = function(this1,that) {
+	return this1.modulo(that);
+};
+thx_unit_time__$Minute_Minute_$Impl_$.equalsTo = function(this1,that) {
+	return thx__$Decimal_Decimal_$Impl_$.equals(this1,that);
+};
+thx_unit_time__$Minute_Minute_$Impl_$.equals = function(self,that) {
+	return thx__$Decimal_Decimal_$Impl_$.equals(self,that);
+};
+thx_unit_time__$Minute_Minute_$Impl_$.nearEqualsTo = function(this1,that) {
+	return thx_Floats.nearEquals(this1.toFloat(),that.toFloat());
+};
+thx_unit_time__$Minute_Minute_$Impl_$.nearEquals = function(self,that) {
+	return thx_Floats.nearEquals(self.toFloat(),that.toFloat());
+};
+thx_unit_time__$Minute_Minute_$Impl_$.notEqualsTo = function(this1,that) {
+	return thx__$Decimal_Decimal_$Impl_$.notEquals(this1,that);
+};
+thx_unit_time__$Minute_Minute_$Impl_$.notEquals = function(self,that) {
+	return thx__$Decimal_Decimal_$Impl_$.notEquals(self,that);
+};
+thx_unit_time__$Minute_Minute_$Impl_$.lessThan = function(this1,that) {
+	return thx__$Decimal_Decimal_$Impl_$.less(this1,that);
+};
+thx_unit_time__$Minute_Minute_$Impl_$.less = function(self,that) {
+	return thx__$Decimal_Decimal_$Impl_$.less(self,that);
+};
+thx_unit_time__$Minute_Minute_$Impl_$.lessEqualsTo = function(this1,that) {
+	return thx__$Decimal_Decimal_$Impl_$.lessEquals(this1,that);
+};
+thx_unit_time__$Minute_Minute_$Impl_$.lessEquals = function(self,that) {
+	return thx__$Decimal_Decimal_$Impl_$.lessEquals(self,that);
+};
+thx_unit_time__$Minute_Minute_$Impl_$.greaterThan = function(this1,that) {
+	return thx__$Decimal_Decimal_$Impl_$.greater(this1,that);
+};
+thx_unit_time__$Minute_Minute_$Impl_$.greater = function(self,that) {
+	return thx__$Decimal_Decimal_$Impl_$.greaterEquals(self,that);
+};
+thx_unit_time__$Minute_Minute_$Impl_$.greaterEqualsTo = function(this1,that) {
+	return thx__$Decimal_Decimal_$Impl_$.greaterEquals(this1,that);
+};
+thx_unit_time__$Minute_Minute_$Impl_$.greaterEquals = function(self,that) {
+	return thx__$Decimal_Decimal_$Impl_$.greaterEquals(self,that);
+};
+thx_unit_time__$Minute_Minute_$Impl_$.toDecimal = function(this1) {
+	return this1;
+};
+thx_unit_time__$Minute_Minute_$Impl_$.toFloat = function(this1) {
+	return this1.toFloat();
+};
+thx_unit_time__$Minute_Minute_$Impl_$.toPlankTimeUnit = function(this1) {
+	return this1.multiply(thx_unit_time__$Minute_Minute_$Impl_$.ofUnit).divide(thx_unit_time__$Minute_Minute_$Impl_$.dividerPlankTimeUnit).trim(null);
+};
+thx_unit_time__$Minute_Minute_$Impl_$.toJiffyPhysics = function(this1) {
+	return this1.multiply(thx_unit_time__$Minute_Minute_$Impl_$.ofUnit).divide(thx_unit_time__$Minute_Minute_$Impl_$.dividerJiffyPhysics).trim(null);
+};
+thx_unit_time__$Minute_Minute_$Impl_$.toSvedberg = function(this1) {
+	return this1.multiply(thx_unit_time__$Minute_Minute_$Impl_$.ofUnit).divide(thx_unit_time__$Minute_Minute_$Impl_$.dividerSvedberg).trim(null);
+};
+thx_unit_time__$Minute_Minute_$Impl_$.toPicosecond = function(this1) {
+	return this1.multiply(thx_unit_time__$Minute_Minute_$Impl_$.ofUnit).divide(thx_unit_time__$Minute_Minute_$Impl_$.dividerPicosecond).trim(null);
+};
+thx_unit_time__$Minute_Minute_$Impl_$.toNanosecond = function(this1) {
+	return this1.multiply(thx_unit_time__$Minute_Minute_$Impl_$.ofUnit).divide(thx_unit_time__$Minute_Minute_$Impl_$.dividerNanosecond).trim(null);
+};
+thx_unit_time__$Minute_Minute_$Impl_$.toShake = function(this1) {
+	return this1.multiply(thx_unit_time__$Minute_Minute_$Impl_$.ofUnit).divide(thx_unit_time__$Minute_Minute_$Impl_$.dividerShake).trim(null);
+};
+thx_unit_time__$Minute_Minute_$Impl_$.toTick = function(this1) {
+	return this1.multiply(thx_unit_time__$Minute_Minute_$Impl_$.ofUnit).divide(thx_unit_time__$Minute_Minute_$Impl_$.dividerTick).trim(null);
+};
+thx_unit_time__$Minute_Minute_$Impl_$.toMicrosecond = function(this1) {
+	return this1.multiply(thx_unit_time__$Minute_Minute_$Impl_$.ofUnit).divide(thx_unit_time__$Minute_Minute_$Impl_$.dividerMicrosecond).trim(null);
+};
+thx_unit_time__$Minute_Minute_$Impl_$.toFourth = function(this1) {
+	return this1.multiply(thx_unit_time__$Minute_Minute_$Impl_$.ofUnit).divide(thx_unit_time__$Minute_Minute_$Impl_$.dividerFourth).trim(null);
+};
+thx_unit_time__$Minute_Minute_$Impl_$.toMillisecond = function(this1) {
+	return this1.multiply(thx_unit_time__$Minute_Minute_$Impl_$.ofUnit).divide(thx_unit_time__$Minute_Minute_$Impl_$.dividerMillisecond).trim(null);
+};
+thx_unit_time__$Minute_Minute_$Impl_$.toThird = function(this1) {
+	return this1.multiply(thx_unit_time__$Minute_Minute_$Impl_$.ofUnit).divide(thx_unit_time__$Minute_Minute_$Impl_$.dividerThird).trim(null);
+};
+thx_unit_time__$Minute_Minute_$Impl_$.toSecond = function(this1) {
+	return this1.multiply(thx_unit_time__$Minute_Minute_$Impl_$.ofUnit).divide(thx_unit_time__$Minute_Minute_$Impl_$.dividerSecond).trim(null);
+};
+thx_unit_time__$Minute_Minute_$Impl_$.toMinute = function(this1) {
+	return this1;
+};
+thx_unit_time__$Minute_Minute_$Impl_$.toKe = function(this1) {
+	return this1.multiply(thx_unit_time__$Minute_Minute_$Impl_$.ofUnit).divide(thx_unit_time__$Minute_Minute_$Impl_$.dividerKe).trim(null);
+};
+thx_unit_time__$Minute_Minute_$Impl_$.toKilosecond = function(this1) {
+	return this1.multiply(thx_unit_time__$Minute_Minute_$Impl_$.ofUnit).divide(thx_unit_time__$Minute_Minute_$Impl_$.dividerKilosecond).trim(null);
+};
+thx_unit_time__$Minute_Minute_$Impl_$.toHour = function(this1) {
+	return this1.multiply(thx_unit_time__$Minute_Minute_$Impl_$.ofUnit).divide(thx_unit_time__$Minute_Minute_$Impl_$.dividerHour).trim(null);
+};
+thx_unit_time__$Minute_Minute_$Impl_$.toDay = function(this1) {
+	return this1.multiply(thx_unit_time__$Minute_Minute_$Impl_$.ofUnit).divide(thx_unit_time__$Minute_Minute_$Impl_$.dividerDay).trim(null);
+};
+thx_unit_time__$Minute_Minute_$Impl_$.toWeek = function(this1) {
+	return this1.multiply(thx_unit_time__$Minute_Minute_$Impl_$.ofUnit).divide(thx_unit_time__$Minute_Minute_$Impl_$.dividerWeek).trim(null);
+};
+thx_unit_time__$Minute_Minute_$Impl_$.toMegasecond = function(this1) {
+	return this1.multiply(thx_unit_time__$Minute_Minute_$Impl_$.ofUnit).divide(thx_unit_time__$Minute_Minute_$Impl_$.dividerMegasecond).trim(null);
+};
+thx_unit_time__$Minute_Minute_$Impl_$.toFortnight = function(this1) {
+	return this1.multiply(thx_unit_time__$Minute_Minute_$Impl_$.ofUnit).divide(thx_unit_time__$Minute_Minute_$Impl_$.dividerFortnight).trim(null);
+};
+thx_unit_time__$Minute_Minute_$Impl_$.toSynodicMonth = function(this1) {
+	return this1.multiply(thx_unit_time__$Minute_Minute_$Impl_$.ofUnit).divide(thx_unit_time__$Minute_Minute_$Impl_$.dividerSynodicMonth).trim(null);
+};
+thx_unit_time__$Minute_Minute_$Impl_$.toTropicalMonth = function(this1) {
+	return this1.multiply(thx_unit_time__$Minute_Minute_$Impl_$.ofUnit).divide(thx_unit_time__$Minute_Minute_$Impl_$.dividerTropicalMonth).trim(null);
+};
+thx_unit_time__$Minute_Minute_$Impl_$.toJulianYear = function(this1) {
+	return this1.multiply(thx_unit_time__$Minute_Minute_$Impl_$.ofUnit).divide(thx_unit_time__$Minute_Minute_$Impl_$.dividerJulianYear).trim(null);
+};
+thx_unit_time__$Minute_Minute_$Impl_$.toGigasecond = function(this1) {
+	return this1.multiply(thx_unit_time__$Minute_Minute_$Impl_$.ofUnit).divide(thx_unit_time__$Minute_Minute_$Impl_$.dividerGigasecond).trim(null);
+};
+thx_unit_time__$Minute_Minute_$Impl_$.toTerasecond = function(this1) {
+	return this1.multiply(thx_unit_time__$Minute_Minute_$Impl_$.ofUnit).divide(thx_unit_time__$Minute_Minute_$Impl_$.dividerTerasecond).trim(null);
+};
+thx_unit_time__$Minute_Minute_$Impl_$.toString = function(this1) {
+	return "" + this1.toString() + "min";
+};
+thx_unit_time__$Minute_Minute_$Impl_$.fromTime = function(time) {
+	return thx__$Decimal_Decimal_$Impl_$.fromInt64(time).multiply(thx_unit_time__$Tick_Tick_$Impl_$.ofUnit).divide(thx_unit_time__$Tick_Tick_$Impl_$.dividerMinute).trim(null);
+};
+thx_unit_time__$Minute_Minute_$Impl_$.toTime = function(this1) {
+	return thx_bigint_Bigs.toInt64(thx__$Decimal_Decimal_$Impl_$.toBigInt(this1.multiply(thx_unit_time__$Minute_Minute_$Impl_$.ofUnit).divide(thx_unit_time__$Minute_Minute_$Impl_$.dividerTick).trim(null)));
+};
+var thx_unit_time__$Nanosecond_Nanosecond_$Impl_$ = {};
+thx_unit_time__$Nanosecond_Nanosecond_$Impl_$.__name__ = ["thx","unit","time","_Nanosecond","Nanosecond_Impl_"];
+thx_unit_time__$Nanosecond_Nanosecond_$Impl_$.fromDecimal = function(value) {
+	return value;
+};
+thx_unit_time__$Nanosecond_Nanosecond_$Impl_$.fromInt = function(value) {
+	return thx__$Decimal_Decimal_$Impl_$.fromInt(value);
+};
+thx_unit_time__$Nanosecond_Nanosecond_$Impl_$.fromFloat = function(value) {
+	return thx_bigint_Decimals.fromFloat(value);
+};
+thx_unit_time__$Nanosecond_Nanosecond_$Impl_$._new = function(value) {
+	return value;
+};
+thx_unit_time__$Nanosecond_Nanosecond_$Impl_$.abs = function(this1) {
+	return this1.abs();
+};
+thx_unit_time__$Nanosecond_Nanosecond_$Impl_$.min = function(this1,that) {
+	var that1 = that;
+	return thx__$Decimal_Decimal_$Impl_$.less(this1,that1)?this1:that1;
+};
+thx_unit_time__$Nanosecond_Nanosecond_$Impl_$.max = function(this1,that) {
+	var that1 = that;
+	return thx__$Decimal_Decimal_$Impl_$.greater(this1,that1)?this1:that1;
+};
+thx_unit_time__$Nanosecond_Nanosecond_$Impl_$.negate = function(this1) {
+	return this1.negate();
+};
+thx_unit_time__$Nanosecond_Nanosecond_$Impl_$.add = function(this1,that) {
+	return this1.add(that);
+};
+thx_unit_time__$Nanosecond_Nanosecond_$Impl_$.subtract = function(this1,that) {
+	return this1.subtract(that);
+};
+thx_unit_time__$Nanosecond_Nanosecond_$Impl_$.multiply = function(this1,that) {
+	return this1.multiply(that);
+};
+thx_unit_time__$Nanosecond_Nanosecond_$Impl_$.divide = function(this1,that) {
+	return this1.divide(that);
+};
+thx_unit_time__$Nanosecond_Nanosecond_$Impl_$.modulo = function(this1,that) {
+	return this1.modulo(that);
+};
+thx_unit_time__$Nanosecond_Nanosecond_$Impl_$.equalsTo = function(this1,that) {
+	return thx__$Decimal_Decimal_$Impl_$.equals(this1,that);
+};
+thx_unit_time__$Nanosecond_Nanosecond_$Impl_$.equals = function(self,that) {
+	return thx__$Decimal_Decimal_$Impl_$.equals(self,that);
+};
+thx_unit_time__$Nanosecond_Nanosecond_$Impl_$.nearEqualsTo = function(this1,that) {
+	return thx_Floats.nearEquals(this1.toFloat(),that.toFloat());
+};
+thx_unit_time__$Nanosecond_Nanosecond_$Impl_$.nearEquals = function(self,that) {
+	return thx_Floats.nearEquals(self.toFloat(),that.toFloat());
+};
+thx_unit_time__$Nanosecond_Nanosecond_$Impl_$.notEqualsTo = function(this1,that) {
+	return thx__$Decimal_Decimal_$Impl_$.notEquals(this1,that);
+};
+thx_unit_time__$Nanosecond_Nanosecond_$Impl_$.notEquals = function(self,that) {
+	return thx__$Decimal_Decimal_$Impl_$.notEquals(self,that);
+};
+thx_unit_time__$Nanosecond_Nanosecond_$Impl_$.lessThan = function(this1,that) {
+	return thx__$Decimal_Decimal_$Impl_$.less(this1,that);
+};
+thx_unit_time__$Nanosecond_Nanosecond_$Impl_$.less = function(self,that) {
+	return thx__$Decimal_Decimal_$Impl_$.less(self,that);
+};
+thx_unit_time__$Nanosecond_Nanosecond_$Impl_$.lessEqualsTo = function(this1,that) {
+	return thx__$Decimal_Decimal_$Impl_$.lessEquals(this1,that);
+};
+thx_unit_time__$Nanosecond_Nanosecond_$Impl_$.lessEquals = function(self,that) {
+	return thx__$Decimal_Decimal_$Impl_$.lessEquals(self,that);
+};
+thx_unit_time__$Nanosecond_Nanosecond_$Impl_$.greaterThan = function(this1,that) {
+	return thx__$Decimal_Decimal_$Impl_$.greater(this1,that);
+};
+thx_unit_time__$Nanosecond_Nanosecond_$Impl_$.greater = function(self,that) {
+	return thx__$Decimal_Decimal_$Impl_$.greaterEquals(self,that);
+};
+thx_unit_time__$Nanosecond_Nanosecond_$Impl_$.greaterEqualsTo = function(this1,that) {
+	return thx__$Decimal_Decimal_$Impl_$.greaterEquals(this1,that);
+};
+thx_unit_time__$Nanosecond_Nanosecond_$Impl_$.greaterEquals = function(self,that) {
+	return thx__$Decimal_Decimal_$Impl_$.greaterEquals(self,that);
+};
+thx_unit_time__$Nanosecond_Nanosecond_$Impl_$.toDecimal = function(this1) {
+	return this1;
+};
+thx_unit_time__$Nanosecond_Nanosecond_$Impl_$.toFloat = function(this1) {
+	return this1.toFloat();
+};
+thx_unit_time__$Nanosecond_Nanosecond_$Impl_$.toPlankTimeUnit = function(this1) {
+	return this1.multiply(thx_unit_time__$Nanosecond_Nanosecond_$Impl_$.ofUnit).divide(thx_unit_time__$Nanosecond_Nanosecond_$Impl_$.dividerPlankTimeUnit).trim(null);
+};
+thx_unit_time__$Nanosecond_Nanosecond_$Impl_$.toJiffyPhysics = function(this1) {
+	return this1.multiply(thx_unit_time__$Nanosecond_Nanosecond_$Impl_$.ofUnit).divide(thx_unit_time__$Nanosecond_Nanosecond_$Impl_$.dividerJiffyPhysics).trim(null);
+};
+thx_unit_time__$Nanosecond_Nanosecond_$Impl_$.toSvedberg = function(this1) {
+	return this1.multiply(thx_unit_time__$Nanosecond_Nanosecond_$Impl_$.ofUnit).divide(thx_unit_time__$Nanosecond_Nanosecond_$Impl_$.dividerSvedberg).trim(null);
+};
+thx_unit_time__$Nanosecond_Nanosecond_$Impl_$.toPicosecond = function(this1) {
+	return this1.multiply(thx_unit_time__$Nanosecond_Nanosecond_$Impl_$.ofUnit).divide(thx_unit_time__$Nanosecond_Nanosecond_$Impl_$.dividerPicosecond).trim(null);
+};
+thx_unit_time__$Nanosecond_Nanosecond_$Impl_$.toNanosecond = function(this1) {
+	return this1;
+};
+thx_unit_time__$Nanosecond_Nanosecond_$Impl_$.toShake = function(this1) {
+	return this1.multiply(thx_unit_time__$Nanosecond_Nanosecond_$Impl_$.ofUnit).divide(thx_unit_time__$Nanosecond_Nanosecond_$Impl_$.dividerShake).trim(null);
+};
+thx_unit_time__$Nanosecond_Nanosecond_$Impl_$.toTick = function(this1) {
+	return this1.multiply(thx_unit_time__$Nanosecond_Nanosecond_$Impl_$.ofUnit).divide(thx_unit_time__$Nanosecond_Nanosecond_$Impl_$.dividerTick).trim(null);
+};
+thx_unit_time__$Nanosecond_Nanosecond_$Impl_$.toMicrosecond = function(this1) {
+	return this1.multiply(thx_unit_time__$Nanosecond_Nanosecond_$Impl_$.ofUnit).divide(thx_unit_time__$Nanosecond_Nanosecond_$Impl_$.dividerMicrosecond).trim(null);
+};
+thx_unit_time__$Nanosecond_Nanosecond_$Impl_$.toFourth = function(this1) {
+	return this1.multiply(thx_unit_time__$Nanosecond_Nanosecond_$Impl_$.ofUnit).divide(thx_unit_time__$Nanosecond_Nanosecond_$Impl_$.dividerFourth).trim(null);
+};
+thx_unit_time__$Nanosecond_Nanosecond_$Impl_$.toMillisecond = function(this1) {
+	return this1.multiply(thx_unit_time__$Nanosecond_Nanosecond_$Impl_$.ofUnit).divide(thx_unit_time__$Nanosecond_Nanosecond_$Impl_$.dividerMillisecond).trim(null);
+};
+thx_unit_time__$Nanosecond_Nanosecond_$Impl_$.toThird = function(this1) {
+	return this1.multiply(thx_unit_time__$Nanosecond_Nanosecond_$Impl_$.ofUnit).divide(thx_unit_time__$Nanosecond_Nanosecond_$Impl_$.dividerThird).trim(null);
+};
+thx_unit_time__$Nanosecond_Nanosecond_$Impl_$.toSecond = function(this1) {
+	return this1.multiply(thx_unit_time__$Nanosecond_Nanosecond_$Impl_$.ofUnit).divide(thx_unit_time__$Nanosecond_Nanosecond_$Impl_$.dividerSecond).trim(null);
+};
+thx_unit_time__$Nanosecond_Nanosecond_$Impl_$.toMinute = function(this1) {
+	return this1.multiply(thx_unit_time__$Nanosecond_Nanosecond_$Impl_$.ofUnit).divide(thx_unit_time__$Nanosecond_Nanosecond_$Impl_$.dividerMinute).trim(null);
+};
+thx_unit_time__$Nanosecond_Nanosecond_$Impl_$.toKe = function(this1) {
+	return this1.multiply(thx_unit_time__$Nanosecond_Nanosecond_$Impl_$.ofUnit).divide(thx_unit_time__$Nanosecond_Nanosecond_$Impl_$.dividerKe).trim(null);
+};
+thx_unit_time__$Nanosecond_Nanosecond_$Impl_$.toKilosecond = function(this1) {
+	return this1.multiply(thx_unit_time__$Nanosecond_Nanosecond_$Impl_$.ofUnit).divide(thx_unit_time__$Nanosecond_Nanosecond_$Impl_$.dividerKilosecond).trim(null);
+};
+thx_unit_time__$Nanosecond_Nanosecond_$Impl_$.toHour = function(this1) {
+	return this1.multiply(thx_unit_time__$Nanosecond_Nanosecond_$Impl_$.ofUnit).divide(thx_unit_time__$Nanosecond_Nanosecond_$Impl_$.dividerHour).trim(null);
+};
+thx_unit_time__$Nanosecond_Nanosecond_$Impl_$.toDay = function(this1) {
+	return this1.multiply(thx_unit_time__$Nanosecond_Nanosecond_$Impl_$.ofUnit).divide(thx_unit_time__$Nanosecond_Nanosecond_$Impl_$.dividerDay).trim(null);
+};
+thx_unit_time__$Nanosecond_Nanosecond_$Impl_$.toWeek = function(this1) {
+	return this1.multiply(thx_unit_time__$Nanosecond_Nanosecond_$Impl_$.ofUnit).divide(thx_unit_time__$Nanosecond_Nanosecond_$Impl_$.dividerWeek).trim(null);
+};
+thx_unit_time__$Nanosecond_Nanosecond_$Impl_$.toMegasecond = function(this1) {
+	return this1.multiply(thx_unit_time__$Nanosecond_Nanosecond_$Impl_$.ofUnit).divide(thx_unit_time__$Nanosecond_Nanosecond_$Impl_$.dividerMegasecond).trim(null);
+};
+thx_unit_time__$Nanosecond_Nanosecond_$Impl_$.toFortnight = function(this1) {
+	return this1.multiply(thx_unit_time__$Nanosecond_Nanosecond_$Impl_$.ofUnit).divide(thx_unit_time__$Nanosecond_Nanosecond_$Impl_$.dividerFortnight).trim(null);
+};
+thx_unit_time__$Nanosecond_Nanosecond_$Impl_$.toSynodicMonth = function(this1) {
+	return this1.multiply(thx_unit_time__$Nanosecond_Nanosecond_$Impl_$.ofUnit).divide(thx_unit_time__$Nanosecond_Nanosecond_$Impl_$.dividerSynodicMonth).trim(null);
+};
+thx_unit_time__$Nanosecond_Nanosecond_$Impl_$.toTropicalMonth = function(this1) {
+	return this1.multiply(thx_unit_time__$Nanosecond_Nanosecond_$Impl_$.ofUnit).divide(thx_unit_time__$Nanosecond_Nanosecond_$Impl_$.dividerTropicalMonth).trim(null);
+};
+thx_unit_time__$Nanosecond_Nanosecond_$Impl_$.toJulianYear = function(this1) {
+	return this1.multiply(thx_unit_time__$Nanosecond_Nanosecond_$Impl_$.ofUnit).divide(thx_unit_time__$Nanosecond_Nanosecond_$Impl_$.dividerJulianYear).trim(null);
+};
+thx_unit_time__$Nanosecond_Nanosecond_$Impl_$.toGigasecond = function(this1) {
+	return this1.multiply(thx_unit_time__$Nanosecond_Nanosecond_$Impl_$.ofUnit).divide(thx_unit_time__$Nanosecond_Nanosecond_$Impl_$.dividerGigasecond).trim(null);
+};
+thx_unit_time__$Nanosecond_Nanosecond_$Impl_$.toTerasecond = function(this1) {
+	return this1.multiply(thx_unit_time__$Nanosecond_Nanosecond_$Impl_$.ofUnit).divide(thx_unit_time__$Nanosecond_Nanosecond_$Impl_$.dividerTerasecond).trim(null);
+};
+thx_unit_time__$Nanosecond_Nanosecond_$Impl_$.toString = function(this1) {
+	return "" + this1.toString() + "ns";
+};
+thx_unit_time__$Nanosecond_Nanosecond_$Impl_$.fromTime = function(time) {
+	return thx__$Decimal_Decimal_$Impl_$.fromInt64(time).multiply(thx_unit_time__$Tick_Tick_$Impl_$.ofUnit).divide(thx_unit_time__$Tick_Tick_$Impl_$.dividerNanosecond).trim(null);
+};
+thx_unit_time__$Nanosecond_Nanosecond_$Impl_$.toTime = function(this1) {
+	return thx_bigint_Bigs.toInt64(thx__$Decimal_Decimal_$Impl_$.toBigInt(this1.multiply(thx_unit_time__$Nanosecond_Nanosecond_$Impl_$.ofUnit).divide(thx_unit_time__$Nanosecond_Nanosecond_$Impl_$.dividerTick).trim(null)));
+};
+var thx_unit_time__$Picosecond_Picosecond_$Impl_$ = {};
+thx_unit_time__$Picosecond_Picosecond_$Impl_$.__name__ = ["thx","unit","time","_Picosecond","Picosecond_Impl_"];
+thx_unit_time__$Picosecond_Picosecond_$Impl_$.fromDecimal = function(value) {
+	return value;
+};
+thx_unit_time__$Picosecond_Picosecond_$Impl_$.fromInt = function(value) {
+	return thx__$Decimal_Decimal_$Impl_$.fromInt(value);
+};
+thx_unit_time__$Picosecond_Picosecond_$Impl_$.fromFloat = function(value) {
+	return thx_bigint_Decimals.fromFloat(value);
+};
+thx_unit_time__$Picosecond_Picosecond_$Impl_$._new = function(value) {
+	return value;
+};
+thx_unit_time__$Picosecond_Picosecond_$Impl_$.abs = function(this1) {
+	return this1.abs();
+};
+thx_unit_time__$Picosecond_Picosecond_$Impl_$.min = function(this1,that) {
+	var that1 = that;
+	return thx__$Decimal_Decimal_$Impl_$.less(this1,that1)?this1:that1;
+};
+thx_unit_time__$Picosecond_Picosecond_$Impl_$.max = function(this1,that) {
+	var that1 = that;
+	return thx__$Decimal_Decimal_$Impl_$.greater(this1,that1)?this1:that1;
+};
+thx_unit_time__$Picosecond_Picosecond_$Impl_$.negate = function(this1) {
+	return this1.negate();
+};
+thx_unit_time__$Picosecond_Picosecond_$Impl_$.add = function(this1,that) {
+	return this1.add(that);
+};
+thx_unit_time__$Picosecond_Picosecond_$Impl_$.subtract = function(this1,that) {
+	return this1.subtract(that);
+};
+thx_unit_time__$Picosecond_Picosecond_$Impl_$.multiply = function(this1,that) {
+	return this1.multiply(that);
+};
+thx_unit_time__$Picosecond_Picosecond_$Impl_$.divide = function(this1,that) {
+	return this1.divide(that);
+};
+thx_unit_time__$Picosecond_Picosecond_$Impl_$.modulo = function(this1,that) {
+	return this1.modulo(that);
+};
+thx_unit_time__$Picosecond_Picosecond_$Impl_$.equalsTo = function(this1,that) {
+	return thx__$Decimal_Decimal_$Impl_$.equals(this1,that);
+};
+thx_unit_time__$Picosecond_Picosecond_$Impl_$.equals = function(self,that) {
+	return thx__$Decimal_Decimal_$Impl_$.equals(self,that);
+};
+thx_unit_time__$Picosecond_Picosecond_$Impl_$.nearEqualsTo = function(this1,that) {
+	return thx_Floats.nearEquals(this1.toFloat(),that.toFloat());
+};
+thx_unit_time__$Picosecond_Picosecond_$Impl_$.nearEquals = function(self,that) {
+	return thx_Floats.nearEquals(self.toFloat(),that.toFloat());
+};
+thx_unit_time__$Picosecond_Picosecond_$Impl_$.notEqualsTo = function(this1,that) {
+	return thx__$Decimal_Decimal_$Impl_$.notEquals(this1,that);
+};
+thx_unit_time__$Picosecond_Picosecond_$Impl_$.notEquals = function(self,that) {
+	return thx__$Decimal_Decimal_$Impl_$.notEquals(self,that);
+};
+thx_unit_time__$Picosecond_Picosecond_$Impl_$.lessThan = function(this1,that) {
+	return thx__$Decimal_Decimal_$Impl_$.less(this1,that);
+};
+thx_unit_time__$Picosecond_Picosecond_$Impl_$.less = function(self,that) {
+	return thx__$Decimal_Decimal_$Impl_$.less(self,that);
+};
+thx_unit_time__$Picosecond_Picosecond_$Impl_$.lessEqualsTo = function(this1,that) {
+	return thx__$Decimal_Decimal_$Impl_$.lessEquals(this1,that);
+};
+thx_unit_time__$Picosecond_Picosecond_$Impl_$.lessEquals = function(self,that) {
+	return thx__$Decimal_Decimal_$Impl_$.lessEquals(self,that);
+};
+thx_unit_time__$Picosecond_Picosecond_$Impl_$.greaterThan = function(this1,that) {
+	return thx__$Decimal_Decimal_$Impl_$.greater(this1,that);
+};
+thx_unit_time__$Picosecond_Picosecond_$Impl_$.greater = function(self,that) {
+	return thx__$Decimal_Decimal_$Impl_$.greaterEquals(self,that);
+};
+thx_unit_time__$Picosecond_Picosecond_$Impl_$.greaterEqualsTo = function(this1,that) {
+	return thx__$Decimal_Decimal_$Impl_$.greaterEquals(this1,that);
+};
+thx_unit_time__$Picosecond_Picosecond_$Impl_$.greaterEquals = function(self,that) {
+	return thx__$Decimal_Decimal_$Impl_$.greaterEquals(self,that);
+};
+thx_unit_time__$Picosecond_Picosecond_$Impl_$.toDecimal = function(this1) {
+	return this1;
+};
+thx_unit_time__$Picosecond_Picosecond_$Impl_$.toFloat = function(this1) {
+	return this1.toFloat();
+};
+thx_unit_time__$Picosecond_Picosecond_$Impl_$.toPlankTimeUnit = function(this1) {
+	return this1.multiply(thx_unit_time__$Picosecond_Picosecond_$Impl_$.ofUnit).divide(thx_unit_time__$Picosecond_Picosecond_$Impl_$.dividerPlankTimeUnit).trim(null);
+};
+thx_unit_time__$Picosecond_Picosecond_$Impl_$.toJiffyPhysics = function(this1) {
+	return this1.multiply(thx_unit_time__$Picosecond_Picosecond_$Impl_$.ofUnit).divide(thx_unit_time__$Picosecond_Picosecond_$Impl_$.dividerJiffyPhysics).trim(null);
+};
+thx_unit_time__$Picosecond_Picosecond_$Impl_$.toSvedberg = function(this1) {
+	return this1.multiply(thx_unit_time__$Picosecond_Picosecond_$Impl_$.ofUnit).divide(thx_unit_time__$Picosecond_Picosecond_$Impl_$.dividerSvedberg).trim(null);
+};
+thx_unit_time__$Picosecond_Picosecond_$Impl_$.toPicosecond = function(this1) {
+	return this1;
+};
+thx_unit_time__$Picosecond_Picosecond_$Impl_$.toNanosecond = function(this1) {
+	return this1.multiply(thx_unit_time__$Picosecond_Picosecond_$Impl_$.ofUnit).divide(thx_unit_time__$Picosecond_Picosecond_$Impl_$.dividerNanosecond).trim(null);
+};
+thx_unit_time__$Picosecond_Picosecond_$Impl_$.toShake = function(this1) {
+	return this1.multiply(thx_unit_time__$Picosecond_Picosecond_$Impl_$.ofUnit).divide(thx_unit_time__$Picosecond_Picosecond_$Impl_$.dividerShake).trim(null);
+};
+thx_unit_time__$Picosecond_Picosecond_$Impl_$.toTick = function(this1) {
+	return this1.multiply(thx_unit_time__$Picosecond_Picosecond_$Impl_$.ofUnit).divide(thx_unit_time__$Picosecond_Picosecond_$Impl_$.dividerTick).trim(null);
+};
+thx_unit_time__$Picosecond_Picosecond_$Impl_$.toMicrosecond = function(this1) {
+	return this1.multiply(thx_unit_time__$Picosecond_Picosecond_$Impl_$.ofUnit).divide(thx_unit_time__$Picosecond_Picosecond_$Impl_$.dividerMicrosecond).trim(null);
+};
+thx_unit_time__$Picosecond_Picosecond_$Impl_$.toFourth = function(this1) {
+	return this1.multiply(thx_unit_time__$Picosecond_Picosecond_$Impl_$.ofUnit).divide(thx_unit_time__$Picosecond_Picosecond_$Impl_$.dividerFourth).trim(null);
+};
+thx_unit_time__$Picosecond_Picosecond_$Impl_$.toMillisecond = function(this1) {
+	return this1.multiply(thx_unit_time__$Picosecond_Picosecond_$Impl_$.ofUnit).divide(thx_unit_time__$Picosecond_Picosecond_$Impl_$.dividerMillisecond).trim(null);
+};
+thx_unit_time__$Picosecond_Picosecond_$Impl_$.toThird = function(this1) {
+	return this1.multiply(thx_unit_time__$Picosecond_Picosecond_$Impl_$.ofUnit).divide(thx_unit_time__$Picosecond_Picosecond_$Impl_$.dividerThird).trim(null);
+};
+thx_unit_time__$Picosecond_Picosecond_$Impl_$.toSecond = function(this1) {
+	return this1.multiply(thx_unit_time__$Picosecond_Picosecond_$Impl_$.ofUnit).divide(thx_unit_time__$Picosecond_Picosecond_$Impl_$.dividerSecond).trim(null);
+};
+thx_unit_time__$Picosecond_Picosecond_$Impl_$.toMinute = function(this1) {
+	return this1.multiply(thx_unit_time__$Picosecond_Picosecond_$Impl_$.ofUnit).divide(thx_unit_time__$Picosecond_Picosecond_$Impl_$.dividerMinute).trim(null);
+};
+thx_unit_time__$Picosecond_Picosecond_$Impl_$.toKe = function(this1) {
+	return this1.multiply(thx_unit_time__$Picosecond_Picosecond_$Impl_$.ofUnit).divide(thx_unit_time__$Picosecond_Picosecond_$Impl_$.dividerKe).trim(null);
+};
+thx_unit_time__$Picosecond_Picosecond_$Impl_$.toKilosecond = function(this1) {
+	return this1.multiply(thx_unit_time__$Picosecond_Picosecond_$Impl_$.ofUnit).divide(thx_unit_time__$Picosecond_Picosecond_$Impl_$.dividerKilosecond).trim(null);
+};
+thx_unit_time__$Picosecond_Picosecond_$Impl_$.toHour = function(this1) {
+	return this1.multiply(thx_unit_time__$Picosecond_Picosecond_$Impl_$.ofUnit).divide(thx_unit_time__$Picosecond_Picosecond_$Impl_$.dividerHour).trim(null);
+};
+thx_unit_time__$Picosecond_Picosecond_$Impl_$.toDay = function(this1) {
+	return this1.multiply(thx_unit_time__$Picosecond_Picosecond_$Impl_$.ofUnit).divide(thx_unit_time__$Picosecond_Picosecond_$Impl_$.dividerDay).trim(null);
+};
+thx_unit_time__$Picosecond_Picosecond_$Impl_$.toWeek = function(this1) {
+	return this1.multiply(thx_unit_time__$Picosecond_Picosecond_$Impl_$.ofUnit).divide(thx_unit_time__$Picosecond_Picosecond_$Impl_$.dividerWeek).trim(null);
+};
+thx_unit_time__$Picosecond_Picosecond_$Impl_$.toMegasecond = function(this1) {
+	return this1.multiply(thx_unit_time__$Picosecond_Picosecond_$Impl_$.ofUnit).divide(thx_unit_time__$Picosecond_Picosecond_$Impl_$.dividerMegasecond).trim(null);
+};
+thx_unit_time__$Picosecond_Picosecond_$Impl_$.toFortnight = function(this1) {
+	return this1.multiply(thx_unit_time__$Picosecond_Picosecond_$Impl_$.ofUnit).divide(thx_unit_time__$Picosecond_Picosecond_$Impl_$.dividerFortnight).trim(null);
+};
+thx_unit_time__$Picosecond_Picosecond_$Impl_$.toSynodicMonth = function(this1) {
+	return this1.multiply(thx_unit_time__$Picosecond_Picosecond_$Impl_$.ofUnit).divide(thx_unit_time__$Picosecond_Picosecond_$Impl_$.dividerSynodicMonth).trim(null);
+};
+thx_unit_time__$Picosecond_Picosecond_$Impl_$.toTropicalMonth = function(this1) {
+	return this1.multiply(thx_unit_time__$Picosecond_Picosecond_$Impl_$.ofUnit).divide(thx_unit_time__$Picosecond_Picosecond_$Impl_$.dividerTropicalMonth).trim(null);
+};
+thx_unit_time__$Picosecond_Picosecond_$Impl_$.toJulianYear = function(this1) {
+	return this1.multiply(thx_unit_time__$Picosecond_Picosecond_$Impl_$.ofUnit).divide(thx_unit_time__$Picosecond_Picosecond_$Impl_$.dividerJulianYear).trim(null);
+};
+thx_unit_time__$Picosecond_Picosecond_$Impl_$.toGigasecond = function(this1) {
+	return this1.multiply(thx_unit_time__$Picosecond_Picosecond_$Impl_$.ofUnit).divide(thx_unit_time__$Picosecond_Picosecond_$Impl_$.dividerGigasecond).trim(null);
+};
+thx_unit_time__$Picosecond_Picosecond_$Impl_$.toTerasecond = function(this1) {
+	return this1.multiply(thx_unit_time__$Picosecond_Picosecond_$Impl_$.ofUnit).divide(thx_unit_time__$Picosecond_Picosecond_$Impl_$.dividerTerasecond).trim(null);
+};
+thx_unit_time__$Picosecond_Picosecond_$Impl_$.toString = function(this1) {
+	return "" + this1.toString() + "ps";
+};
+thx_unit_time__$Picosecond_Picosecond_$Impl_$.fromTime = function(time) {
+	return thx__$Decimal_Decimal_$Impl_$.fromInt64(time).multiply(thx_unit_time__$Tick_Tick_$Impl_$.ofUnit).divide(thx_unit_time__$Tick_Tick_$Impl_$.dividerPicosecond).trim(null);
+};
+thx_unit_time__$Picosecond_Picosecond_$Impl_$.toTime = function(this1) {
+	return thx_bigint_Bigs.toInt64(thx__$Decimal_Decimal_$Impl_$.toBigInt(this1.multiply(thx_unit_time__$Picosecond_Picosecond_$Impl_$.ofUnit).divide(thx_unit_time__$Picosecond_Picosecond_$Impl_$.dividerTick).trim(null)));
+};
+var thx_unit_time__$PlankTimeUnit_PlankTimeUnit_$Impl_$ = {};
+thx_unit_time__$PlankTimeUnit_PlankTimeUnit_$Impl_$.__name__ = ["thx","unit","time","_PlankTimeUnit","PlankTimeUnit_Impl_"];
+thx_unit_time__$PlankTimeUnit_PlankTimeUnit_$Impl_$.fromDecimal = function(value) {
+	return value;
+};
+thx_unit_time__$PlankTimeUnit_PlankTimeUnit_$Impl_$.fromInt = function(value) {
+	return thx__$Decimal_Decimal_$Impl_$.fromInt(value);
+};
+thx_unit_time__$PlankTimeUnit_PlankTimeUnit_$Impl_$.fromFloat = function(value) {
+	return thx_bigint_Decimals.fromFloat(value);
+};
+thx_unit_time__$PlankTimeUnit_PlankTimeUnit_$Impl_$._new = function(value) {
+	return value;
+};
+thx_unit_time__$PlankTimeUnit_PlankTimeUnit_$Impl_$.abs = function(this1) {
+	return this1.abs();
+};
+thx_unit_time__$PlankTimeUnit_PlankTimeUnit_$Impl_$.min = function(this1,that) {
+	var that1 = that;
+	return thx__$Decimal_Decimal_$Impl_$.less(this1,that1)?this1:that1;
+};
+thx_unit_time__$PlankTimeUnit_PlankTimeUnit_$Impl_$.max = function(this1,that) {
+	var that1 = that;
+	return thx__$Decimal_Decimal_$Impl_$.greater(this1,that1)?this1:that1;
+};
+thx_unit_time__$PlankTimeUnit_PlankTimeUnit_$Impl_$.negate = function(this1) {
+	return this1.negate();
+};
+thx_unit_time__$PlankTimeUnit_PlankTimeUnit_$Impl_$.add = function(this1,that) {
+	return this1.add(that);
+};
+thx_unit_time__$PlankTimeUnit_PlankTimeUnit_$Impl_$.subtract = function(this1,that) {
+	return this1.subtract(that);
+};
+thx_unit_time__$PlankTimeUnit_PlankTimeUnit_$Impl_$.multiply = function(this1,that) {
+	return this1.multiply(that);
+};
+thx_unit_time__$PlankTimeUnit_PlankTimeUnit_$Impl_$.divide = function(this1,that) {
+	return this1.divide(that);
+};
+thx_unit_time__$PlankTimeUnit_PlankTimeUnit_$Impl_$.modulo = function(this1,that) {
+	return this1.modulo(that);
+};
+thx_unit_time__$PlankTimeUnit_PlankTimeUnit_$Impl_$.equalsTo = function(this1,that) {
+	return thx__$Decimal_Decimal_$Impl_$.equals(this1,that);
+};
+thx_unit_time__$PlankTimeUnit_PlankTimeUnit_$Impl_$.equals = function(self,that) {
+	return thx__$Decimal_Decimal_$Impl_$.equals(self,that);
+};
+thx_unit_time__$PlankTimeUnit_PlankTimeUnit_$Impl_$.nearEqualsTo = function(this1,that) {
+	return thx_Floats.nearEquals(this1.toFloat(),that.toFloat());
+};
+thx_unit_time__$PlankTimeUnit_PlankTimeUnit_$Impl_$.nearEquals = function(self,that) {
+	return thx_Floats.nearEquals(self.toFloat(),that.toFloat());
+};
+thx_unit_time__$PlankTimeUnit_PlankTimeUnit_$Impl_$.notEqualsTo = function(this1,that) {
+	return thx__$Decimal_Decimal_$Impl_$.notEquals(this1,that);
+};
+thx_unit_time__$PlankTimeUnit_PlankTimeUnit_$Impl_$.notEquals = function(self,that) {
+	return thx__$Decimal_Decimal_$Impl_$.notEquals(self,that);
+};
+thx_unit_time__$PlankTimeUnit_PlankTimeUnit_$Impl_$.lessThan = function(this1,that) {
+	return thx__$Decimal_Decimal_$Impl_$.less(this1,that);
+};
+thx_unit_time__$PlankTimeUnit_PlankTimeUnit_$Impl_$.less = function(self,that) {
+	return thx__$Decimal_Decimal_$Impl_$.less(self,that);
+};
+thx_unit_time__$PlankTimeUnit_PlankTimeUnit_$Impl_$.lessEqualsTo = function(this1,that) {
+	return thx__$Decimal_Decimal_$Impl_$.lessEquals(this1,that);
+};
+thx_unit_time__$PlankTimeUnit_PlankTimeUnit_$Impl_$.lessEquals = function(self,that) {
+	return thx__$Decimal_Decimal_$Impl_$.lessEquals(self,that);
+};
+thx_unit_time__$PlankTimeUnit_PlankTimeUnit_$Impl_$.greaterThan = function(this1,that) {
+	return thx__$Decimal_Decimal_$Impl_$.greater(this1,that);
+};
+thx_unit_time__$PlankTimeUnit_PlankTimeUnit_$Impl_$.greater = function(self,that) {
+	return thx__$Decimal_Decimal_$Impl_$.greaterEquals(self,that);
+};
+thx_unit_time__$PlankTimeUnit_PlankTimeUnit_$Impl_$.greaterEqualsTo = function(this1,that) {
+	return thx__$Decimal_Decimal_$Impl_$.greaterEquals(this1,that);
+};
+thx_unit_time__$PlankTimeUnit_PlankTimeUnit_$Impl_$.greaterEquals = function(self,that) {
+	return thx__$Decimal_Decimal_$Impl_$.greaterEquals(self,that);
+};
+thx_unit_time__$PlankTimeUnit_PlankTimeUnit_$Impl_$.toDecimal = function(this1) {
+	return this1;
+};
+thx_unit_time__$PlankTimeUnit_PlankTimeUnit_$Impl_$.toFloat = function(this1) {
+	return this1.toFloat();
+};
+thx_unit_time__$PlankTimeUnit_PlankTimeUnit_$Impl_$.toPlankTimeUnit = function(this1) {
+	return this1;
+};
+thx_unit_time__$PlankTimeUnit_PlankTimeUnit_$Impl_$.toJiffyPhysics = function(this1) {
+	return this1.multiply(thx_unit_time__$PlankTimeUnit_PlankTimeUnit_$Impl_$.ofUnit).divide(thx_unit_time__$PlankTimeUnit_PlankTimeUnit_$Impl_$.dividerJiffyPhysics).trim(null);
+};
+thx_unit_time__$PlankTimeUnit_PlankTimeUnit_$Impl_$.toSvedberg = function(this1) {
+	return this1.multiply(thx_unit_time__$PlankTimeUnit_PlankTimeUnit_$Impl_$.ofUnit).divide(thx_unit_time__$PlankTimeUnit_PlankTimeUnit_$Impl_$.dividerSvedberg).trim(null);
+};
+thx_unit_time__$PlankTimeUnit_PlankTimeUnit_$Impl_$.toPicosecond = function(this1) {
+	return this1.multiply(thx_unit_time__$PlankTimeUnit_PlankTimeUnit_$Impl_$.ofUnit).divide(thx_unit_time__$PlankTimeUnit_PlankTimeUnit_$Impl_$.dividerPicosecond).trim(null);
+};
+thx_unit_time__$PlankTimeUnit_PlankTimeUnit_$Impl_$.toNanosecond = function(this1) {
+	return this1.multiply(thx_unit_time__$PlankTimeUnit_PlankTimeUnit_$Impl_$.ofUnit).divide(thx_unit_time__$PlankTimeUnit_PlankTimeUnit_$Impl_$.dividerNanosecond).trim(null);
+};
+thx_unit_time__$PlankTimeUnit_PlankTimeUnit_$Impl_$.toShake = function(this1) {
+	return this1.multiply(thx_unit_time__$PlankTimeUnit_PlankTimeUnit_$Impl_$.ofUnit).divide(thx_unit_time__$PlankTimeUnit_PlankTimeUnit_$Impl_$.dividerShake).trim(null);
+};
+thx_unit_time__$PlankTimeUnit_PlankTimeUnit_$Impl_$.toTick = function(this1) {
+	return this1.multiply(thx_unit_time__$PlankTimeUnit_PlankTimeUnit_$Impl_$.ofUnit).divide(thx_unit_time__$PlankTimeUnit_PlankTimeUnit_$Impl_$.dividerTick).trim(null);
+};
+thx_unit_time__$PlankTimeUnit_PlankTimeUnit_$Impl_$.toMicrosecond = function(this1) {
+	return this1.multiply(thx_unit_time__$PlankTimeUnit_PlankTimeUnit_$Impl_$.ofUnit).divide(thx_unit_time__$PlankTimeUnit_PlankTimeUnit_$Impl_$.dividerMicrosecond).trim(null);
+};
+thx_unit_time__$PlankTimeUnit_PlankTimeUnit_$Impl_$.toFourth = function(this1) {
+	return this1.multiply(thx_unit_time__$PlankTimeUnit_PlankTimeUnit_$Impl_$.ofUnit).divide(thx_unit_time__$PlankTimeUnit_PlankTimeUnit_$Impl_$.dividerFourth).trim(null);
+};
+thx_unit_time__$PlankTimeUnit_PlankTimeUnit_$Impl_$.toMillisecond = function(this1) {
+	return this1.multiply(thx_unit_time__$PlankTimeUnit_PlankTimeUnit_$Impl_$.ofUnit).divide(thx_unit_time__$PlankTimeUnit_PlankTimeUnit_$Impl_$.dividerMillisecond).trim(null);
+};
+thx_unit_time__$PlankTimeUnit_PlankTimeUnit_$Impl_$.toThird = function(this1) {
+	return this1.multiply(thx_unit_time__$PlankTimeUnit_PlankTimeUnit_$Impl_$.ofUnit).divide(thx_unit_time__$PlankTimeUnit_PlankTimeUnit_$Impl_$.dividerThird).trim(null);
+};
+thx_unit_time__$PlankTimeUnit_PlankTimeUnit_$Impl_$.toSecond = function(this1) {
+	return this1.multiply(thx_unit_time__$PlankTimeUnit_PlankTimeUnit_$Impl_$.ofUnit).divide(thx_unit_time__$PlankTimeUnit_PlankTimeUnit_$Impl_$.dividerSecond).trim(null);
+};
+thx_unit_time__$PlankTimeUnit_PlankTimeUnit_$Impl_$.toMinute = function(this1) {
+	return this1.multiply(thx_unit_time__$PlankTimeUnit_PlankTimeUnit_$Impl_$.ofUnit).divide(thx_unit_time__$PlankTimeUnit_PlankTimeUnit_$Impl_$.dividerMinute).trim(null);
+};
+thx_unit_time__$PlankTimeUnit_PlankTimeUnit_$Impl_$.toKe = function(this1) {
+	return this1.multiply(thx_unit_time__$PlankTimeUnit_PlankTimeUnit_$Impl_$.ofUnit).divide(thx_unit_time__$PlankTimeUnit_PlankTimeUnit_$Impl_$.dividerKe).trim(null);
+};
+thx_unit_time__$PlankTimeUnit_PlankTimeUnit_$Impl_$.toKilosecond = function(this1) {
+	return this1.multiply(thx_unit_time__$PlankTimeUnit_PlankTimeUnit_$Impl_$.ofUnit).divide(thx_unit_time__$PlankTimeUnit_PlankTimeUnit_$Impl_$.dividerKilosecond).trim(null);
+};
+thx_unit_time__$PlankTimeUnit_PlankTimeUnit_$Impl_$.toHour = function(this1) {
+	return this1.multiply(thx_unit_time__$PlankTimeUnit_PlankTimeUnit_$Impl_$.ofUnit).divide(thx_unit_time__$PlankTimeUnit_PlankTimeUnit_$Impl_$.dividerHour).trim(null);
+};
+thx_unit_time__$PlankTimeUnit_PlankTimeUnit_$Impl_$.toDay = function(this1) {
+	return this1.multiply(thx_unit_time__$PlankTimeUnit_PlankTimeUnit_$Impl_$.ofUnit).divide(thx_unit_time__$PlankTimeUnit_PlankTimeUnit_$Impl_$.dividerDay).trim(null);
+};
+thx_unit_time__$PlankTimeUnit_PlankTimeUnit_$Impl_$.toWeek = function(this1) {
+	return this1.multiply(thx_unit_time__$PlankTimeUnit_PlankTimeUnit_$Impl_$.ofUnit).divide(thx_unit_time__$PlankTimeUnit_PlankTimeUnit_$Impl_$.dividerWeek).trim(null);
+};
+thx_unit_time__$PlankTimeUnit_PlankTimeUnit_$Impl_$.toMegasecond = function(this1) {
+	return this1.multiply(thx_unit_time__$PlankTimeUnit_PlankTimeUnit_$Impl_$.ofUnit).divide(thx_unit_time__$PlankTimeUnit_PlankTimeUnit_$Impl_$.dividerMegasecond).trim(null);
+};
+thx_unit_time__$PlankTimeUnit_PlankTimeUnit_$Impl_$.toFortnight = function(this1) {
+	return this1.multiply(thx_unit_time__$PlankTimeUnit_PlankTimeUnit_$Impl_$.ofUnit).divide(thx_unit_time__$PlankTimeUnit_PlankTimeUnit_$Impl_$.dividerFortnight).trim(null);
+};
+thx_unit_time__$PlankTimeUnit_PlankTimeUnit_$Impl_$.toSynodicMonth = function(this1) {
+	return this1.multiply(thx_unit_time__$PlankTimeUnit_PlankTimeUnit_$Impl_$.ofUnit).divide(thx_unit_time__$PlankTimeUnit_PlankTimeUnit_$Impl_$.dividerSynodicMonth).trim(null);
+};
+thx_unit_time__$PlankTimeUnit_PlankTimeUnit_$Impl_$.toTropicalMonth = function(this1) {
+	return this1.multiply(thx_unit_time__$PlankTimeUnit_PlankTimeUnit_$Impl_$.ofUnit).divide(thx_unit_time__$PlankTimeUnit_PlankTimeUnit_$Impl_$.dividerTropicalMonth).trim(null);
+};
+thx_unit_time__$PlankTimeUnit_PlankTimeUnit_$Impl_$.toJulianYear = function(this1) {
+	return this1.multiply(thx_unit_time__$PlankTimeUnit_PlankTimeUnit_$Impl_$.ofUnit).divide(thx_unit_time__$PlankTimeUnit_PlankTimeUnit_$Impl_$.dividerJulianYear).trim(null);
+};
+thx_unit_time__$PlankTimeUnit_PlankTimeUnit_$Impl_$.toGigasecond = function(this1) {
+	return this1.multiply(thx_unit_time__$PlankTimeUnit_PlankTimeUnit_$Impl_$.ofUnit).divide(thx_unit_time__$PlankTimeUnit_PlankTimeUnit_$Impl_$.dividerGigasecond).trim(null);
+};
+thx_unit_time__$PlankTimeUnit_PlankTimeUnit_$Impl_$.toTerasecond = function(this1) {
+	return this1.multiply(thx_unit_time__$PlankTimeUnit_PlankTimeUnit_$Impl_$.ofUnit).divide(thx_unit_time__$PlankTimeUnit_PlankTimeUnit_$Impl_$.dividerTerasecond).trim(null);
+};
+thx_unit_time__$PlankTimeUnit_PlankTimeUnit_$Impl_$.toString = function(this1) {
+	return "" + this1.toString() + "tP";
+};
+thx_unit_time__$PlankTimeUnit_PlankTimeUnit_$Impl_$.fromTime = function(time) {
+	return thx__$Decimal_Decimal_$Impl_$.fromInt64(time).multiply(thx_unit_time__$Tick_Tick_$Impl_$.ofUnit).divide(thx_unit_time__$Tick_Tick_$Impl_$.dividerPlankTimeUnit).trim(null);
+};
+thx_unit_time__$PlankTimeUnit_PlankTimeUnit_$Impl_$.toTime = function(this1) {
+	return thx_bigint_Bigs.toInt64(thx__$Decimal_Decimal_$Impl_$.toBigInt(this1.multiply(thx_unit_time__$PlankTimeUnit_PlankTimeUnit_$Impl_$.ofUnit).divide(thx_unit_time__$PlankTimeUnit_PlankTimeUnit_$Impl_$.dividerTick).trim(null)));
+};
+var thx_unit_time__$Second_Second_$Impl_$ = {};
+thx_unit_time__$Second_Second_$Impl_$.__name__ = ["thx","unit","time","_Second","Second_Impl_"];
+thx_unit_time__$Second_Second_$Impl_$.fromDecimal = function(value) {
+	return value;
+};
+thx_unit_time__$Second_Second_$Impl_$.fromInt = function(value) {
+	return thx__$Decimal_Decimal_$Impl_$.fromInt(value);
+};
+thx_unit_time__$Second_Second_$Impl_$.fromFloat = function(value) {
+	return thx_bigint_Decimals.fromFloat(value);
+};
+thx_unit_time__$Second_Second_$Impl_$._new = function(value) {
+	return value;
+};
+thx_unit_time__$Second_Second_$Impl_$.abs = function(this1) {
+	return this1.abs();
+};
+thx_unit_time__$Second_Second_$Impl_$.min = function(this1,that) {
+	var that1 = that;
+	return thx__$Decimal_Decimal_$Impl_$.less(this1,that1)?this1:that1;
+};
+thx_unit_time__$Second_Second_$Impl_$.max = function(this1,that) {
+	var that1 = that;
+	return thx__$Decimal_Decimal_$Impl_$.greater(this1,that1)?this1:that1;
+};
+thx_unit_time__$Second_Second_$Impl_$.negate = function(this1) {
+	return this1.negate();
+};
+thx_unit_time__$Second_Second_$Impl_$.add = function(this1,that) {
+	return this1.add(that);
+};
+thx_unit_time__$Second_Second_$Impl_$.subtract = function(this1,that) {
+	return this1.subtract(that);
+};
+thx_unit_time__$Second_Second_$Impl_$.multiply = function(this1,that) {
+	return this1.multiply(that);
+};
+thx_unit_time__$Second_Second_$Impl_$.divide = function(this1,that) {
+	return this1.divide(that);
+};
+thx_unit_time__$Second_Second_$Impl_$.modulo = function(this1,that) {
+	return this1.modulo(that);
+};
+thx_unit_time__$Second_Second_$Impl_$.equalsTo = function(this1,that) {
+	return thx__$Decimal_Decimal_$Impl_$.equals(this1,that);
+};
+thx_unit_time__$Second_Second_$Impl_$.equals = function(self,that) {
+	return thx__$Decimal_Decimal_$Impl_$.equals(self,that);
+};
+thx_unit_time__$Second_Second_$Impl_$.nearEqualsTo = function(this1,that) {
+	return thx_Floats.nearEquals(this1.toFloat(),that.toFloat());
+};
+thx_unit_time__$Second_Second_$Impl_$.nearEquals = function(self,that) {
+	return thx_Floats.nearEquals(self.toFloat(),that.toFloat());
+};
+thx_unit_time__$Second_Second_$Impl_$.notEqualsTo = function(this1,that) {
+	return thx__$Decimal_Decimal_$Impl_$.notEquals(this1,that);
+};
+thx_unit_time__$Second_Second_$Impl_$.notEquals = function(self,that) {
+	return thx__$Decimal_Decimal_$Impl_$.notEquals(self,that);
+};
+thx_unit_time__$Second_Second_$Impl_$.lessThan = function(this1,that) {
+	return thx__$Decimal_Decimal_$Impl_$.less(this1,that);
+};
+thx_unit_time__$Second_Second_$Impl_$.less = function(self,that) {
+	return thx__$Decimal_Decimal_$Impl_$.less(self,that);
+};
+thx_unit_time__$Second_Second_$Impl_$.lessEqualsTo = function(this1,that) {
+	return thx__$Decimal_Decimal_$Impl_$.lessEquals(this1,that);
+};
+thx_unit_time__$Second_Second_$Impl_$.lessEquals = function(self,that) {
+	return thx__$Decimal_Decimal_$Impl_$.lessEquals(self,that);
+};
+thx_unit_time__$Second_Second_$Impl_$.greaterThan = function(this1,that) {
+	return thx__$Decimal_Decimal_$Impl_$.greater(this1,that);
+};
+thx_unit_time__$Second_Second_$Impl_$.greater = function(self,that) {
+	return thx__$Decimal_Decimal_$Impl_$.greaterEquals(self,that);
+};
+thx_unit_time__$Second_Second_$Impl_$.greaterEqualsTo = function(this1,that) {
+	return thx__$Decimal_Decimal_$Impl_$.greaterEquals(this1,that);
+};
+thx_unit_time__$Second_Second_$Impl_$.greaterEquals = function(self,that) {
+	return thx__$Decimal_Decimal_$Impl_$.greaterEquals(self,that);
+};
+thx_unit_time__$Second_Second_$Impl_$.toDecimal = function(this1) {
+	return this1;
+};
+thx_unit_time__$Second_Second_$Impl_$.toFloat = function(this1) {
+	return this1.toFloat();
+};
+thx_unit_time__$Second_Second_$Impl_$.toPlankTimeUnit = function(this1) {
+	return this1.multiply(thx_unit_time__$Second_Second_$Impl_$.ofUnit).divide(thx_unit_time__$Second_Second_$Impl_$.dividerPlankTimeUnit).trim(null);
+};
+thx_unit_time__$Second_Second_$Impl_$.toJiffyPhysics = function(this1) {
+	return this1.multiply(thx_unit_time__$Second_Second_$Impl_$.ofUnit).divide(thx_unit_time__$Second_Second_$Impl_$.dividerJiffyPhysics).trim(null);
+};
+thx_unit_time__$Second_Second_$Impl_$.toSvedberg = function(this1) {
+	return this1.multiply(thx_unit_time__$Second_Second_$Impl_$.ofUnit).divide(thx_unit_time__$Second_Second_$Impl_$.dividerSvedberg).trim(null);
+};
+thx_unit_time__$Second_Second_$Impl_$.toPicosecond = function(this1) {
+	return this1.multiply(thx_unit_time__$Second_Second_$Impl_$.ofUnit).divide(thx_unit_time__$Second_Second_$Impl_$.dividerPicosecond).trim(null);
+};
+thx_unit_time__$Second_Second_$Impl_$.toNanosecond = function(this1) {
+	return this1.multiply(thx_unit_time__$Second_Second_$Impl_$.ofUnit).divide(thx_unit_time__$Second_Second_$Impl_$.dividerNanosecond).trim(null);
+};
+thx_unit_time__$Second_Second_$Impl_$.toShake = function(this1) {
+	return this1.multiply(thx_unit_time__$Second_Second_$Impl_$.ofUnit).divide(thx_unit_time__$Second_Second_$Impl_$.dividerShake).trim(null);
+};
+thx_unit_time__$Second_Second_$Impl_$.toTick = function(this1) {
+	return this1.multiply(thx_unit_time__$Second_Second_$Impl_$.ofUnit).divide(thx_unit_time__$Second_Second_$Impl_$.dividerTick).trim(null);
+};
+thx_unit_time__$Second_Second_$Impl_$.toMicrosecond = function(this1) {
+	return this1.multiply(thx_unit_time__$Second_Second_$Impl_$.ofUnit).divide(thx_unit_time__$Second_Second_$Impl_$.dividerMicrosecond).trim(null);
+};
+thx_unit_time__$Second_Second_$Impl_$.toFourth = function(this1) {
+	return this1.multiply(thx_unit_time__$Second_Second_$Impl_$.ofUnit).divide(thx_unit_time__$Second_Second_$Impl_$.dividerFourth).trim(null);
+};
+thx_unit_time__$Second_Second_$Impl_$.toMillisecond = function(this1) {
+	return this1.multiply(thx_unit_time__$Second_Second_$Impl_$.ofUnit).divide(thx_unit_time__$Second_Second_$Impl_$.dividerMillisecond).trim(null);
+};
+thx_unit_time__$Second_Second_$Impl_$.toThird = function(this1) {
+	return this1.multiply(thx_unit_time__$Second_Second_$Impl_$.ofUnit).divide(thx_unit_time__$Second_Second_$Impl_$.dividerThird).trim(null);
+};
+thx_unit_time__$Second_Second_$Impl_$.toSecond = function(this1) {
+	return this1;
+};
+thx_unit_time__$Second_Second_$Impl_$.toMinute = function(this1) {
+	return this1.multiply(thx_unit_time__$Second_Second_$Impl_$.ofUnit).divide(thx_unit_time__$Second_Second_$Impl_$.dividerMinute).trim(null);
+};
+thx_unit_time__$Second_Second_$Impl_$.toKe = function(this1) {
+	return this1.multiply(thx_unit_time__$Second_Second_$Impl_$.ofUnit).divide(thx_unit_time__$Second_Second_$Impl_$.dividerKe).trim(null);
+};
+thx_unit_time__$Second_Second_$Impl_$.toKilosecond = function(this1) {
+	return this1.multiply(thx_unit_time__$Second_Second_$Impl_$.ofUnit).divide(thx_unit_time__$Second_Second_$Impl_$.dividerKilosecond).trim(null);
+};
+thx_unit_time__$Second_Second_$Impl_$.toHour = function(this1) {
+	return this1.multiply(thx_unit_time__$Second_Second_$Impl_$.ofUnit).divide(thx_unit_time__$Second_Second_$Impl_$.dividerHour).trim(null);
+};
+thx_unit_time__$Second_Second_$Impl_$.toDay = function(this1) {
+	return this1.multiply(thx_unit_time__$Second_Second_$Impl_$.ofUnit).divide(thx_unit_time__$Second_Second_$Impl_$.dividerDay).trim(null);
+};
+thx_unit_time__$Second_Second_$Impl_$.toWeek = function(this1) {
+	return this1.multiply(thx_unit_time__$Second_Second_$Impl_$.ofUnit).divide(thx_unit_time__$Second_Second_$Impl_$.dividerWeek).trim(null);
+};
+thx_unit_time__$Second_Second_$Impl_$.toMegasecond = function(this1) {
+	return this1.multiply(thx_unit_time__$Second_Second_$Impl_$.ofUnit).divide(thx_unit_time__$Second_Second_$Impl_$.dividerMegasecond).trim(null);
+};
+thx_unit_time__$Second_Second_$Impl_$.toFortnight = function(this1) {
+	return this1.multiply(thx_unit_time__$Second_Second_$Impl_$.ofUnit).divide(thx_unit_time__$Second_Second_$Impl_$.dividerFortnight).trim(null);
+};
+thx_unit_time__$Second_Second_$Impl_$.toSynodicMonth = function(this1) {
+	return this1.multiply(thx_unit_time__$Second_Second_$Impl_$.ofUnit).divide(thx_unit_time__$Second_Second_$Impl_$.dividerSynodicMonth).trim(null);
+};
+thx_unit_time__$Second_Second_$Impl_$.toTropicalMonth = function(this1) {
+	return this1.multiply(thx_unit_time__$Second_Second_$Impl_$.ofUnit).divide(thx_unit_time__$Second_Second_$Impl_$.dividerTropicalMonth).trim(null);
+};
+thx_unit_time__$Second_Second_$Impl_$.toJulianYear = function(this1) {
+	return this1.multiply(thx_unit_time__$Second_Second_$Impl_$.ofUnit).divide(thx_unit_time__$Second_Second_$Impl_$.dividerJulianYear).trim(null);
+};
+thx_unit_time__$Second_Second_$Impl_$.toGigasecond = function(this1) {
+	return this1.multiply(thx_unit_time__$Second_Second_$Impl_$.ofUnit).divide(thx_unit_time__$Second_Second_$Impl_$.dividerGigasecond).trim(null);
+};
+thx_unit_time__$Second_Second_$Impl_$.toTerasecond = function(this1) {
+	return this1.multiply(thx_unit_time__$Second_Second_$Impl_$.ofUnit).divide(thx_unit_time__$Second_Second_$Impl_$.dividerTerasecond).trim(null);
+};
+thx_unit_time__$Second_Second_$Impl_$.toString = function(this1) {
+	return "" + this1.toString() + "s";
+};
+thx_unit_time__$Second_Second_$Impl_$.fromTime = function(time) {
+	return thx__$Decimal_Decimal_$Impl_$.fromInt64(time).multiply(thx_unit_time__$Tick_Tick_$Impl_$.ofUnit).divide(thx_unit_time__$Tick_Tick_$Impl_$.dividerSecond).trim(null);
+};
+thx_unit_time__$Second_Second_$Impl_$.toTime = function(this1) {
+	return thx_bigint_Bigs.toInt64(thx__$Decimal_Decimal_$Impl_$.toBigInt(this1.multiply(thx_unit_time__$Second_Second_$Impl_$.ofUnit).divide(thx_unit_time__$Second_Second_$Impl_$.dividerTick).trim(null)));
+};
+var thx_unit_time__$Shake_Shake_$Impl_$ = {};
+thx_unit_time__$Shake_Shake_$Impl_$.__name__ = ["thx","unit","time","_Shake","Shake_Impl_"];
+thx_unit_time__$Shake_Shake_$Impl_$.fromDecimal = function(value) {
+	return value;
+};
+thx_unit_time__$Shake_Shake_$Impl_$.fromInt = function(value) {
+	return thx__$Decimal_Decimal_$Impl_$.fromInt(value);
+};
+thx_unit_time__$Shake_Shake_$Impl_$.fromFloat = function(value) {
+	return thx_bigint_Decimals.fromFloat(value);
+};
+thx_unit_time__$Shake_Shake_$Impl_$._new = function(value) {
+	return value;
+};
+thx_unit_time__$Shake_Shake_$Impl_$.abs = function(this1) {
+	return this1.abs();
+};
+thx_unit_time__$Shake_Shake_$Impl_$.min = function(this1,that) {
+	var that1 = that;
+	return thx__$Decimal_Decimal_$Impl_$.less(this1,that1)?this1:that1;
+};
+thx_unit_time__$Shake_Shake_$Impl_$.max = function(this1,that) {
+	var that1 = that;
+	return thx__$Decimal_Decimal_$Impl_$.greater(this1,that1)?this1:that1;
+};
+thx_unit_time__$Shake_Shake_$Impl_$.negate = function(this1) {
+	return this1.negate();
+};
+thx_unit_time__$Shake_Shake_$Impl_$.add = function(this1,that) {
+	return this1.add(that);
+};
+thx_unit_time__$Shake_Shake_$Impl_$.subtract = function(this1,that) {
+	return this1.subtract(that);
+};
+thx_unit_time__$Shake_Shake_$Impl_$.multiply = function(this1,that) {
+	return this1.multiply(that);
+};
+thx_unit_time__$Shake_Shake_$Impl_$.divide = function(this1,that) {
+	return this1.divide(that);
+};
+thx_unit_time__$Shake_Shake_$Impl_$.modulo = function(this1,that) {
+	return this1.modulo(that);
+};
+thx_unit_time__$Shake_Shake_$Impl_$.equalsTo = function(this1,that) {
+	return thx__$Decimal_Decimal_$Impl_$.equals(this1,that);
+};
+thx_unit_time__$Shake_Shake_$Impl_$.equals = function(self,that) {
+	return thx__$Decimal_Decimal_$Impl_$.equals(self,that);
+};
+thx_unit_time__$Shake_Shake_$Impl_$.nearEqualsTo = function(this1,that) {
+	return thx_Floats.nearEquals(this1.toFloat(),that.toFloat());
+};
+thx_unit_time__$Shake_Shake_$Impl_$.nearEquals = function(self,that) {
+	return thx_Floats.nearEquals(self.toFloat(),that.toFloat());
+};
+thx_unit_time__$Shake_Shake_$Impl_$.notEqualsTo = function(this1,that) {
+	return thx__$Decimal_Decimal_$Impl_$.notEquals(this1,that);
+};
+thx_unit_time__$Shake_Shake_$Impl_$.notEquals = function(self,that) {
+	return thx__$Decimal_Decimal_$Impl_$.notEquals(self,that);
+};
+thx_unit_time__$Shake_Shake_$Impl_$.lessThan = function(this1,that) {
+	return thx__$Decimal_Decimal_$Impl_$.less(this1,that);
+};
+thx_unit_time__$Shake_Shake_$Impl_$.less = function(self,that) {
+	return thx__$Decimal_Decimal_$Impl_$.less(self,that);
+};
+thx_unit_time__$Shake_Shake_$Impl_$.lessEqualsTo = function(this1,that) {
+	return thx__$Decimal_Decimal_$Impl_$.lessEquals(this1,that);
+};
+thx_unit_time__$Shake_Shake_$Impl_$.lessEquals = function(self,that) {
+	return thx__$Decimal_Decimal_$Impl_$.lessEquals(self,that);
+};
+thx_unit_time__$Shake_Shake_$Impl_$.greaterThan = function(this1,that) {
+	return thx__$Decimal_Decimal_$Impl_$.greater(this1,that);
+};
+thx_unit_time__$Shake_Shake_$Impl_$.greater = function(self,that) {
+	return thx__$Decimal_Decimal_$Impl_$.greaterEquals(self,that);
+};
+thx_unit_time__$Shake_Shake_$Impl_$.greaterEqualsTo = function(this1,that) {
+	return thx__$Decimal_Decimal_$Impl_$.greaterEquals(this1,that);
+};
+thx_unit_time__$Shake_Shake_$Impl_$.greaterEquals = function(self,that) {
+	return thx__$Decimal_Decimal_$Impl_$.greaterEquals(self,that);
+};
+thx_unit_time__$Shake_Shake_$Impl_$.toDecimal = function(this1) {
+	return this1;
+};
+thx_unit_time__$Shake_Shake_$Impl_$.toFloat = function(this1) {
+	return this1.toFloat();
+};
+thx_unit_time__$Shake_Shake_$Impl_$.toPlankTimeUnit = function(this1) {
+	return this1.multiply(thx_unit_time__$Shake_Shake_$Impl_$.ofUnit).divide(thx_unit_time__$Shake_Shake_$Impl_$.dividerPlankTimeUnit).trim(null);
+};
+thx_unit_time__$Shake_Shake_$Impl_$.toJiffyPhysics = function(this1) {
+	return this1.multiply(thx_unit_time__$Shake_Shake_$Impl_$.ofUnit).divide(thx_unit_time__$Shake_Shake_$Impl_$.dividerJiffyPhysics).trim(null);
+};
+thx_unit_time__$Shake_Shake_$Impl_$.toSvedberg = function(this1) {
+	return this1.multiply(thx_unit_time__$Shake_Shake_$Impl_$.ofUnit).divide(thx_unit_time__$Shake_Shake_$Impl_$.dividerSvedberg).trim(null);
+};
+thx_unit_time__$Shake_Shake_$Impl_$.toPicosecond = function(this1) {
+	return this1.multiply(thx_unit_time__$Shake_Shake_$Impl_$.ofUnit).divide(thx_unit_time__$Shake_Shake_$Impl_$.dividerPicosecond).trim(null);
+};
+thx_unit_time__$Shake_Shake_$Impl_$.toNanosecond = function(this1) {
+	return this1.multiply(thx_unit_time__$Shake_Shake_$Impl_$.ofUnit).divide(thx_unit_time__$Shake_Shake_$Impl_$.dividerNanosecond).trim(null);
+};
+thx_unit_time__$Shake_Shake_$Impl_$.toShake = function(this1) {
+	return this1;
+};
+thx_unit_time__$Shake_Shake_$Impl_$.toTick = function(this1) {
+	return this1.multiply(thx_unit_time__$Shake_Shake_$Impl_$.ofUnit).divide(thx_unit_time__$Shake_Shake_$Impl_$.dividerTick).trim(null);
+};
+thx_unit_time__$Shake_Shake_$Impl_$.toMicrosecond = function(this1) {
+	return this1.multiply(thx_unit_time__$Shake_Shake_$Impl_$.ofUnit).divide(thx_unit_time__$Shake_Shake_$Impl_$.dividerMicrosecond).trim(null);
+};
+thx_unit_time__$Shake_Shake_$Impl_$.toFourth = function(this1) {
+	return this1.multiply(thx_unit_time__$Shake_Shake_$Impl_$.ofUnit).divide(thx_unit_time__$Shake_Shake_$Impl_$.dividerFourth).trim(null);
+};
+thx_unit_time__$Shake_Shake_$Impl_$.toMillisecond = function(this1) {
+	return this1.multiply(thx_unit_time__$Shake_Shake_$Impl_$.ofUnit).divide(thx_unit_time__$Shake_Shake_$Impl_$.dividerMillisecond).trim(null);
+};
+thx_unit_time__$Shake_Shake_$Impl_$.toThird = function(this1) {
+	return this1.multiply(thx_unit_time__$Shake_Shake_$Impl_$.ofUnit).divide(thx_unit_time__$Shake_Shake_$Impl_$.dividerThird).trim(null);
+};
+thx_unit_time__$Shake_Shake_$Impl_$.toSecond = function(this1) {
+	return this1.multiply(thx_unit_time__$Shake_Shake_$Impl_$.ofUnit).divide(thx_unit_time__$Shake_Shake_$Impl_$.dividerSecond).trim(null);
+};
+thx_unit_time__$Shake_Shake_$Impl_$.toMinute = function(this1) {
+	return this1.multiply(thx_unit_time__$Shake_Shake_$Impl_$.ofUnit).divide(thx_unit_time__$Shake_Shake_$Impl_$.dividerMinute).trim(null);
+};
+thx_unit_time__$Shake_Shake_$Impl_$.toKe = function(this1) {
+	return this1.multiply(thx_unit_time__$Shake_Shake_$Impl_$.ofUnit).divide(thx_unit_time__$Shake_Shake_$Impl_$.dividerKe).trim(null);
+};
+thx_unit_time__$Shake_Shake_$Impl_$.toKilosecond = function(this1) {
+	return this1.multiply(thx_unit_time__$Shake_Shake_$Impl_$.ofUnit).divide(thx_unit_time__$Shake_Shake_$Impl_$.dividerKilosecond).trim(null);
+};
+thx_unit_time__$Shake_Shake_$Impl_$.toHour = function(this1) {
+	return this1.multiply(thx_unit_time__$Shake_Shake_$Impl_$.ofUnit).divide(thx_unit_time__$Shake_Shake_$Impl_$.dividerHour).trim(null);
+};
+thx_unit_time__$Shake_Shake_$Impl_$.toDay = function(this1) {
+	return this1.multiply(thx_unit_time__$Shake_Shake_$Impl_$.ofUnit).divide(thx_unit_time__$Shake_Shake_$Impl_$.dividerDay).trim(null);
+};
+thx_unit_time__$Shake_Shake_$Impl_$.toWeek = function(this1) {
+	return this1.multiply(thx_unit_time__$Shake_Shake_$Impl_$.ofUnit).divide(thx_unit_time__$Shake_Shake_$Impl_$.dividerWeek).trim(null);
+};
+thx_unit_time__$Shake_Shake_$Impl_$.toMegasecond = function(this1) {
+	return this1.multiply(thx_unit_time__$Shake_Shake_$Impl_$.ofUnit).divide(thx_unit_time__$Shake_Shake_$Impl_$.dividerMegasecond).trim(null);
+};
+thx_unit_time__$Shake_Shake_$Impl_$.toFortnight = function(this1) {
+	return this1.multiply(thx_unit_time__$Shake_Shake_$Impl_$.ofUnit).divide(thx_unit_time__$Shake_Shake_$Impl_$.dividerFortnight).trim(null);
+};
+thx_unit_time__$Shake_Shake_$Impl_$.toSynodicMonth = function(this1) {
+	return this1.multiply(thx_unit_time__$Shake_Shake_$Impl_$.ofUnit).divide(thx_unit_time__$Shake_Shake_$Impl_$.dividerSynodicMonth).trim(null);
+};
+thx_unit_time__$Shake_Shake_$Impl_$.toTropicalMonth = function(this1) {
+	return this1.multiply(thx_unit_time__$Shake_Shake_$Impl_$.ofUnit).divide(thx_unit_time__$Shake_Shake_$Impl_$.dividerTropicalMonth).trim(null);
+};
+thx_unit_time__$Shake_Shake_$Impl_$.toJulianYear = function(this1) {
+	return this1.multiply(thx_unit_time__$Shake_Shake_$Impl_$.ofUnit).divide(thx_unit_time__$Shake_Shake_$Impl_$.dividerJulianYear).trim(null);
+};
+thx_unit_time__$Shake_Shake_$Impl_$.toGigasecond = function(this1) {
+	return this1.multiply(thx_unit_time__$Shake_Shake_$Impl_$.ofUnit).divide(thx_unit_time__$Shake_Shake_$Impl_$.dividerGigasecond).trim(null);
+};
+thx_unit_time__$Shake_Shake_$Impl_$.toTerasecond = function(this1) {
+	return this1.multiply(thx_unit_time__$Shake_Shake_$Impl_$.ofUnit).divide(thx_unit_time__$Shake_Shake_$Impl_$.dividerTerasecond).trim(null);
+};
+thx_unit_time__$Shake_Shake_$Impl_$.toString = function(this1) {
+	return "" + this1.toString() + "shake";
+};
+thx_unit_time__$Shake_Shake_$Impl_$.fromTime = function(time) {
+	return thx__$Decimal_Decimal_$Impl_$.fromInt64(time).multiply(thx_unit_time__$Tick_Tick_$Impl_$.ofUnit).divide(thx_unit_time__$Tick_Tick_$Impl_$.dividerShake).trim(null);
+};
+thx_unit_time__$Shake_Shake_$Impl_$.toTime = function(this1) {
+	return thx_bigint_Bigs.toInt64(thx__$Decimal_Decimal_$Impl_$.toBigInt(this1.multiply(thx_unit_time__$Shake_Shake_$Impl_$.ofUnit).divide(thx_unit_time__$Shake_Shake_$Impl_$.dividerTick).trim(null)));
+};
+var thx_unit_time__$Svedberg_Svedberg_$Impl_$ = {};
+thx_unit_time__$Svedberg_Svedberg_$Impl_$.__name__ = ["thx","unit","time","_Svedberg","Svedberg_Impl_"];
+thx_unit_time__$Svedberg_Svedberg_$Impl_$.fromDecimal = function(value) {
+	return value;
+};
+thx_unit_time__$Svedberg_Svedberg_$Impl_$.fromInt = function(value) {
+	return thx__$Decimal_Decimal_$Impl_$.fromInt(value);
+};
+thx_unit_time__$Svedberg_Svedberg_$Impl_$.fromFloat = function(value) {
+	return thx_bigint_Decimals.fromFloat(value);
+};
+thx_unit_time__$Svedberg_Svedberg_$Impl_$._new = function(value) {
+	return value;
+};
+thx_unit_time__$Svedberg_Svedberg_$Impl_$.abs = function(this1) {
+	return this1.abs();
+};
+thx_unit_time__$Svedberg_Svedberg_$Impl_$.min = function(this1,that) {
+	var that1 = that;
+	return thx__$Decimal_Decimal_$Impl_$.less(this1,that1)?this1:that1;
+};
+thx_unit_time__$Svedberg_Svedberg_$Impl_$.max = function(this1,that) {
+	var that1 = that;
+	return thx__$Decimal_Decimal_$Impl_$.greater(this1,that1)?this1:that1;
+};
+thx_unit_time__$Svedberg_Svedberg_$Impl_$.negate = function(this1) {
+	return this1.negate();
+};
+thx_unit_time__$Svedberg_Svedberg_$Impl_$.add = function(this1,that) {
+	return this1.add(that);
+};
+thx_unit_time__$Svedberg_Svedberg_$Impl_$.subtract = function(this1,that) {
+	return this1.subtract(that);
+};
+thx_unit_time__$Svedberg_Svedberg_$Impl_$.multiply = function(this1,that) {
+	return this1.multiply(that);
+};
+thx_unit_time__$Svedberg_Svedberg_$Impl_$.divide = function(this1,that) {
+	return this1.divide(that);
+};
+thx_unit_time__$Svedberg_Svedberg_$Impl_$.modulo = function(this1,that) {
+	return this1.modulo(that);
+};
+thx_unit_time__$Svedberg_Svedberg_$Impl_$.equalsTo = function(this1,that) {
+	return thx__$Decimal_Decimal_$Impl_$.equals(this1,that);
+};
+thx_unit_time__$Svedberg_Svedberg_$Impl_$.equals = function(self,that) {
+	return thx__$Decimal_Decimal_$Impl_$.equals(self,that);
+};
+thx_unit_time__$Svedberg_Svedberg_$Impl_$.nearEqualsTo = function(this1,that) {
+	return thx_Floats.nearEquals(this1.toFloat(),that.toFloat());
+};
+thx_unit_time__$Svedberg_Svedberg_$Impl_$.nearEquals = function(self,that) {
+	return thx_Floats.nearEquals(self.toFloat(),that.toFloat());
+};
+thx_unit_time__$Svedberg_Svedberg_$Impl_$.notEqualsTo = function(this1,that) {
+	return thx__$Decimal_Decimal_$Impl_$.notEquals(this1,that);
+};
+thx_unit_time__$Svedberg_Svedberg_$Impl_$.notEquals = function(self,that) {
+	return thx__$Decimal_Decimal_$Impl_$.notEquals(self,that);
+};
+thx_unit_time__$Svedberg_Svedberg_$Impl_$.lessThan = function(this1,that) {
+	return thx__$Decimal_Decimal_$Impl_$.less(this1,that);
+};
+thx_unit_time__$Svedberg_Svedberg_$Impl_$.less = function(self,that) {
+	return thx__$Decimal_Decimal_$Impl_$.less(self,that);
+};
+thx_unit_time__$Svedberg_Svedberg_$Impl_$.lessEqualsTo = function(this1,that) {
+	return thx__$Decimal_Decimal_$Impl_$.lessEquals(this1,that);
+};
+thx_unit_time__$Svedberg_Svedberg_$Impl_$.lessEquals = function(self,that) {
+	return thx__$Decimal_Decimal_$Impl_$.lessEquals(self,that);
+};
+thx_unit_time__$Svedberg_Svedberg_$Impl_$.greaterThan = function(this1,that) {
+	return thx__$Decimal_Decimal_$Impl_$.greater(this1,that);
+};
+thx_unit_time__$Svedberg_Svedberg_$Impl_$.greater = function(self,that) {
+	return thx__$Decimal_Decimal_$Impl_$.greaterEquals(self,that);
+};
+thx_unit_time__$Svedberg_Svedberg_$Impl_$.greaterEqualsTo = function(this1,that) {
+	return thx__$Decimal_Decimal_$Impl_$.greaterEquals(this1,that);
+};
+thx_unit_time__$Svedberg_Svedberg_$Impl_$.greaterEquals = function(self,that) {
+	return thx__$Decimal_Decimal_$Impl_$.greaterEquals(self,that);
+};
+thx_unit_time__$Svedberg_Svedberg_$Impl_$.toDecimal = function(this1) {
+	return this1;
+};
+thx_unit_time__$Svedberg_Svedberg_$Impl_$.toFloat = function(this1) {
+	return this1.toFloat();
+};
+thx_unit_time__$Svedberg_Svedberg_$Impl_$.toPlankTimeUnit = function(this1) {
+	return this1.multiply(thx_unit_time__$Svedberg_Svedberg_$Impl_$.ofUnit).divide(thx_unit_time__$Svedberg_Svedberg_$Impl_$.dividerPlankTimeUnit).trim(null);
+};
+thx_unit_time__$Svedberg_Svedberg_$Impl_$.toJiffyPhysics = function(this1) {
+	return this1.multiply(thx_unit_time__$Svedberg_Svedberg_$Impl_$.ofUnit).divide(thx_unit_time__$Svedberg_Svedberg_$Impl_$.dividerJiffyPhysics).trim(null);
+};
+thx_unit_time__$Svedberg_Svedberg_$Impl_$.toSvedberg = function(this1) {
+	return this1;
+};
+thx_unit_time__$Svedberg_Svedberg_$Impl_$.toPicosecond = function(this1) {
+	return this1.multiply(thx_unit_time__$Svedberg_Svedberg_$Impl_$.ofUnit).divide(thx_unit_time__$Svedberg_Svedberg_$Impl_$.dividerPicosecond).trim(null);
+};
+thx_unit_time__$Svedberg_Svedberg_$Impl_$.toNanosecond = function(this1) {
+	return this1.multiply(thx_unit_time__$Svedberg_Svedberg_$Impl_$.ofUnit).divide(thx_unit_time__$Svedberg_Svedberg_$Impl_$.dividerNanosecond).trim(null);
+};
+thx_unit_time__$Svedberg_Svedberg_$Impl_$.toShake = function(this1) {
+	return this1.multiply(thx_unit_time__$Svedberg_Svedberg_$Impl_$.ofUnit).divide(thx_unit_time__$Svedberg_Svedberg_$Impl_$.dividerShake).trim(null);
+};
+thx_unit_time__$Svedberg_Svedberg_$Impl_$.toTick = function(this1) {
+	return this1.multiply(thx_unit_time__$Svedberg_Svedberg_$Impl_$.ofUnit).divide(thx_unit_time__$Svedberg_Svedberg_$Impl_$.dividerTick).trim(null);
+};
+thx_unit_time__$Svedberg_Svedberg_$Impl_$.toMicrosecond = function(this1) {
+	return this1.multiply(thx_unit_time__$Svedberg_Svedberg_$Impl_$.ofUnit).divide(thx_unit_time__$Svedberg_Svedberg_$Impl_$.dividerMicrosecond).trim(null);
+};
+thx_unit_time__$Svedberg_Svedberg_$Impl_$.toFourth = function(this1) {
+	return this1.multiply(thx_unit_time__$Svedberg_Svedberg_$Impl_$.ofUnit).divide(thx_unit_time__$Svedberg_Svedberg_$Impl_$.dividerFourth).trim(null);
+};
+thx_unit_time__$Svedberg_Svedberg_$Impl_$.toMillisecond = function(this1) {
+	return this1.multiply(thx_unit_time__$Svedberg_Svedberg_$Impl_$.ofUnit).divide(thx_unit_time__$Svedberg_Svedberg_$Impl_$.dividerMillisecond).trim(null);
+};
+thx_unit_time__$Svedberg_Svedberg_$Impl_$.toThird = function(this1) {
+	return this1.multiply(thx_unit_time__$Svedberg_Svedberg_$Impl_$.ofUnit).divide(thx_unit_time__$Svedberg_Svedberg_$Impl_$.dividerThird).trim(null);
+};
+thx_unit_time__$Svedberg_Svedberg_$Impl_$.toSecond = function(this1) {
+	return this1.multiply(thx_unit_time__$Svedberg_Svedberg_$Impl_$.ofUnit).divide(thx_unit_time__$Svedberg_Svedberg_$Impl_$.dividerSecond).trim(null);
+};
+thx_unit_time__$Svedberg_Svedberg_$Impl_$.toMinute = function(this1) {
+	return this1.multiply(thx_unit_time__$Svedberg_Svedberg_$Impl_$.ofUnit).divide(thx_unit_time__$Svedberg_Svedberg_$Impl_$.dividerMinute).trim(null);
+};
+thx_unit_time__$Svedberg_Svedberg_$Impl_$.toKe = function(this1) {
+	return this1.multiply(thx_unit_time__$Svedberg_Svedberg_$Impl_$.ofUnit).divide(thx_unit_time__$Svedberg_Svedberg_$Impl_$.dividerKe).trim(null);
+};
+thx_unit_time__$Svedberg_Svedberg_$Impl_$.toKilosecond = function(this1) {
+	return this1.multiply(thx_unit_time__$Svedberg_Svedberg_$Impl_$.ofUnit).divide(thx_unit_time__$Svedberg_Svedberg_$Impl_$.dividerKilosecond).trim(null);
+};
+thx_unit_time__$Svedberg_Svedberg_$Impl_$.toHour = function(this1) {
+	return this1.multiply(thx_unit_time__$Svedberg_Svedberg_$Impl_$.ofUnit).divide(thx_unit_time__$Svedberg_Svedberg_$Impl_$.dividerHour).trim(null);
+};
+thx_unit_time__$Svedberg_Svedberg_$Impl_$.toDay = function(this1) {
+	return this1.multiply(thx_unit_time__$Svedberg_Svedberg_$Impl_$.ofUnit).divide(thx_unit_time__$Svedberg_Svedberg_$Impl_$.dividerDay).trim(null);
+};
+thx_unit_time__$Svedberg_Svedberg_$Impl_$.toWeek = function(this1) {
+	return this1.multiply(thx_unit_time__$Svedberg_Svedberg_$Impl_$.ofUnit).divide(thx_unit_time__$Svedberg_Svedberg_$Impl_$.dividerWeek).trim(null);
+};
+thx_unit_time__$Svedberg_Svedberg_$Impl_$.toMegasecond = function(this1) {
+	return this1.multiply(thx_unit_time__$Svedberg_Svedberg_$Impl_$.ofUnit).divide(thx_unit_time__$Svedberg_Svedberg_$Impl_$.dividerMegasecond).trim(null);
+};
+thx_unit_time__$Svedberg_Svedberg_$Impl_$.toFortnight = function(this1) {
+	return this1.multiply(thx_unit_time__$Svedberg_Svedberg_$Impl_$.ofUnit).divide(thx_unit_time__$Svedberg_Svedberg_$Impl_$.dividerFortnight).trim(null);
+};
+thx_unit_time__$Svedberg_Svedberg_$Impl_$.toSynodicMonth = function(this1) {
+	return this1.multiply(thx_unit_time__$Svedberg_Svedberg_$Impl_$.ofUnit).divide(thx_unit_time__$Svedberg_Svedberg_$Impl_$.dividerSynodicMonth).trim(null);
+};
+thx_unit_time__$Svedberg_Svedberg_$Impl_$.toTropicalMonth = function(this1) {
+	return this1.multiply(thx_unit_time__$Svedberg_Svedberg_$Impl_$.ofUnit).divide(thx_unit_time__$Svedberg_Svedberg_$Impl_$.dividerTropicalMonth).trim(null);
+};
+thx_unit_time__$Svedberg_Svedberg_$Impl_$.toJulianYear = function(this1) {
+	return this1.multiply(thx_unit_time__$Svedberg_Svedberg_$Impl_$.ofUnit).divide(thx_unit_time__$Svedberg_Svedberg_$Impl_$.dividerJulianYear).trim(null);
+};
+thx_unit_time__$Svedberg_Svedberg_$Impl_$.toGigasecond = function(this1) {
+	return this1.multiply(thx_unit_time__$Svedberg_Svedberg_$Impl_$.ofUnit).divide(thx_unit_time__$Svedberg_Svedberg_$Impl_$.dividerGigasecond).trim(null);
+};
+thx_unit_time__$Svedberg_Svedberg_$Impl_$.toTerasecond = function(this1) {
+	return this1.multiply(thx_unit_time__$Svedberg_Svedberg_$Impl_$.ofUnit).divide(thx_unit_time__$Svedberg_Svedberg_$Impl_$.dividerTerasecond).trim(null);
+};
+thx_unit_time__$Svedberg_Svedberg_$Impl_$.toString = function(this1) {
+	return "" + this1.toString() + "S";
+};
+thx_unit_time__$Svedberg_Svedberg_$Impl_$.fromTime = function(time) {
+	return thx__$Decimal_Decimal_$Impl_$.fromInt64(time).multiply(thx_unit_time__$Tick_Tick_$Impl_$.ofUnit).divide(thx_unit_time__$Tick_Tick_$Impl_$.dividerSvedberg).trim(null);
+};
+thx_unit_time__$Svedberg_Svedberg_$Impl_$.toTime = function(this1) {
+	return thx_bigint_Bigs.toInt64(thx__$Decimal_Decimal_$Impl_$.toBigInt(this1.multiply(thx_unit_time__$Svedberg_Svedberg_$Impl_$.ofUnit).divide(thx_unit_time__$Svedberg_Svedberg_$Impl_$.dividerTick).trim(null)));
+};
+var thx_unit_time__$SynodicMonth_SynodicMonth_$Impl_$ = {};
+thx_unit_time__$SynodicMonth_SynodicMonth_$Impl_$.__name__ = ["thx","unit","time","_SynodicMonth","SynodicMonth_Impl_"];
+thx_unit_time__$SynodicMonth_SynodicMonth_$Impl_$.fromDecimal = function(value) {
+	return value;
+};
+thx_unit_time__$SynodicMonth_SynodicMonth_$Impl_$.fromInt = function(value) {
+	return thx__$Decimal_Decimal_$Impl_$.fromInt(value);
+};
+thx_unit_time__$SynodicMonth_SynodicMonth_$Impl_$.fromFloat = function(value) {
+	return thx_bigint_Decimals.fromFloat(value);
+};
+thx_unit_time__$SynodicMonth_SynodicMonth_$Impl_$._new = function(value) {
+	return value;
+};
+thx_unit_time__$SynodicMonth_SynodicMonth_$Impl_$.abs = function(this1) {
+	return this1.abs();
+};
+thx_unit_time__$SynodicMonth_SynodicMonth_$Impl_$.min = function(this1,that) {
+	var that1 = that;
+	return thx__$Decimal_Decimal_$Impl_$.less(this1,that1)?this1:that1;
+};
+thx_unit_time__$SynodicMonth_SynodicMonth_$Impl_$.max = function(this1,that) {
+	var that1 = that;
+	return thx__$Decimal_Decimal_$Impl_$.greater(this1,that1)?this1:that1;
+};
+thx_unit_time__$SynodicMonth_SynodicMonth_$Impl_$.negate = function(this1) {
+	return this1.negate();
+};
+thx_unit_time__$SynodicMonth_SynodicMonth_$Impl_$.add = function(this1,that) {
+	return this1.add(that);
+};
+thx_unit_time__$SynodicMonth_SynodicMonth_$Impl_$.subtract = function(this1,that) {
+	return this1.subtract(that);
+};
+thx_unit_time__$SynodicMonth_SynodicMonth_$Impl_$.multiply = function(this1,that) {
+	return this1.multiply(that);
+};
+thx_unit_time__$SynodicMonth_SynodicMonth_$Impl_$.divide = function(this1,that) {
+	return this1.divide(that);
+};
+thx_unit_time__$SynodicMonth_SynodicMonth_$Impl_$.modulo = function(this1,that) {
+	return this1.modulo(that);
+};
+thx_unit_time__$SynodicMonth_SynodicMonth_$Impl_$.equalsTo = function(this1,that) {
+	return thx__$Decimal_Decimal_$Impl_$.equals(this1,that);
+};
+thx_unit_time__$SynodicMonth_SynodicMonth_$Impl_$.equals = function(self,that) {
+	return thx__$Decimal_Decimal_$Impl_$.equals(self,that);
+};
+thx_unit_time__$SynodicMonth_SynodicMonth_$Impl_$.nearEqualsTo = function(this1,that) {
+	return thx_Floats.nearEquals(this1.toFloat(),that.toFloat());
+};
+thx_unit_time__$SynodicMonth_SynodicMonth_$Impl_$.nearEquals = function(self,that) {
+	return thx_Floats.nearEquals(self.toFloat(),that.toFloat());
+};
+thx_unit_time__$SynodicMonth_SynodicMonth_$Impl_$.notEqualsTo = function(this1,that) {
+	return thx__$Decimal_Decimal_$Impl_$.notEquals(this1,that);
+};
+thx_unit_time__$SynodicMonth_SynodicMonth_$Impl_$.notEquals = function(self,that) {
+	return thx__$Decimal_Decimal_$Impl_$.notEquals(self,that);
+};
+thx_unit_time__$SynodicMonth_SynodicMonth_$Impl_$.lessThan = function(this1,that) {
+	return thx__$Decimal_Decimal_$Impl_$.less(this1,that);
+};
+thx_unit_time__$SynodicMonth_SynodicMonth_$Impl_$.less = function(self,that) {
+	return thx__$Decimal_Decimal_$Impl_$.less(self,that);
+};
+thx_unit_time__$SynodicMonth_SynodicMonth_$Impl_$.lessEqualsTo = function(this1,that) {
+	return thx__$Decimal_Decimal_$Impl_$.lessEquals(this1,that);
+};
+thx_unit_time__$SynodicMonth_SynodicMonth_$Impl_$.lessEquals = function(self,that) {
+	return thx__$Decimal_Decimal_$Impl_$.lessEquals(self,that);
+};
+thx_unit_time__$SynodicMonth_SynodicMonth_$Impl_$.greaterThan = function(this1,that) {
+	return thx__$Decimal_Decimal_$Impl_$.greater(this1,that);
+};
+thx_unit_time__$SynodicMonth_SynodicMonth_$Impl_$.greater = function(self,that) {
+	return thx__$Decimal_Decimal_$Impl_$.greaterEquals(self,that);
+};
+thx_unit_time__$SynodicMonth_SynodicMonth_$Impl_$.greaterEqualsTo = function(this1,that) {
+	return thx__$Decimal_Decimal_$Impl_$.greaterEquals(this1,that);
+};
+thx_unit_time__$SynodicMonth_SynodicMonth_$Impl_$.greaterEquals = function(self,that) {
+	return thx__$Decimal_Decimal_$Impl_$.greaterEquals(self,that);
+};
+thx_unit_time__$SynodicMonth_SynodicMonth_$Impl_$.toDecimal = function(this1) {
+	return this1;
+};
+thx_unit_time__$SynodicMonth_SynodicMonth_$Impl_$.toFloat = function(this1) {
+	return this1.toFloat();
+};
+thx_unit_time__$SynodicMonth_SynodicMonth_$Impl_$.toPlankTimeUnit = function(this1) {
+	return this1.multiply(thx_unit_time__$SynodicMonth_SynodicMonth_$Impl_$.ofUnit).divide(thx_unit_time__$SynodicMonth_SynodicMonth_$Impl_$.dividerPlankTimeUnit).trim(null);
+};
+thx_unit_time__$SynodicMonth_SynodicMonth_$Impl_$.toJiffyPhysics = function(this1) {
+	return this1.multiply(thx_unit_time__$SynodicMonth_SynodicMonth_$Impl_$.ofUnit).divide(thx_unit_time__$SynodicMonth_SynodicMonth_$Impl_$.dividerJiffyPhysics).trim(null);
+};
+thx_unit_time__$SynodicMonth_SynodicMonth_$Impl_$.toSvedberg = function(this1) {
+	return this1.multiply(thx_unit_time__$SynodicMonth_SynodicMonth_$Impl_$.ofUnit).divide(thx_unit_time__$SynodicMonth_SynodicMonth_$Impl_$.dividerSvedberg).trim(null);
+};
+thx_unit_time__$SynodicMonth_SynodicMonth_$Impl_$.toPicosecond = function(this1) {
+	return this1.multiply(thx_unit_time__$SynodicMonth_SynodicMonth_$Impl_$.ofUnit).divide(thx_unit_time__$SynodicMonth_SynodicMonth_$Impl_$.dividerPicosecond).trim(null);
+};
+thx_unit_time__$SynodicMonth_SynodicMonth_$Impl_$.toNanosecond = function(this1) {
+	return this1.multiply(thx_unit_time__$SynodicMonth_SynodicMonth_$Impl_$.ofUnit).divide(thx_unit_time__$SynodicMonth_SynodicMonth_$Impl_$.dividerNanosecond).trim(null);
+};
+thx_unit_time__$SynodicMonth_SynodicMonth_$Impl_$.toShake = function(this1) {
+	return this1.multiply(thx_unit_time__$SynodicMonth_SynodicMonth_$Impl_$.ofUnit).divide(thx_unit_time__$SynodicMonth_SynodicMonth_$Impl_$.dividerShake).trim(null);
+};
+thx_unit_time__$SynodicMonth_SynodicMonth_$Impl_$.toTick = function(this1) {
+	return this1.multiply(thx_unit_time__$SynodicMonth_SynodicMonth_$Impl_$.ofUnit).divide(thx_unit_time__$SynodicMonth_SynodicMonth_$Impl_$.dividerTick).trim(null);
+};
+thx_unit_time__$SynodicMonth_SynodicMonth_$Impl_$.toMicrosecond = function(this1) {
+	return this1.multiply(thx_unit_time__$SynodicMonth_SynodicMonth_$Impl_$.ofUnit).divide(thx_unit_time__$SynodicMonth_SynodicMonth_$Impl_$.dividerMicrosecond).trim(null);
+};
+thx_unit_time__$SynodicMonth_SynodicMonth_$Impl_$.toFourth = function(this1) {
+	return this1.multiply(thx_unit_time__$SynodicMonth_SynodicMonth_$Impl_$.ofUnit).divide(thx_unit_time__$SynodicMonth_SynodicMonth_$Impl_$.dividerFourth).trim(null);
+};
+thx_unit_time__$SynodicMonth_SynodicMonth_$Impl_$.toMillisecond = function(this1) {
+	return this1.multiply(thx_unit_time__$SynodicMonth_SynodicMonth_$Impl_$.ofUnit).divide(thx_unit_time__$SynodicMonth_SynodicMonth_$Impl_$.dividerMillisecond).trim(null);
+};
+thx_unit_time__$SynodicMonth_SynodicMonth_$Impl_$.toThird = function(this1) {
+	return this1.multiply(thx_unit_time__$SynodicMonth_SynodicMonth_$Impl_$.ofUnit).divide(thx_unit_time__$SynodicMonth_SynodicMonth_$Impl_$.dividerThird).trim(null);
+};
+thx_unit_time__$SynodicMonth_SynodicMonth_$Impl_$.toSecond = function(this1) {
+	return this1.multiply(thx_unit_time__$SynodicMonth_SynodicMonth_$Impl_$.ofUnit).divide(thx_unit_time__$SynodicMonth_SynodicMonth_$Impl_$.dividerSecond).trim(null);
+};
+thx_unit_time__$SynodicMonth_SynodicMonth_$Impl_$.toMinute = function(this1) {
+	return this1.multiply(thx_unit_time__$SynodicMonth_SynodicMonth_$Impl_$.ofUnit).divide(thx_unit_time__$SynodicMonth_SynodicMonth_$Impl_$.dividerMinute).trim(null);
+};
+thx_unit_time__$SynodicMonth_SynodicMonth_$Impl_$.toKe = function(this1) {
+	return this1.multiply(thx_unit_time__$SynodicMonth_SynodicMonth_$Impl_$.ofUnit).divide(thx_unit_time__$SynodicMonth_SynodicMonth_$Impl_$.dividerKe).trim(null);
+};
+thx_unit_time__$SynodicMonth_SynodicMonth_$Impl_$.toKilosecond = function(this1) {
+	return this1.multiply(thx_unit_time__$SynodicMonth_SynodicMonth_$Impl_$.ofUnit).divide(thx_unit_time__$SynodicMonth_SynodicMonth_$Impl_$.dividerKilosecond).trim(null);
+};
+thx_unit_time__$SynodicMonth_SynodicMonth_$Impl_$.toHour = function(this1) {
+	return this1.multiply(thx_unit_time__$SynodicMonth_SynodicMonth_$Impl_$.ofUnit).divide(thx_unit_time__$SynodicMonth_SynodicMonth_$Impl_$.dividerHour).trim(null);
+};
+thx_unit_time__$SynodicMonth_SynodicMonth_$Impl_$.toDay = function(this1) {
+	return this1.multiply(thx_unit_time__$SynodicMonth_SynodicMonth_$Impl_$.ofUnit).divide(thx_unit_time__$SynodicMonth_SynodicMonth_$Impl_$.dividerDay).trim(null);
+};
+thx_unit_time__$SynodicMonth_SynodicMonth_$Impl_$.toWeek = function(this1) {
+	return this1.multiply(thx_unit_time__$SynodicMonth_SynodicMonth_$Impl_$.ofUnit).divide(thx_unit_time__$SynodicMonth_SynodicMonth_$Impl_$.dividerWeek).trim(null);
+};
+thx_unit_time__$SynodicMonth_SynodicMonth_$Impl_$.toMegasecond = function(this1) {
+	return this1.multiply(thx_unit_time__$SynodicMonth_SynodicMonth_$Impl_$.ofUnit).divide(thx_unit_time__$SynodicMonth_SynodicMonth_$Impl_$.dividerMegasecond).trim(null);
+};
+thx_unit_time__$SynodicMonth_SynodicMonth_$Impl_$.toFortnight = function(this1) {
+	return this1.multiply(thx_unit_time__$SynodicMonth_SynodicMonth_$Impl_$.ofUnit).divide(thx_unit_time__$SynodicMonth_SynodicMonth_$Impl_$.dividerFortnight).trim(null);
+};
+thx_unit_time__$SynodicMonth_SynodicMonth_$Impl_$.toSynodicMonth = function(this1) {
+	return this1;
+};
+thx_unit_time__$SynodicMonth_SynodicMonth_$Impl_$.toTropicalMonth = function(this1) {
+	return this1.multiply(thx_unit_time__$SynodicMonth_SynodicMonth_$Impl_$.ofUnit).divide(thx_unit_time__$SynodicMonth_SynodicMonth_$Impl_$.dividerTropicalMonth).trim(null);
+};
+thx_unit_time__$SynodicMonth_SynodicMonth_$Impl_$.toJulianYear = function(this1) {
+	return this1.multiply(thx_unit_time__$SynodicMonth_SynodicMonth_$Impl_$.ofUnit).divide(thx_unit_time__$SynodicMonth_SynodicMonth_$Impl_$.dividerJulianYear).trim(null);
+};
+thx_unit_time__$SynodicMonth_SynodicMonth_$Impl_$.toGigasecond = function(this1) {
+	return this1.multiply(thx_unit_time__$SynodicMonth_SynodicMonth_$Impl_$.ofUnit).divide(thx_unit_time__$SynodicMonth_SynodicMonth_$Impl_$.dividerGigasecond).trim(null);
+};
+thx_unit_time__$SynodicMonth_SynodicMonth_$Impl_$.toTerasecond = function(this1) {
+	return this1.multiply(thx_unit_time__$SynodicMonth_SynodicMonth_$Impl_$.ofUnit).divide(thx_unit_time__$SynodicMonth_SynodicMonth_$Impl_$.dividerTerasecond).trim(null);
+};
+thx_unit_time__$SynodicMonth_SynodicMonth_$Impl_$.toString = function(this1) {
+	return "" + this1.toString() + "synodic month";
+};
+thx_unit_time__$SynodicMonth_SynodicMonth_$Impl_$.fromTime = function(time) {
+	return thx__$Decimal_Decimal_$Impl_$.fromInt64(time).multiply(thx_unit_time__$Tick_Tick_$Impl_$.ofUnit).divide(thx_unit_time__$Tick_Tick_$Impl_$.dividerSynodicMonth).trim(null);
+};
+thx_unit_time__$SynodicMonth_SynodicMonth_$Impl_$.toTime = function(this1) {
+	return thx_bigint_Bigs.toInt64(thx__$Decimal_Decimal_$Impl_$.toBigInt(this1.multiply(thx_unit_time__$SynodicMonth_SynodicMonth_$Impl_$.ofUnit).divide(thx_unit_time__$SynodicMonth_SynodicMonth_$Impl_$.dividerTick).trim(null)));
+};
+var thx_unit_time__$Terasecond_Terasecond_$Impl_$ = {};
+thx_unit_time__$Terasecond_Terasecond_$Impl_$.__name__ = ["thx","unit","time","_Terasecond","Terasecond_Impl_"];
+thx_unit_time__$Terasecond_Terasecond_$Impl_$.fromDecimal = function(value) {
+	return value;
+};
+thx_unit_time__$Terasecond_Terasecond_$Impl_$.fromInt = function(value) {
+	return thx__$Decimal_Decimal_$Impl_$.fromInt(value);
+};
+thx_unit_time__$Terasecond_Terasecond_$Impl_$.fromFloat = function(value) {
+	return thx_bigint_Decimals.fromFloat(value);
+};
+thx_unit_time__$Terasecond_Terasecond_$Impl_$._new = function(value) {
+	return value;
+};
+thx_unit_time__$Terasecond_Terasecond_$Impl_$.abs = function(this1) {
+	return this1.abs();
+};
+thx_unit_time__$Terasecond_Terasecond_$Impl_$.min = function(this1,that) {
+	var that1 = that;
+	return thx__$Decimal_Decimal_$Impl_$.less(this1,that1)?this1:that1;
+};
+thx_unit_time__$Terasecond_Terasecond_$Impl_$.max = function(this1,that) {
+	var that1 = that;
+	return thx__$Decimal_Decimal_$Impl_$.greater(this1,that1)?this1:that1;
+};
+thx_unit_time__$Terasecond_Terasecond_$Impl_$.negate = function(this1) {
+	return this1.negate();
+};
+thx_unit_time__$Terasecond_Terasecond_$Impl_$.add = function(this1,that) {
+	return this1.add(that);
+};
+thx_unit_time__$Terasecond_Terasecond_$Impl_$.subtract = function(this1,that) {
+	return this1.subtract(that);
+};
+thx_unit_time__$Terasecond_Terasecond_$Impl_$.multiply = function(this1,that) {
+	return this1.multiply(that);
+};
+thx_unit_time__$Terasecond_Terasecond_$Impl_$.divide = function(this1,that) {
+	return this1.divide(that);
+};
+thx_unit_time__$Terasecond_Terasecond_$Impl_$.modulo = function(this1,that) {
+	return this1.modulo(that);
+};
+thx_unit_time__$Terasecond_Terasecond_$Impl_$.equalsTo = function(this1,that) {
+	return thx__$Decimal_Decimal_$Impl_$.equals(this1,that);
+};
+thx_unit_time__$Terasecond_Terasecond_$Impl_$.equals = function(self,that) {
+	return thx__$Decimal_Decimal_$Impl_$.equals(self,that);
+};
+thx_unit_time__$Terasecond_Terasecond_$Impl_$.nearEqualsTo = function(this1,that) {
+	return thx_Floats.nearEquals(this1.toFloat(),that.toFloat());
+};
+thx_unit_time__$Terasecond_Terasecond_$Impl_$.nearEquals = function(self,that) {
+	return thx_Floats.nearEquals(self.toFloat(),that.toFloat());
+};
+thx_unit_time__$Terasecond_Terasecond_$Impl_$.notEqualsTo = function(this1,that) {
+	return thx__$Decimal_Decimal_$Impl_$.notEquals(this1,that);
+};
+thx_unit_time__$Terasecond_Terasecond_$Impl_$.notEquals = function(self,that) {
+	return thx__$Decimal_Decimal_$Impl_$.notEquals(self,that);
+};
+thx_unit_time__$Terasecond_Terasecond_$Impl_$.lessThan = function(this1,that) {
+	return thx__$Decimal_Decimal_$Impl_$.less(this1,that);
+};
+thx_unit_time__$Terasecond_Terasecond_$Impl_$.less = function(self,that) {
+	return thx__$Decimal_Decimal_$Impl_$.less(self,that);
+};
+thx_unit_time__$Terasecond_Terasecond_$Impl_$.lessEqualsTo = function(this1,that) {
+	return thx__$Decimal_Decimal_$Impl_$.lessEquals(this1,that);
+};
+thx_unit_time__$Terasecond_Terasecond_$Impl_$.lessEquals = function(self,that) {
+	return thx__$Decimal_Decimal_$Impl_$.lessEquals(self,that);
+};
+thx_unit_time__$Terasecond_Terasecond_$Impl_$.greaterThan = function(this1,that) {
+	return thx__$Decimal_Decimal_$Impl_$.greater(this1,that);
+};
+thx_unit_time__$Terasecond_Terasecond_$Impl_$.greater = function(self,that) {
+	return thx__$Decimal_Decimal_$Impl_$.greaterEquals(self,that);
+};
+thx_unit_time__$Terasecond_Terasecond_$Impl_$.greaterEqualsTo = function(this1,that) {
+	return thx__$Decimal_Decimal_$Impl_$.greaterEquals(this1,that);
+};
+thx_unit_time__$Terasecond_Terasecond_$Impl_$.greaterEquals = function(self,that) {
+	return thx__$Decimal_Decimal_$Impl_$.greaterEquals(self,that);
+};
+thx_unit_time__$Terasecond_Terasecond_$Impl_$.toDecimal = function(this1) {
+	return this1;
+};
+thx_unit_time__$Terasecond_Terasecond_$Impl_$.toFloat = function(this1) {
+	return this1.toFloat();
+};
+thx_unit_time__$Terasecond_Terasecond_$Impl_$.toPlankTimeUnit = function(this1) {
+	return this1.multiply(thx_unit_time__$Terasecond_Terasecond_$Impl_$.ofUnit).divide(thx_unit_time__$Terasecond_Terasecond_$Impl_$.dividerPlankTimeUnit).trim(null);
+};
+thx_unit_time__$Terasecond_Terasecond_$Impl_$.toJiffyPhysics = function(this1) {
+	return this1.multiply(thx_unit_time__$Terasecond_Terasecond_$Impl_$.ofUnit).divide(thx_unit_time__$Terasecond_Terasecond_$Impl_$.dividerJiffyPhysics).trim(null);
+};
+thx_unit_time__$Terasecond_Terasecond_$Impl_$.toSvedberg = function(this1) {
+	return this1.multiply(thx_unit_time__$Terasecond_Terasecond_$Impl_$.ofUnit).divide(thx_unit_time__$Terasecond_Terasecond_$Impl_$.dividerSvedberg).trim(null);
+};
+thx_unit_time__$Terasecond_Terasecond_$Impl_$.toPicosecond = function(this1) {
+	return this1.multiply(thx_unit_time__$Terasecond_Terasecond_$Impl_$.ofUnit).divide(thx_unit_time__$Terasecond_Terasecond_$Impl_$.dividerPicosecond).trim(null);
+};
+thx_unit_time__$Terasecond_Terasecond_$Impl_$.toNanosecond = function(this1) {
+	return this1.multiply(thx_unit_time__$Terasecond_Terasecond_$Impl_$.ofUnit).divide(thx_unit_time__$Terasecond_Terasecond_$Impl_$.dividerNanosecond).trim(null);
+};
+thx_unit_time__$Terasecond_Terasecond_$Impl_$.toShake = function(this1) {
+	return this1.multiply(thx_unit_time__$Terasecond_Terasecond_$Impl_$.ofUnit).divide(thx_unit_time__$Terasecond_Terasecond_$Impl_$.dividerShake).trim(null);
+};
+thx_unit_time__$Terasecond_Terasecond_$Impl_$.toTick = function(this1) {
+	return this1.multiply(thx_unit_time__$Terasecond_Terasecond_$Impl_$.ofUnit).divide(thx_unit_time__$Terasecond_Terasecond_$Impl_$.dividerTick).trim(null);
+};
+thx_unit_time__$Terasecond_Terasecond_$Impl_$.toMicrosecond = function(this1) {
+	return this1.multiply(thx_unit_time__$Terasecond_Terasecond_$Impl_$.ofUnit).divide(thx_unit_time__$Terasecond_Terasecond_$Impl_$.dividerMicrosecond).trim(null);
+};
+thx_unit_time__$Terasecond_Terasecond_$Impl_$.toFourth = function(this1) {
+	return this1.multiply(thx_unit_time__$Terasecond_Terasecond_$Impl_$.ofUnit).divide(thx_unit_time__$Terasecond_Terasecond_$Impl_$.dividerFourth).trim(null);
+};
+thx_unit_time__$Terasecond_Terasecond_$Impl_$.toMillisecond = function(this1) {
+	return this1.multiply(thx_unit_time__$Terasecond_Terasecond_$Impl_$.ofUnit).divide(thx_unit_time__$Terasecond_Terasecond_$Impl_$.dividerMillisecond).trim(null);
+};
+thx_unit_time__$Terasecond_Terasecond_$Impl_$.toThird = function(this1) {
+	return this1.multiply(thx_unit_time__$Terasecond_Terasecond_$Impl_$.ofUnit).divide(thx_unit_time__$Terasecond_Terasecond_$Impl_$.dividerThird).trim(null);
+};
+thx_unit_time__$Terasecond_Terasecond_$Impl_$.toSecond = function(this1) {
+	return this1.multiply(thx_unit_time__$Terasecond_Terasecond_$Impl_$.ofUnit).divide(thx_unit_time__$Terasecond_Terasecond_$Impl_$.dividerSecond).trim(null);
+};
+thx_unit_time__$Terasecond_Terasecond_$Impl_$.toMinute = function(this1) {
+	return this1.multiply(thx_unit_time__$Terasecond_Terasecond_$Impl_$.ofUnit).divide(thx_unit_time__$Terasecond_Terasecond_$Impl_$.dividerMinute).trim(null);
+};
+thx_unit_time__$Terasecond_Terasecond_$Impl_$.toKe = function(this1) {
+	return this1.multiply(thx_unit_time__$Terasecond_Terasecond_$Impl_$.ofUnit).divide(thx_unit_time__$Terasecond_Terasecond_$Impl_$.dividerKe).trim(null);
+};
+thx_unit_time__$Terasecond_Terasecond_$Impl_$.toKilosecond = function(this1) {
+	return this1.multiply(thx_unit_time__$Terasecond_Terasecond_$Impl_$.ofUnit).divide(thx_unit_time__$Terasecond_Terasecond_$Impl_$.dividerKilosecond).trim(null);
+};
+thx_unit_time__$Terasecond_Terasecond_$Impl_$.toHour = function(this1) {
+	return this1.multiply(thx_unit_time__$Terasecond_Terasecond_$Impl_$.ofUnit).divide(thx_unit_time__$Terasecond_Terasecond_$Impl_$.dividerHour).trim(null);
+};
+thx_unit_time__$Terasecond_Terasecond_$Impl_$.toDay = function(this1) {
+	return this1.multiply(thx_unit_time__$Terasecond_Terasecond_$Impl_$.ofUnit).divide(thx_unit_time__$Terasecond_Terasecond_$Impl_$.dividerDay).trim(null);
+};
+thx_unit_time__$Terasecond_Terasecond_$Impl_$.toWeek = function(this1) {
+	return this1.multiply(thx_unit_time__$Terasecond_Terasecond_$Impl_$.ofUnit).divide(thx_unit_time__$Terasecond_Terasecond_$Impl_$.dividerWeek).trim(null);
+};
+thx_unit_time__$Terasecond_Terasecond_$Impl_$.toMegasecond = function(this1) {
+	return this1.multiply(thx_unit_time__$Terasecond_Terasecond_$Impl_$.ofUnit).divide(thx_unit_time__$Terasecond_Terasecond_$Impl_$.dividerMegasecond).trim(null);
+};
+thx_unit_time__$Terasecond_Terasecond_$Impl_$.toFortnight = function(this1) {
+	return this1.multiply(thx_unit_time__$Terasecond_Terasecond_$Impl_$.ofUnit).divide(thx_unit_time__$Terasecond_Terasecond_$Impl_$.dividerFortnight).trim(null);
+};
+thx_unit_time__$Terasecond_Terasecond_$Impl_$.toSynodicMonth = function(this1) {
+	return this1.multiply(thx_unit_time__$Terasecond_Terasecond_$Impl_$.ofUnit).divide(thx_unit_time__$Terasecond_Terasecond_$Impl_$.dividerSynodicMonth).trim(null);
+};
+thx_unit_time__$Terasecond_Terasecond_$Impl_$.toTropicalMonth = function(this1) {
+	return this1.multiply(thx_unit_time__$Terasecond_Terasecond_$Impl_$.ofUnit).divide(thx_unit_time__$Terasecond_Terasecond_$Impl_$.dividerTropicalMonth).trim(null);
+};
+thx_unit_time__$Terasecond_Terasecond_$Impl_$.toJulianYear = function(this1) {
+	return this1.multiply(thx_unit_time__$Terasecond_Terasecond_$Impl_$.ofUnit).divide(thx_unit_time__$Terasecond_Terasecond_$Impl_$.dividerJulianYear).trim(null);
+};
+thx_unit_time__$Terasecond_Terasecond_$Impl_$.toGigasecond = function(this1) {
+	return this1.multiply(thx_unit_time__$Terasecond_Terasecond_$Impl_$.ofUnit).divide(thx_unit_time__$Terasecond_Terasecond_$Impl_$.dividerGigasecond).trim(null);
+};
+thx_unit_time__$Terasecond_Terasecond_$Impl_$.toTerasecond = function(this1) {
+	return this1;
+};
+thx_unit_time__$Terasecond_Terasecond_$Impl_$.toString = function(this1) {
+	return "" + this1.toString() + "Ts";
+};
+thx_unit_time__$Terasecond_Terasecond_$Impl_$.fromTime = function(time) {
+	return thx__$Decimal_Decimal_$Impl_$.fromInt64(time).multiply(thx_unit_time__$Tick_Tick_$Impl_$.ofUnit).divide(thx_unit_time__$Tick_Tick_$Impl_$.dividerTerasecond).trim(null);
+};
+thx_unit_time__$Terasecond_Terasecond_$Impl_$.toTime = function(this1) {
+	return thx_bigint_Bigs.toInt64(thx__$Decimal_Decimal_$Impl_$.toBigInt(this1.multiply(thx_unit_time__$Terasecond_Terasecond_$Impl_$.ofUnit).divide(thx_unit_time__$Terasecond_Terasecond_$Impl_$.dividerTick).trim(null)));
+};
+var thx_unit_time__$Third_Third_$Impl_$ = {};
+thx_unit_time__$Third_Third_$Impl_$.__name__ = ["thx","unit","time","_Third","Third_Impl_"];
+thx_unit_time__$Third_Third_$Impl_$.fromDecimal = function(value) {
+	return value;
+};
+thx_unit_time__$Third_Third_$Impl_$.fromInt = function(value) {
+	return thx__$Decimal_Decimal_$Impl_$.fromInt(value);
+};
+thx_unit_time__$Third_Third_$Impl_$.fromFloat = function(value) {
+	return thx_bigint_Decimals.fromFloat(value);
+};
+thx_unit_time__$Third_Third_$Impl_$._new = function(value) {
+	return value;
+};
+thx_unit_time__$Third_Third_$Impl_$.abs = function(this1) {
+	return this1.abs();
+};
+thx_unit_time__$Third_Third_$Impl_$.min = function(this1,that) {
+	var that1 = that;
+	return thx__$Decimal_Decimal_$Impl_$.less(this1,that1)?this1:that1;
+};
+thx_unit_time__$Third_Third_$Impl_$.max = function(this1,that) {
+	var that1 = that;
+	return thx__$Decimal_Decimal_$Impl_$.greater(this1,that1)?this1:that1;
+};
+thx_unit_time__$Third_Third_$Impl_$.negate = function(this1) {
+	return this1.negate();
+};
+thx_unit_time__$Third_Third_$Impl_$.add = function(this1,that) {
+	return this1.add(that);
+};
+thx_unit_time__$Third_Third_$Impl_$.subtract = function(this1,that) {
+	return this1.subtract(that);
+};
+thx_unit_time__$Third_Third_$Impl_$.multiply = function(this1,that) {
+	return this1.multiply(that);
+};
+thx_unit_time__$Third_Third_$Impl_$.divide = function(this1,that) {
+	return this1.divide(that);
+};
+thx_unit_time__$Third_Third_$Impl_$.modulo = function(this1,that) {
+	return this1.modulo(that);
+};
+thx_unit_time__$Third_Third_$Impl_$.equalsTo = function(this1,that) {
+	return thx__$Decimal_Decimal_$Impl_$.equals(this1,that);
+};
+thx_unit_time__$Third_Third_$Impl_$.equals = function(self,that) {
+	return thx__$Decimal_Decimal_$Impl_$.equals(self,that);
+};
+thx_unit_time__$Third_Third_$Impl_$.nearEqualsTo = function(this1,that) {
+	return thx_Floats.nearEquals(this1.toFloat(),that.toFloat());
+};
+thx_unit_time__$Third_Third_$Impl_$.nearEquals = function(self,that) {
+	return thx_Floats.nearEquals(self.toFloat(),that.toFloat());
+};
+thx_unit_time__$Third_Third_$Impl_$.notEqualsTo = function(this1,that) {
+	return thx__$Decimal_Decimal_$Impl_$.notEquals(this1,that);
+};
+thx_unit_time__$Third_Third_$Impl_$.notEquals = function(self,that) {
+	return thx__$Decimal_Decimal_$Impl_$.notEquals(self,that);
+};
+thx_unit_time__$Third_Third_$Impl_$.lessThan = function(this1,that) {
+	return thx__$Decimal_Decimal_$Impl_$.less(this1,that);
+};
+thx_unit_time__$Third_Third_$Impl_$.less = function(self,that) {
+	return thx__$Decimal_Decimal_$Impl_$.less(self,that);
+};
+thx_unit_time__$Third_Third_$Impl_$.lessEqualsTo = function(this1,that) {
+	return thx__$Decimal_Decimal_$Impl_$.lessEquals(this1,that);
+};
+thx_unit_time__$Third_Third_$Impl_$.lessEquals = function(self,that) {
+	return thx__$Decimal_Decimal_$Impl_$.lessEquals(self,that);
+};
+thx_unit_time__$Third_Third_$Impl_$.greaterThan = function(this1,that) {
+	return thx__$Decimal_Decimal_$Impl_$.greater(this1,that);
+};
+thx_unit_time__$Third_Third_$Impl_$.greater = function(self,that) {
+	return thx__$Decimal_Decimal_$Impl_$.greaterEquals(self,that);
+};
+thx_unit_time__$Third_Third_$Impl_$.greaterEqualsTo = function(this1,that) {
+	return thx__$Decimal_Decimal_$Impl_$.greaterEquals(this1,that);
+};
+thx_unit_time__$Third_Third_$Impl_$.greaterEquals = function(self,that) {
+	return thx__$Decimal_Decimal_$Impl_$.greaterEquals(self,that);
+};
+thx_unit_time__$Third_Third_$Impl_$.toDecimal = function(this1) {
+	return this1;
+};
+thx_unit_time__$Third_Third_$Impl_$.toFloat = function(this1) {
+	return this1.toFloat();
+};
+thx_unit_time__$Third_Third_$Impl_$.toPlankTimeUnit = function(this1) {
+	return this1.multiply(thx_unit_time__$Third_Third_$Impl_$.ofUnit).divide(thx_unit_time__$Third_Third_$Impl_$.dividerPlankTimeUnit).trim(null);
+};
+thx_unit_time__$Third_Third_$Impl_$.toJiffyPhysics = function(this1) {
+	return this1.multiply(thx_unit_time__$Third_Third_$Impl_$.ofUnit).divide(thx_unit_time__$Third_Third_$Impl_$.dividerJiffyPhysics).trim(null);
+};
+thx_unit_time__$Third_Third_$Impl_$.toSvedberg = function(this1) {
+	return this1.multiply(thx_unit_time__$Third_Third_$Impl_$.ofUnit).divide(thx_unit_time__$Third_Third_$Impl_$.dividerSvedberg).trim(null);
+};
+thx_unit_time__$Third_Third_$Impl_$.toPicosecond = function(this1) {
+	return this1.multiply(thx_unit_time__$Third_Third_$Impl_$.ofUnit).divide(thx_unit_time__$Third_Third_$Impl_$.dividerPicosecond).trim(null);
+};
+thx_unit_time__$Third_Third_$Impl_$.toNanosecond = function(this1) {
+	return this1.multiply(thx_unit_time__$Third_Third_$Impl_$.ofUnit).divide(thx_unit_time__$Third_Third_$Impl_$.dividerNanosecond).trim(null);
+};
+thx_unit_time__$Third_Third_$Impl_$.toShake = function(this1) {
+	return this1.multiply(thx_unit_time__$Third_Third_$Impl_$.ofUnit).divide(thx_unit_time__$Third_Third_$Impl_$.dividerShake).trim(null);
+};
+thx_unit_time__$Third_Third_$Impl_$.toTick = function(this1) {
+	return this1.multiply(thx_unit_time__$Third_Third_$Impl_$.ofUnit).divide(thx_unit_time__$Third_Third_$Impl_$.dividerTick).trim(null);
+};
+thx_unit_time__$Third_Third_$Impl_$.toMicrosecond = function(this1) {
+	return this1.multiply(thx_unit_time__$Third_Third_$Impl_$.ofUnit).divide(thx_unit_time__$Third_Third_$Impl_$.dividerMicrosecond).trim(null);
+};
+thx_unit_time__$Third_Third_$Impl_$.toFourth = function(this1) {
+	return this1.multiply(thx_unit_time__$Third_Third_$Impl_$.ofUnit).divide(thx_unit_time__$Third_Third_$Impl_$.dividerFourth).trim(null);
+};
+thx_unit_time__$Third_Third_$Impl_$.toMillisecond = function(this1) {
+	return this1.multiply(thx_unit_time__$Third_Third_$Impl_$.ofUnit).divide(thx_unit_time__$Third_Third_$Impl_$.dividerMillisecond).trim(null);
+};
+thx_unit_time__$Third_Third_$Impl_$.toThird = function(this1) {
+	return this1;
+};
+thx_unit_time__$Third_Third_$Impl_$.toSecond = function(this1) {
+	return this1.multiply(thx_unit_time__$Third_Third_$Impl_$.ofUnit).divide(thx_unit_time__$Third_Third_$Impl_$.dividerSecond).trim(null);
+};
+thx_unit_time__$Third_Third_$Impl_$.toMinute = function(this1) {
+	return this1.multiply(thx_unit_time__$Third_Third_$Impl_$.ofUnit).divide(thx_unit_time__$Third_Third_$Impl_$.dividerMinute).trim(null);
+};
+thx_unit_time__$Third_Third_$Impl_$.toKe = function(this1) {
+	return this1.multiply(thx_unit_time__$Third_Third_$Impl_$.ofUnit).divide(thx_unit_time__$Third_Third_$Impl_$.dividerKe).trim(null);
+};
+thx_unit_time__$Third_Third_$Impl_$.toKilosecond = function(this1) {
+	return this1.multiply(thx_unit_time__$Third_Third_$Impl_$.ofUnit).divide(thx_unit_time__$Third_Third_$Impl_$.dividerKilosecond).trim(null);
+};
+thx_unit_time__$Third_Third_$Impl_$.toHour = function(this1) {
+	return this1.multiply(thx_unit_time__$Third_Third_$Impl_$.ofUnit).divide(thx_unit_time__$Third_Third_$Impl_$.dividerHour).trim(null);
+};
+thx_unit_time__$Third_Third_$Impl_$.toDay = function(this1) {
+	return this1.multiply(thx_unit_time__$Third_Third_$Impl_$.ofUnit).divide(thx_unit_time__$Third_Third_$Impl_$.dividerDay).trim(null);
+};
+thx_unit_time__$Third_Third_$Impl_$.toWeek = function(this1) {
+	return this1.multiply(thx_unit_time__$Third_Third_$Impl_$.ofUnit).divide(thx_unit_time__$Third_Third_$Impl_$.dividerWeek).trim(null);
+};
+thx_unit_time__$Third_Third_$Impl_$.toMegasecond = function(this1) {
+	return this1.multiply(thx_unit_time__$Third_Third_$Impl_$.ofUnit).divide(thx_unit_time__$Third_Third_$Impl_$.dividerMegasecond).trim(null);
+};
+thx_unit_time__$Third_Third_$Impl_$.toFortnight = function(this1) {
+	return this1.multiply(thx_unit_time__$Third_Third_$Impl_$.ofUnit).divide(thx_unit_time__$Third_Third_$Impl_$.dividerFortnight).trim(null);
+};
+thx_unit_time__$Third_Third_$Impl_$.toSynodicMonth = function(this1) {
+	return this1.multiply(thx_unit_time__$Third_Third_$Impl_$.ofUnit).divide(thx_unit_time__$Third_Third_$Impl_$.dividerSynodicMonth).trim(null);
+};
+thx_unit_time__$Third_Third_$Impl_$.toTropicalMonth = function(this1) {
+	return this1.multiply(thx_unit_time__$Third_Third_$Impl_$.ofUnit).divide(thx_unit_time__$Third_Third_$Impl_$.dividerTropicalMonth).trim(null);
+};
+thx_unit_time__$Third_Third_$Impl_$.toJulianYear = function(this1) {
+	return this1.multiply(thx_unit_time__$Third_Third_$Impl_$.ofUnit).divide(thx_unit_time__$Third_Third_$Impl_$.dividerJulianYear).trim(null);
+};
+thx_unit_time__$Third_Third_$Impl_$.toGigasecond = function(this1) {
+	return this1.multiply(thx_unit_time__$Third_Third_$Impl_$.ofUnit).divide(thx_unit_time__$Third_Third_$Impl_$.dividerGigasecond).trim(null);
+};
+thx_unit_time__$Third_Third_$Impl_$.toTerasecond = function(this1) {
+	return this1.multiply(thx_unit_time__$Third_Third_$Impl_$.ofUnit).divide(thx_unit_time__$Third_Third_$Impl_$.dividerTerasecond).trim(null);
+};
+thx_unit_time__$Third_Third_$Impl_$.toString = function(this1) {
+	return "" + this1.toString() + "third";
+};
+thx_unit_time__$Third_Third_$Impl_$.fromTime = function(time) {
+	return thx__$Decimal_Decimal_$Impl_$.fromInt64(time).multiply(thx_unit_time__$Tick_Tick_$Impl_$.ofUnit).divide(thx_unit_time__$Tick_Tick_$Impl_$.dividerThird).trim(null);
+};
+thx_unit_time__$Third_Third_$Impl_$.toTime = function(this1) {
+	return thx_bigint_Bigs.toInt64(thx__$Decimal_Decimal_$Impl_$.toBigInt(this1.multiply(thx_unit_time__$Third_Third_$Impl_$.ofUnit).divide(thx_unit_time__$Third_Third_$Impl_$.dividerTick).trim(null)));
+};
+var thx_unit_time__$Tick_Tick_$Impl_$ = {};
+thx_unit_time__$Tick_Tick_$Impl_$.__name__ = ["thx","unit","time","_Tick","Tick_Impl_"];
+thx_unit_time__$Tick_Tick_$Impl_$.fromDecimal = function(value) {
+	return value;
+};
+thx_unit_time__$Tick_Tick_$Impl_$.fromInt = function(value) {
+	return thx__$Decimal_Decimal_$Impl_$.fromInt(value);
+};
+thx_unit_time__$Tick_Tick_$Impl_$.fromFloat = function(value) {
+	return thx_bigint_Decimals.fromFloat(value);
+};
+thx_unit_time__$Tick_Tick_$Impl_$._new = function(value) {
+	return value;
+};
+thx_unit_time__$Tick_Tick_$Impl_$.abs = function(this1) {
+	return this1.abs();
+};
+thx_unit_time__$Tick_Tick_$Impl_$.min = function(this1,that) {
+	var that1 = that;
+	return thx__$Decimal_Decimal_$Impl_$.less(this1,that1)?this1:that1;
+};
+thx_unit_time__$Tick_Tick_$Impl_$.max = function(this1,that) {
+	var that1 = that;
+	return thx__$Decimal_Decimal_$Impl_$.greater(this1,that1)?this1:that1;
+};
+thx_unit_time__$Tick_Tick_$Impl_$.negate = function(this1) {
+	return this1.negate();
+};
+thx_unit_time__$Tick_Tick_$Impl_$.add = function(this1,that) {
+	return this1.add(that);
+};
+thx_unit_time__$Tick_Tick_$Impl_$.subtract = function(this1,that) {
+	return this1.subtract(that);
+};
+thx_unit_time__$Tick_Tick_$Impl_$.multiply = function(this1,that) {
+	return this1.multiply(that);
+};
+thx_unit_time__$Tick_Tick_$Impl_$.divide = function(this1,that) {
+	return this1.divide(that);
+};
+thx_unit_time__$Tick_Tick_$Impl_$.modulo = function(this1,that) {
+	return this1.modulo(that);
+};
+thx_unit_time__$Tick_Tick_$Impl_$.equalsTo = function(this1,that) {
+	return thx__$Decimal_Decimal_$Impl_$.equals(this1,that);
+};
+thx_unit_time__$Tick_Tick_$Impl_$.equals = function(self,that) {
+	return thx__$Decimal_Decimal_$Impl_$.equals(self,that);
+};
+thx_unit_time__$Tick_Tick_$Impl_$.nearEqualsTo = function(this1,that) {
+	return thx_Floats.nearEquals(this1.toFloat(),that.toFloat());
+};
+thx_unit_time__$Tick_Tick_$Impl_$.nearEquals = function(self,that) {
+	return thx_Floats.nearEquals(self.toFloat(),that.toFloat());
+};
+thx_unit_time__$Tick_Tick_$Impl_$.notEqualsTo = function(this1,that) {
+	return thx__$Decimal_Decimal_$Impl_$.notEquals(this1,that);
+};
+thx_unit_time__$Tick_Tick_$Impl_$.notEquals = function(self,that) {
+	return thx__$Decimal_Decimal_$Impl_$.notEquals(self,that);
+};
+thx_unit_time__$Tick_Tick_$Impl_$.lessThan = function(this1,that) {
+	return thx__$Decimal_Decimal_$Impl_$.less(this1,that);
+};
+thx_unit_time__$Tick_Tick_$Impl_$.less = function(self,that) {
+	return thx__$Decimal_Decimal_$Impl_$.less(self,that);
+};
+thx_unit_time__$Tick_Tick_$Impl_$.lessEqualsTo = function(this1,that) {
+	return thx__$Decimal_Decimal_$Impl_$.lessEquals(this1,that);
+};
+thx_unit_time__$Tick_Tick_$Impl_$.lessEquals = function(self,that) {
+	return thx__$Decimal_Decimal_$Impl_$.lessEquals(self,that);
+};
+thx_unit_time__$Tick_Tick_$Impl_$.greaterThan = function(this1,that) {
+	return thx__$Decimal_Decimal_$Impl_$.greater(this1,that);
+};
+thx_unit_time__$Tick_Tick_$Impl_$.greater = function(self,that) {
+	return thx__$Decimal_Decimal_$Impl_$.greaterEquals(self,that);
+};
+thx_unit_time__$Tick_Tick_$Impl_$.greaterEqualsTo = function(this1,that) {
+	return thx__$Decimal_Decimal_$Impl_$.greaterEquals(this1,that);
+};
+thx_unit_time__$Tick_Tick_$Impl_$.greaterEquals = function(self,that) {
+	return thx__$Decimal_Decimal_$Impl_$.greaterEquals(self,that);
+};
+thx_unit_time__$Tick_Tick_$Impl_$.toDecimal = function(this1) {
+	return this1;
+};
+thx_unit_time__$Tick_Tick_$Impl_$.toFloat = function(this1) {
+	return this1.toFloat();
+};
+thx_unit_time__$Tick_Tick_$Impl_$.toPlankTimeUnit = function(this1) {
+	return this1.multiply(thx_unit_time__$Tick_Tick_$Impl_$.ofUnit).divide(thx_unit_time__$Tick_Tick_$Impl_$.dividerPlankTimeUnit).trim(null);
+};
+thx_unit_time__$Tick_Tick_$Impl_$.toJiffyPhysics = function(this1) {
+	return this1.multiply(thx_unit_time__$Tick_Tick_$Impl_$.ofUnit).divide(thx_unit_time__$Tick_Tick_$Impl_$.dividerJiffyPhysics).trim(null);
+};
+thx_unit_time__$Tick_Tick_$Impl_$.toSvedberg = function(this1) {
+	return this1.multiply(thx_unit_time__$Tick_Tick_$Impl_$.ofUnit).divide(thx_unit_time__$Tick_Tick_$Impl_$.dividerSvedberg).trim(null);
+};
+thx_unit_time__$Tick_Tick_$Impl_$.toPicosecond = function(this1) {
+	return this1.multiply(thx_unit_time__$Tick_Tick_$Impl_$.ofUnit).divide(thx_unit_time__$Tick_Tick_$Impl_$.dividerPicosecond).trim(null);
+};
+thx_unit_time__$Tick_Tick_$Impl_$.toNanosecond = function(this1) {
+	return this1.multiply(thx_unit_time__$Tick_Tick_$Impl_$.ofUnit).divide(thx_unit_time__$Tick_Tick_$Impl_$.dividerNanosecond).trim(null);
+};
+thx_unit_time__$Tick_Tick_$Impl_$.toShake = function(this1) {
+	return this1.multiply(thx_unit_time__$Tick_Tick_$Impl_$.ofUnit).divide(thx_unit_time__$Tick_Tick_$Impl_$.dividerShake).trim(null);
+};
+thx_unit_time__$Tick_Tick_$Impl_$.toTick = function(this1) {
+	return this1;
+};
+thx_unit_time__$Tick_Tick_$Impl_$.toMicrosecond = function(this1) {
+	return this1.multiply(thx_unit_time__$Tick_Tick_$Impl_$.ofUnit).divide(thx_unit_time__$Tick_Tick_$Impl_$.dividerMicrosecond).trim(null);
+};
+thx_unit_time__$Tick_Tick_$Impl_$.toFourth = function(this1) {
+	return this1.multiply(thx_unit_time__$Tick_Tick_$Impl_$.ofUnit).divide(thx_unit_time__$Tick_Tick_$Impl_$.dividerFourth).trim(null);
+};
+thx_unit_time__$Tick_Tick_$Impl_$.toMillisecond = function(this1) {
+	return this1.multiply(thx_unit_time__$Tick_Tick_$Impl_$.ofUnit).divide(thx_unit_time__$Tick_Tick_$Impl_$.dividerMillisecond).trim(null);
+};
+thx_unit_time__$Tick_Tick_$Impl_$.toThird = function(this1) {
+	return this1.multiply(thx_unit_time__$Tick_Tick_$Impl_$.ofUnit).divide(thx_unit_time__$Tick_Tick_$Impl_$.dividerThird).trim(null);
+};
+thx_unit_time__$Tick_Tick_$Impl_$.toSecond = function(this1) {
+	return this1.multiply(thx_unit_time__$Tick_Tick_$Impl_$.ofUnit).divide(thx_unit_time__$Tick_Tick_$Impl_$.dividerSecond).trim(null);
+};
+thx_unit_time__$Tick_Tick_$Impl_$.toMinute = function(this1) {
+	return this1.multiply(thx_unit_time__$Tick_Tick_$Impl_$.ofUnit).divide(thx_unit_time__$Tick_Tick_$Impl_$.dividerMinute).trim(null);
+};
+thx_unit_time__$Tick_Tick_$Impl_$.toKe = function(this1) {
+	return this1.multiply(thx_unit_time__$Tick_Tick_$Impl_$.ofUnit).divide(thx_unit_time__$Tick_Tick_$Impl_$.dividerKe).trim(null);
+};
+thx_unit_time__$Tick_Tick_$Impl_$.toKilosecond = function(this1) {
+	return this1.multiply(thx_unit_time__$Tick_Tick_$Impl_$.ofUnit).divide(thx_unit_time__$Tick_Tick_$Impl_$.dividerKilosecond).trim(null);
+};
+thx_unit_time__$Tick_Tick_$Impl_$.toHour = function(this1) {
+	return this1.multiply(thx_unit_time__$Tick_Tick_$Impl_$.ofUnit).divide(thx_unit_time__$Tick_Tick_$Impl_$.dividerHour).trim(null);
+};
+thx_unit_time__$Tick_Tick_$Impl_$.toDay = function(this1) {
+	return this1.multiply(thx_unit_time__$Tick_Tick_$Impl_$.ofUnit).divide(thx_unit_time__$Tick_Tick_$Impl_$.dividerDay).trim(null);
+};
+thx_unit_time__$Tick_Tick_$Impl_$.toWeek = function(this1) {
+	return this1.multiply(thx_unit_time__$Tick_Tick_$Impl_$.ofUnit).divide(thx_unit_time__$Tick_Tick_$Impl_$.dividerWeek).trim(null);
+};
+thx_unit_time__$Tick_Tick_$Impl_$.toMegasecond = function(this1) {
+	return this1.multiply(thx_unit_time__$Tick_Tick_$Impl_$.ofUnit).divide(thx_unit_time__$Tick_Tick_$Impl_$.dividerMegasecond).trim(null);
+};
+thx_unit_time__$Tick_Tick_$Impl_$.toFortnight = function(this1) {
+	return this1.multiply(thx_unit_time__$Tick_Tick_$Impl_$.ofUnit).divide(thx_unit_time__$Tick_Tick_$Impl_$.dividerFortnight).trim(null);
+};
+thx_unit_time__$Tick_Tick_$Impl_$.toSynodicMonth = function(this1) {
+	return this1.multiply(thx_unit_time__$Tick_Tick_$Impl_$.ofUnit).divide(thx_unit_time__$Tick_Tick_$Impl_$.dividerSynodicMonth).trim(null);
+};
+thx_unit_time__$Tick_Tick_$Impl_$.toTropicalMonth = function(this1) {
+	return this1.multiply(thx_unit_time__$Tick_Tick_$Impl_$.ofUnit).divide(thx_unit_time__$Tick_Tick_$Impl_$.dividerTropicalMonth).trim(null);
+};
+thx_unit_time__$Tick_Tick_$Impl_$.toJulianYear = function(this1) {
+	return this1.multiply(thx_unit_time__$Tick_Tick_$Impl_$.ofUnit).divide(thx_unit_time__$Tick_Tick_$Impl_$.dividerJulianYear).trim(null);
+};
+thx_unit_time__$Tick_Tick_$Impl_$.toGigasecond = function(this1) {
+	return this1.multiply(thx_unit_time__$Tick_Tick_$Impl_$.ofUnit).divide(thx_unit_time__$Tick_Tick_$Impl_$.dividerGigasecond).trim(null);
+};
+thx_unit_time__$Tick_Tick_$Impl_$.toTerasecond = function(this1) {
+	return this1.multiply(thx_unit_time__$Tick_Tick_$Impl_$.ofUnit).divide(thx_unit_time__$Tick_Tick_$Impl_$.dividerTerasecond).trim(null);
+};
+thx_unit_time__$Tick_Tick_$Impl_$.toString = function(this1) {
+	return "" + this1.toString() + "tick";
+};
+thx_unit_time__$Tick_Tick_$Impl_$.fromTime = function(time) {
+	return thx__$Decimal_Decimal_$Impl_$.fromInt64(time);
+};
+thx_unit_time__$Tick_Tick_$Impl_$.toTime = function(this1) {
+	return thx_bigint_Bigs.toInt64(thx__$Decimal_Decimal_$Impl_$.toBigInt(this1));
+};
+var thx_unit_time__$TropicalMonth_TropicalMonth_$Impl_$ = {};
+thx_unit_time__$TropicalMonth_TropicalMonth_$Impl_$.__name__ = ["thx","unit","time","_TropicalMonth","TropicalMonth_Impl_"];
+thx_unit_time__$TropicalMonth_TropicalMonth_$Impl_$.fromDecimal = function(value) {
+	return value;
+};
+thx_unit_time__$TropicalMonth_TropicalMonth_$Impl_$.fromInt = function(value) {
+	return thx__$Decimal_Decimal_$Impl_$.fromInt(value);
+};
+thx_unit_time__$TropicalMonth_TropicalMonth_$Impl_$.fromFloat = function(value) {
+	return thx_bigint_Decimals.fromFloat(value);
+};
+thx_unit_time__$TropicalMonth_TropicalMonth_$Impl_$._new = function(value) {
+	return value;
+};
+thx_unit_time__$TropicalMonth_TropicalMonth_$Impl_$.abs = function(this1) {
+	return this1.abs();
+};
+thx_unit_time__$TropicalMonth_TropicalMonth_$Impl_$.min = function(this1,that) {
+	var that1 = that;
+	return thx__$Decimal_Decimal_$Impl_$.less(this1,that1)?this1:that1;
+};
+thx_unit_time__$TropicalMonth_TropicalMonth_$Impl_$.max = function(this1,that) {
+	var that1 = that;
+	return thx__$Decimal_Decimal_$Impl_$.greater(this1,that1)?this1:that1;
+};
+thx_unit_time__$TropicalMonth_TropicalMonth_$Impl_$.negate = function(this1) {
+	return this1.negate();
+};
+thx_unit_time__$TropicalMonth_TropicalMonth_$Impl_$.add = function(this1,that) {
+	return this1.add(that);
+};
+thx_unit_time__$TropicalMonth_TropicalMonth_$Impl_$.subtract = function(this1,that) {
+	return this1.subtract(that);
+};
+thx_unit_time__$TropicalMonth_TropicalMonth_$Impl_$.multiply = function(this1,that) {
+	return this1.multiply(that);
+};
+thx_unit_time__$TropicalMonth_TropicalMonth_$Impl_$.divide = function(this1,that) {
+	return this1.divide(that);
+};
+thx_unit_time__$TropicalMonth_TropicalMonth_$Impl_$.modulo = function(this1,that) {
+	return this1.modulo(that);
+};
+thx_unit_time__$TropicalMonth_TropicalMonth_$Impl_$.equalsTo = function(this1,that) {
+	return thx__$Decimal_Decimal_$Impl_$.equals(this1,that);
+};
+thx_unit_time__$TropicalMonth_TropicalMonth_$Impl_$.equals = function(self,that) {
+	return thx__$Decimal_Decimal_$Impl_$.equals(self,that);
+};
+thx_unit_time__$TropicalMonth_TropicalMonth_$Impl_$.nearEqualsTo = function(this1,that) {
+	return thx_Floats.nearEquals(this1.toFloat(),that.toFloat());
+};
+thx_unit_time__$TropicalMonth_TropicalMonth_$Impl_$.nearEquals = function(self,that) {
+	return thx_Floats.nearEquals(self.toFloat(),that.toFloat());
+};
+thx_unit_time__$TropicalMonth_TropicalMonth_$Impl_$.notEqualsTo = function(this1,that) {
+	return thx__$Decimal_Decimal_$Impl_$.notEquals(this1,that);
+};
+thx_unit_time__$TropicalMonth_TropicalMonth_$Impl_$.notEquals = function(self,that) {
+	return thx__$Decimal_Decimal_$Impl_$.notEquals(self,that);
+};
+thx_unit_time__$TropicalMonth_TropicalMonth_$Impl_$.lessThan = function(this1,that) {
+	return thx__$Decimal_Decimal_$Impl_$.less(this1,that);
+};
+thx_unit_time__$TropicalMonth_TropicalMonth_$Impl_$.less = function(self,that) {
+	return thx__$Decimal_Decimal_$Impl_$.less(self,that);
+};
+thx_unit_time__$TropicalMonth_TropicalMonth_$Impl_$.lessEqualsTo = function(this1,that) {
+	return thx__$Decimal_Decimal_$Impl_$.lessEquals(this1,that);
+};
+thx_unit_time__$TropicalMonth_TropicalMonth_$Impl_$.lessEquals = function(self,that) {
+	return thx__$Decimal_Decimal_$Impl_$.lessEquals(self,that);
+};
+thx_unit_time__$TropicalMonth_TropicalMonth_$Impl_$.greaterThan = function(this1,that) {
+	return thx__$Decimal_Decimal_$Impl_$.greater(this1,that);
+};
+thx_unit_time__$TropicalMonth_TropicalMonth_$Impl_$.greater = function(self,that) {
+	return thx__$Decimal_Decimal_$Impl_$.greaterEquals(self,that);
+};
+thx_unit_time__$TropicalMonth_TropicalMonth_$Impl_$.greaterEqualsTo = function(this1,that) {
+	return thx__$Decimal_Decimal_$Impl_$.greaterEquals(this1,that);
+};
+thx_unit_time__$TropicalMonth_TropicalMonth_$Impl_$.greaterEquals = function(self,that) {
+	return thx__$Decimal_Decimal_$Impl_$.greaterEquals(self,that);
+};
+thx_unit_time__$TropicalMonth_TropicalMonth_$Impl_$.toDecimal = function(this1) {
+	return this1;
+};
+thx_unit_time__$TropicalMonth_TropicalMonth_$Impl_$.toFloat = function(this1) {
+	return this1.toFloat();
+};
+thx_unit_time__$TropicalMonth_TropicalMonth_$Impl_$.toPlankTimeUnit = function(this1) {
+	return this1.multiply(thx_unit_time__$TropicalMonth_TropicalMonth_$Impl_$.ofUnit).divide(thx_unit_time__$TropicalMonth_TropicalMonth_$Impl_$.dividerPlankTimeUnit).trim(null);
+};
+thx_unit_time__$TropicalMonth_TropicalMonth_$Impl_$.toJiffyPhysics = function(this1) {
+	return this1.multiply(thx_unit_time__$TropicalMonth_TropicalMonth_$Impl_$.ofUnit).divide(thx_unit_time__$TropicalMonth_TropicalMonth_$Impl_$.dividerJiffyPhysics).trim(null);
+};
+thx_unit_time__$TropicalMonth_TropicalMonth_$Impl_$.toSvedberg = function(this1) {
+	return this1.multiply(thx_unit_time__$TropicalMonth_TropicalMonth_$Impl_$.ofUnit).divide(thx_unit_time__$TropicalMonth_TropicalMonth_$Impl_$.dividerSvedberg).trim(null);
+};
+thx_unit_time__$TropicalMonth_TropicalMonth_$Impl_$.toPicosecond = function(this1) {
+	return this1.multiply(thx_unit_time__$TropicalMonth_TropicalMonth_$Impl_$.ofUnit).divide(thx_unit_time__$TropicalMonth_TropicalMonth_$Impl_$.dividerPicosecond).trim(null);
+};
+thx_unit_time__$TropicalMonth_TropicalMonth_$Impl_$.toNanosecond = function(this1) {
+	return this1.multiply(thx_unit_time__$TropicalMonth_TropicalMonth_$Impl_$.ofUnit).divide(thx_unit_time__$TropicalMonth_TropicalMonth_$Impl_$.dividerNanosecond).trim(null);
+};
+thx_unit_time__$TropicalMonth_TropicalMonth_$Impl_$.toShake = function(this1) {
+	return this1.multiply(thx_unit_time__$TropicalMonth_TropicalMonth_$Impl_$.ofUnit).divide(thx_unit_time__$TropicalMonth_TropicalMonth_$Impl_$.dividerShake).trim(null);
+};
+thx_unit_time__$TropicalMonth_TropicalMonth_$Impl_$.toTick = function(this1) {
+	return this1.multiply(thx_unit_time__$TropicalMonth_TropicalMonth_$Impl_$.ofUnit).divide(thx_unit_time__$TropicalMonth_TropicalMonth_$Impl_$.dividerTick).trim(null);
+};
+thx_unit_time__$TropicalMonth_TropicalMonth_$Impl_$.toMicrosecond = function(this1) {
+	return this1.multiply(thx_unit_time__$TropicalMonth_TropicalMonth_$Impl_$.ofUnit).divide(thx_unit_time__$TropicalMonth_TropicalMonth_$Impl_$.dividerMicrosecond).trim(null);
+};
+thx_unit_time__$TropicalMonth_TropicalMonth_$Impl_$.toFourth = function(this1) {
+	return this1.multiply(thx_unit_time__$TropicalMonth_TropicalMonth_$Impl_$.ofUnit).divide(thx_unit_time__$TropicalMonth_TropicalMonth_$Impl_$.dividerFourth).trim(null);
+};
+thx_unit_time__$TropicalMonth_TropicalMonth_$Impl_$.toMillisecond = function(this1) {
+	return this1.multiply(thx_unit_time__$TropicalMonth_TropicalMonth_$Impl_$.ofUnit).divide(thx_unit_time__$TropicalMonth_TropicalMonth_$Impl_$.dividerMillisecond).trim(null);
+};
+thx_unit_time__$TropicalMonth_TropicalMonth_$Impl_$.toThird = function(this1) {
+	return this1.multiply(thx_unit_time__$TropicalMonth_TropicalMonth_$Impl_$.ofUnit).divide(thx_unit_time__$TropicalMonth_TropicalMonth_$Impl_$.dividerThird).trim(null);
+};
+thx_unit_time__$TropicalMonth_TropicalMonth_$Impl_$.toSecond = function(this1) {
+	return this1.multiply(thx_unit_time__$TropicalMonth_TropicalMonth_$Impl_$.ofUnit).divide(thx_unit_time__$TropicalMonth_TropicalMonth_$Impl_$.dividerSecond).trim(null);
+};
+thx_unit_time__$TropicalMonth_TropicalMonth_$Impl_$.toMinute = function(this1) {
+	return this1.multiply(thx_unit_time__$TropicalMonth_TropicalMonth_$Impl_$.ofUnit).divide(thx_unit_time__$TropicalMonth_TropicalMonth_$Impl_$.dividerMinute).trim(null);
+};
+thx_unit_time__$TropicalMonth_TropicalMonth_$Impl_$.toKe = function(this1) {
+	return this1.multiply(thx_unit_time__$TropicalMonth_TropicalMonth_$Impl_$.ofUnit).divide(thx_unit_time__$TropicalMonth_TropicalMonth_$Impl_$.dividerKe).trim(null);
+};
+thx_unit_time__$TropicalMonth_TropicalMonth_$Impl_$.toKilosecond = function(this1) {
+	return this1.multiply(thx_unit_time__$TropicalMonth_TropicalMonth_$Impl_$.ofUnit).divide(thx_unit_time__$TropicalMonth_TropicalMonth_$Impl_$.dividerKilosecond).trim(null);
+};
+thx_unit_time__$TropicalMonth_TropicalMonth_$Impl_$.toHour = function(this1) {
+	return this1.multiply(thx_unit_time__$TropicalMonth_TropicalMonth_$Impl_$.ofUnit).divide(thx_unit_time__$TropicalMonth_TropicalMonth_$Impl_$.dividerHour).trim(null);
+};
+thx_unit_time__$TropicalMonth_TropicalMonth_$Impl_$.toDay = function(this1) {
+	return this1.multiply(thx_unit_time__$TropicalMonth_TropicalMonth_$Impl_$.ofUnit).divide(thx_unit_time__$TropicalMonth_TropicalMonth_$Impl_$.dividerDay).trim(null);
+};
+thx_unit_time__$TropicalMonth_TropicalMonth_$Impl_$.toWeek = function(this1) {
+	return this1.multiply(thx_unit_time__$TropicalMonth_TropicalMonth_$Impl_$.ofUnit).divide(thx_unit_time__$TropicalMonth_TropicalMonth_$Impl_$.dividerWeek).trim(null);
+};
+thx_unit_time__$TropicalMonth_TropicalMonth_$Impl_$.toMegasecond = function(this1) {
+	return this1.multiply(thx_unit_time__$TropicalMonth_TropicalMonth_$Impl_$.ofUnit).divide(thx_unit_time__$TropicalMonth_TropicalMonth_$Impl_$.dividerMegasecond).trim(null);
+};
+thx_unit_time__$TropicalMonth_TropicalMonth_$Impl_$.toFortnight = function(this1) {
+	return this1.multiply(thx_unit_time__$TropicalMonth_TropicalMonth_$Impl_$.ofUnit).divide(thx_unit_time__$TropicalMonth_TropicalMonth_$Impl_$.dividerFortnight).trim(null);
+};
+thx_unit_time__$TropicalMonth_TropicalMonth_$Impl_$.toSynodicMonth = function(this1) {
+	return this1.multiply(thx_unit_time__$TropicalMonth_TropicalMonth_$Impl_$.ofUnit).divide(thx_unit_time__$TropicalMonth_TropicalMonth_$Impl_$.dividerSynodicMonth).trim(null);
+};
+thx_unit_time__$TropicalMonth_TropicalMonth_$Impl_$.toTropicalMonth = function(this1) {
+	return this1;
+};
+thx_unit_time__$TropicalMonth_TropicalMonth_$Impl_$.toJulianYear = function(this1) {
+	return this1.multiply(thx_unit_time__$TropicalMonth_TropicalMonth_$Impl_$.ofUnit).divide(thx_unit_time__$TropicalMonth_TropicalMonth_$Impl_$.dividerJulianYear).trim(null);
+};
+thx_unit_time__$TropicalMonth_TropicalMonth_$Impl_$.toGigasecond = function(this1) {
+	return this1.multiply(thx_unit_time__$TropicalMonth_TropicalMonth_$Impl_$.ofUnit).divide(thx_unit_time__$TropicalMonth_TropicalMonth_$Impl_$.dividerGigasecond).trim(null);
+};
+thx_unit_time__$TropicalMonth_TropicalMonth_$Impl_$.toTerasecond = function(this1) {
+	return this1.multiply(thx_unit_time__$TropicalMonth_TropicalMonth_$Impl_$.ofUnit).divide(thx_unit_time__$TropicalMonth_TropicalMonth_$Impl_$.dividerTerasecond).trim(null);
+};
+thx_unit_time__$TropicalMonth_TropicalMonth_$Impl_$.toString = function(this1) {
+	return "" + this1.toString() + "tropical month";
+};
+thx_unit_time__$TropicalMonth_TropicalMonth_$Impl_$.fromTime = function(time) {
+	return thx__$Decimal_Decimal_$Impl_$.fromInt64(time).multiply(thx_unit_time__$Tick_Tick_$Impl_$.ofUnit).divide(thx_unit_time__$Tick_Tick_$Impl_$.dividerTropicalMonth).trim(null);
+};
+thx_unit_time__$TropicalMonth_TropicalMonth_$Impl_$.toTime = function(this1) {
+	return thx_bigint_Bigs.toInt64(thx__$Decimal_Decimal_$Impl_$.toBigInt(this1.multiply(thx_unit_time__$TropicalMonth_TropicalMonth_$Impl_$.ofUnit).divide(thx_unit_time__$TropicalMonth_TropicalMonth_$Impl_$.dividerTick).trim(null)));
+};
+var thx_unit_time__$Week_Week_$Impl_$ = {};
+thx_unit_time__$Week_Week_$Impl_$.__name__ = ["thx","unit","time","_Week","Week_Impl_"];
+thx_unit_time__$Week_Week_$Impl_$.fromDecimal = function(value) {
+	return value;
+};
+thx_unit_time__$Week_Week_$Impl_$.fromInt = function(value) {
+	return thx__$Decimal_Decimal_$Impl_$.fromInt(value);
+};
+thx_unit_time__$Week_Week_$Impl_$.fromFloat = function(value) {
+	return thx_bigint_Decimals.fromFloat(value);
+};
+thx_unit_time__$Week_Week_$Impl_$._new = function(value) {
+	return value;
+};
+thx_unit_time__$Week_Week_$Impl_$.abs = function(this1) {
+	return this1.abs();
+};
+thx_unit_time__$Week_Week_$Impl_$.min = function(this1,that) {
+	var that1 = that;
+	return thx__$Decimal_Decimal_$Impl_$.less(this1,that1)?this1:that1;
+};
+thx_unit_time__$Week_Week_$Impl_$.max = function(this1,that) {
+	var that1 = that;
+	return thx__$Decimal_Decimal_$Impl_$.greater(this1,that1)?this1:that1;
+};
+thx_unit_time__$Week_Week_$Impl_$.negate = function(this1) {
+	return this1.negate();
+};
+thx_unit_time__$Week_Week_$Impl_$.add = function(this1,that) {
+	return this1.add(that);
+};
+thx_unit_time__$Week_Week_$Impl_$.subtract = function(this1,that) {
+	return this1.subtract(that);
+};
+thx_unit_time__$Week_Week_$Impl_$.multiply = function(this1,that) {
+	return this1.multiply(that);
+};
+thx_unit_time__$Week_Week_$Impl_$.divide = function(this1,that) {
+	return this1.divide(that);
+};
+thx_unit_time__$Week_Week_$Impl_$.modulo = function(this1,that) {
+	return this1.modulo(that);
+};
+thx_unit_time__$Week_Week_$Impl_$.equalsTo = function(this1,that) {
+	return thx__$Decimal_Decimal_$Impl_$.equals(this1,that);
+};
+thx_unit_time__$Week_Week_$Impl_$.equals = function(self,that) {
+	return thx__$Decimal_Decimal_$Impl_$.equals(self,that);
+};
+thx_unit_time__$Week_Week_$Impl_$.nearEqualsTo = function(this1,that) {
+	return thx_Floats.nearEquals(this1.toFloat(),that.toFloat());
+};
+thx_unit_time__$Week_Week_$Impl_$.nearEquals = function(self,that) {
+	return thx_Floats.nearEquals(self.toFloat(),that.toFloat());
+};
+thx_unit_time__$Week_Week_$Impl_$.notEqualsTo = function(this1,that) {
+	return thx__$Decimal_Decimal_$Impl_$.notEquals(this1,that);
+};
+thx_unit_time__$Week_Week_$Impl_$.notEquals = function(self,that) {
+	return thx__$Decimal_Decimal_$Impl_$.notEquals(self,that);
+};
+thx_unit_time__$Week_Week_$Impl_$.lessThan = function(this1,that) {
+	return thx__$Decimal_Decimal_$Impl_$.less(this1,that);
+};
+thx_unit_time__$Week_Week_$Impl_$.less = function(self,that) {
+	return thx__$Decimal_Decimal_$Impl_$.less(self,that);
+};
+thx_unit_time__$Week_Week_$Impl_$.lessEqualsTo = function(this1,that) {
+	return thx__$Decimal_Decimal_$Impl_$.lessEquals(this1,that);
+};
+thx_unit_time__$Week_Week_$Impl_$.lessEquals = function(self,that) {
+	return thx__$Decimal_Decimal_$Impl_$.lessEquals(self,that);
+};
+thx_unit_time__$Week_Week_$Impl_$.greaterThan = function(this1,that) {
+	return thx__$Decimal_Decimal_$Impl_$.greater(this1,that);
+};
+thx_unit_time__$Week_Week_$Impl_$.greater = function(self,that) {
+	return thx__$Decimal_Decimal_$Impl_$.greaterEquals(self,that);
+};
+thx_unit_time__$Week_Week_$Impl_$.greaterEqualsTo = function(this1,that) {
+	return thx__$Decimal_Decimal_$Impl_$.greaterEquals(this1,that);
+};
+thx_unit_time__$Week_Week_$Impl_$.greaterEquals = function(self,that) {
+	return thx__$Decimal_Decimal_$Impl_$.greaterEquals(self,that);
+};
+thx_unit_time__$Week_Week_$Impl_$.toDecimal = function(this1) {
+	return this1;
+};
+thx_unit_time__$Week_Week_$Impl_$.toFloat = function(this1) {
+	return this1.toFloat();
+};
+thx_unit_time__$Week_Week_$Impl_$.toPlankTimeUnit = function(this1) {
+	return this1.multiply(thx_unit_time__$Week_Week_$Impl_$.ofUnit).divide(thx_unit_time__$Week_Week_$Impl_$.dividerPlankTimeUnit).trim(null);
+};
+thx_unit_time__$Week_Week_$Impl_$.toJiffyPhysics = function(this1) {
+	return this1.multiply(thx_unit_time__$Week_Week_$Impl_$.ofUnit).divide(thx_unit_time__$Week_Week_$Impl_$.dividerJiffyPhysics).trim(null);
+};
+thx_unit_time__$Week_Week_$Impl_$.toSvedberg = function(this1) {
+	return this1.multiply(thx_unit_time__$Week_Week_$Impl_$.ofUnit).divide(thx_unit_time__$Week_Week_$Impl_$.dividerSvedberg).trim(null);
+};
+thx_unit_time__$Week_Week_$Impl_$.toPicosecond = function(this1) {
+	return this1.multiply(thx_unit_time__$Week_Week_$Impl_$.ofUnit).divide(thx_unit_time__$Week_Week_$Impl_$.dividerPicosecond).trim(null);
+};
+thx_unit_time__$Week_Week_$Impl_$.toNanosecond = function(this1) {
+	return this1.multiply(thx_unit_time__$Week_Week_$Impl_$.ofUnit).divide(thx_unit_time__$Week_Week_$Impl_$.dividerNanosecond).trim(null);
+};
+thx_unit_time__$Week_Week_$Impl_$.toShake = function(this1) {
+	return this1.multiply(thx_unit_time__$Week_Week_$Impl_$.ofUnit).divide(thx_unit_time__$Week_Week_$Impl_$.dividerShake).trim(null);
+};
+thx_unit_time__$Week_Week_$Impl_$.toTick = function(this1) {
+	return this1.multiply(thx_unit_time__$Week_Week_$Impl_$.ofUnit).divide(thx_unit_time__$Week_Week_$Impl_$.dividerTick).trim(null);
+};
+thx_unit_time__$Week_Week_$Impl_$.toMicrosecond = function(this1) {
+	return this1.multiply(thx_unit_time__$Week_Week_$Impl_$.ofUnit).divide(thx_unit_time__$Week_Week_$Impl_$.dividerMicrosecond).trim(null);
+};
+thx_unit_time__$Week_Week_$Impl_$.toFourth = function(this1) {
+	return this1.multiply(thx_unit_time__$Week_Week_$Impl_$.ofUnit).divide(thx_unit_time__$Week_Week_$Impl_$.dividerFourth).trim(null);
+};
+thx_unit_time__$Week_Week_$Impl_$.toMillisecond = function(this1) {
+	return this1.multiply(thx_unit_time__$Week_Week_$Impl_$.ofUnit).divide(thx_unit_time__$Week_Week_$Impl_$.dividerMillisecond).trim(null);
+};
+thx_unit_time__$Week_Week_$Impl_$.toThird = function(this1) {
+	return this1.multiply(thx_unit_time__$Week_Week_$Impl_$.ofUnit).divide(thx_unit_time__$Week_Week_$Impl_$.dividerThird).trim(null);
+};
+thx_unit_time__$Week_Week_$Impl_$.toSecond = function(this1) {
+	return this1.multiply(thx_unit_time__$Week_Week_$Impl_$.ofUnit).divide(thx_unit_time__$Week_Week_$Impl_$.dividerSecond).trim(null);
+};
+thx_unit_time__$Week_Week_$Impl_$.toMinute = function(this1) {
+	return this1.multiply(thx_unit_time__$Week_Week_$Impl_$.ofUnit).divide(thx_unit_time__$Week_Week_$Impl_$.dividerMinute).trim(null);
+};
+thx_unit_time__$Week_Week_$Impl_$.toKe = function(this1) {
+	return this1.multiply(thx_unit_time__$Week_Week_$Impl_$.ofUnit).divide(thx_unit_time__$Week_Week_$Impl_$.dividerKe).trim(null);
+};
+thx_unit_time__$Week_Week_$Impl_$.toKilosecond = function(this1) {
+	return this1.multiply(thx_unit_time__$Week_Week_$Impl_$.ofUnit).divide(thx_unit_time__$Week_Week_$Impl_$.dividerKilosecond).trim(null);
+};
+thx_unit_time__$Week_Week_$Impl_$.toHour = function(this1) {
+	return this1.multiply(thx_unit_time__$Week_Week_$Impl_$.ofUnit).divide(thx_unit_time__$Week_Week_$Impl_$.dividerHour).trim(null);
+};
+thx_unit_time__$Week_Week_$Impl_$.toDay = function(this1) {
+	return this1.multiply(thx_unit_time__$Week_Week_$Impl_$.ofUnit).divide(thx_unit_time__$Week_Week_$Impl_$.dividerDay).trim(null);
+};
+thx_unit_time__$Week_Week_$Impl_$.toWeek = function(this1) {
+	return this1;
+};
+thx_unit_time__$Week_Week_$Impl_$.toMegasecond = function(this1) {
+	return this1.multiply(thx_unit_time__$Week_Week_$Impl_$.ofUnit).divide(thx_unit_time__$Week_Week_$Impl_$.dividerMegasecond).trim(null);
+};
+thx_unit_time__$Week_Week_$Impl_$.toFortnight = function(this1) {
+	return this1.multiply(thx_unit_time__$Week_Week_$Impl_$.ofUnit).divide(thx_unit_time__$Week_Week_$Impl_$.dividerFortnight).trim(null);
+};
+thx_unit_time__$Week_Week_$Impl_$.toSynodicMonth = function(this1) {
+	return this1.multiply(thx_unit_time__$Week_Week_$Impl_$.ofUnit).divide(thx_unit_time__$Week_Week_$Impl_$.dividerSynodicMonth).trim(null);
+};
+thx_unit_time__$Week_Week_$Impl_$.toTropicalMonth = function(this1) {
+	return this1.multiply(thx_unit_time__$Week_Week_$Impl_$.ofUnit).divide(thx_unit_time__$Week_Week_$Impl_$.dividerTropicalMonth).trim(null);
+};
+thx_unit_time__$Week_Week_$Impl_$.toJulianYear = function(this1) {
+	return this1.multiply(thx_unit_time__$Week_Week_$Impl_$.ofUnit).divide(thx_unit_time__$Week_Week_$Impl_$.dividerJulianYear).trim(null);
+};
+thx_unit_time__$Week_Week_$Impl_$.toGigasecond = function(this1) {
+	return this1.multiply(thx_unit_time__$Week_Week_$Impl_$.ofUnit).divide(thx_unit_time__$Week_Week_$Impl_$.dividerGigasecond).trim(null);
+};
+thx_unit_time__$Week_Week_$Impl_$.toTerasecond = function(this1) {
+	return this1.multiply(thx_unit_time__$Week_Week_$Impl_$.ofUnit).divide(thx_unit_time__$Week_Week_$Impl_$.dividerTerasecond).trim(null);
+};
+thx_unit_time__$Week_Week_$Impl_$.toString = function(this1) {
+	return "" + this1.toString() + "week";
+};
+thx_unit_time__$Week_Week_$Impl_$.fromTime = function(time) {
+	return thx__$Decimal_Decimal_$Impl_$.fromInt64(time).multiply(thx_unit_time__$Tick_Tick_$Impl_$.ofUnit).divide(thx_unit_time__$Tick_Tick_$Impl_$.dividerWeek).trim(null);
+};
+thx_unit_time__$Week_Week_$Impl_$.toTime = function(this1) {
+	return thx_bigint_Bigs.toInt64(thx__$Decimal_Decimal_$Impl_$.toBigInt(this1.multiply(thx_unit_time__$Week_Week_$Impl_$.ofUnit).divide(thx_unit_time__$Week_Week_$Impl_$.dividerTick).trim(null)));
+};
 function $iterator(o) { if( o instanceof Array ) return function() { return HxOverrides.iter(o); }; return typeof(o.iterator) == 'function' ? $bind(o,o.iterator) : o.iterator; }
 var $_, $fid = 0;
 function $bind(o,m) { if( m == null ) return null; if( m.__id__ == null ) m.__id__ = $fid++; var f; if( o.hx__closures__ == null ) o.hx__closures__ = {}; else f = o.hx__closures__[m.__id__]; if( f == null ) { f = function(){ return f.method.apply(f.scope, arguments); }; f.scope = o; f.method = m; o.hx__closures__[m.__id__] = f; } return f; }
@@ -16280,7 +27808,221 @@ murmur_Walk.outBounds = socket_signal_WalkOut.getInstance();
 socket_SocketManager.emitSignal = new msignal_Signal2();
 socket_SocketManager.walkSignal = new msignal_Signal2();
 socket_SocketManager.ctrlSignal = new msignal_Signal2();
+thx_Assert.behavior = new thx_DefaultAssertBehavior();
+thx_bigint_Small.zero = new thx_bigint_Small(0);
+thx_bigint_Small.one = new thx_bigint_Small(1);
+thx_bigint_Small.two = new thx_bigint_Small(2);
+thx_bigint_Small.ten = new thx_bigint_Small(10);
+thx_bigint_Small.negativeOne = new thx_bigint_Small(-1);
+thx__$BigInt_BigInt_$Impl_$.zero = thx_bigint_Small.zero;
+thx__$BigInt_BigInt_$Impl_$.one = thx_bigint_Small.one;
+thx__$BigInt_BigInt_$Impl_$.two = thx_bigint_Small.two;
+thx__$BigInt_BigInt_$Impl_$.negativeOne = thx_bigint_Small.negativeOne;
+thx__$DateTimeUtc_DateTimeUtc_$Impl_$.millisPerSecond = 1000;
+thx__$DateTimeUtc_DateTimeUtc_$Impl_$.millisPerMinute = thx__$DateTimeUtc_DateTimeUtc_$Impl_$.millisPerSecond * 60;
+thx__$DateTimeUtc_DateTimeUtc_$Impl_$.millisPerHour = thx__$DateTimeUtc_DateTimeUtc_$Impl_$.millisPerMinute * 60;
+thx__$DateTimeUtc_DateTimeUtc_$Impl_$.millisPerDay = thx__$DateTimeUtc_DateTimeUtc_$Impl_$.millisPerHour * 24;
+thx__$DateTimeUtc_DateTimeUtc_$Impl_$.tenI64 = new haxe__$Int64__$_$_$Int64(0,10);
+thx__$DateTimeUtc_DateTimeUtc_$Impl_$.hundredI64 = new haxe__$Int64__$_$_$Int64(0,100);
+thx__$DateTimeUtc_DateTimeUtc_$Impl_$.thousandI64 = new haxe__$Int64__$_$_$Int64(0,1000);
+thx__$DateTimeUtc_DateTimeUtc_$Impl_$.tenThousandI64 = new haxe__$Int64__$_$_$Int64(0,10000);
+thx__$DateTimeUtc_DateTimeUtc_$Impl_$.millionI64 = new haxe__$Int64__$_$_$Int64(0,1000000);
+thx__$DateTimeUtc_DateTimeUtc_$Impl_$.ticksPerMicrosecondI64 = thx__$DateTimeUtc_DateTimeUtc_$Impl_$.tenI64;
+thx__$DateTimeUtc_DateTimeUtc_$Impl_$.ticksPerMillisecond = 10000;
+thx__$DateTimeUtc_DateTimeUtc_$Impl_$.ticksPerMillisecondI64 = (function($this) {
+	var $r;
+	var x = thx__$DateTimeUtc_DateTimeUtc_$Impl_$.ticksPerMillisecond;
+	$r = new haxe__$Int64__$_$_$Int64(x >> 31,x);
+	return $r;
+}(this));
+thx__$DateTimeUtc_DateTimeUtc_$Impl_$.ticksPerSecondI64 = (function($this) {
+	var $r;
+	var a = thx__$DateTimeUtc_DateTimeUtc_$Impl_$.ticksPerMillisecondI64;
+	var b = new haxe__$Int64__$_$_$Int64(0,1000);
+	var al = a.low & 65535;
+	var ah = a.low >>> 16;
+	var bl = b.low & 65535;
+	var bh = b.low >>> 16;
+	var p00 = haxe__$Int32_Int32_$Impl_$.mul(al,bl);
+	var p10 = haxe__$Int32_Int32_$Impl_$.mul(ah,bl);
+	var p01 = haxe__$Int32_Int32_$Impl_$.mul(al,bh);
+	var p11 = haxe__$Int32_Int32_$Impl_$.mul(ah,bh);
+	var low = p00;
+	var high = (p11 + (p01 >>> 16) | 0) + (p10 >>> 16) | 0;
+	p01 = p01 << 16;
+	low = p00 + p01 | 0;
+	if(haxe__$Int32_Int32_$Impl_$.ucompare(low,p01) < 0) {
+		++high;
+		high = high | 0;
+	}
+	p10 = p10 << 16;
+	low = low + p10 | 0;
+	if(haxe__$Int32_Int32_$Impl_$.ucompare(low,p10) < 0) {
+		++high;
+		high = high | 0;
+	}
+	high = high + (haxe__$Int32_Int32_$Impl_$.mul(a.low,b.high) + haxe__$Int32_Int32_$Impl_$.mul(a.high,b.low) | 0) | 0;
+	$r = new haxe__$Int64__$_$_$Int64(high,low);
+	return $r;
+}(this));
+thx__$DateTimeUtc_DateTimeUtc_$Impl_$.ticksPerMinuteI64 = (function($this) {
+	var $r;
+	var a = thx__$DateTimeUtc_DateTimeUtc_$Impl_$.ticksPerSecondI64;
+	var b = new haxe__$Int64__$_$_$Int64(0,60);
+	var al = a.low & 65535;
+	var ah = a.low >>> 16;
+	var bl = b.low & 65535;
+	var bh = b.low >>> 16;
+	var p00 = haxe__$Int32_Int32_$Impl_$.mul(al,bl);
+	var p10 = haxe__$Int32_Int32_$Impl_$.mul(ah,bl);
+	var p01 = haxe__$Int32_Int32_$Impl_$.mul(al,bh);
+	var p11 = haxe__$Int32_Int32_$Impl_$.mul(ah,bh);
+	var low = p00;
+	var high = (p11 + (p01 >>> 16) | 0) + (p10 >>> 16) | 0;
+	p01 = p01 << 16;
+	low = p00 + p01 | 0;
+	if(haxe__$Int32_Int32_$Impl_$.ucompare(low,p01) < 0) {
+		++high;
+		high = high | 0;
+	}
+	p10 = p10 << 16;
+	low = low + p10 | 0;
+	if(haxe__$Int32_Int32_$Impl_$.ucompare(low,p10) < 0) {
+		++high;
+		high = high | 0;
+	}
+	high = high + (haxe__$Int32_Int32_$Impl_$.mul(a.low,b.high) + haxe__$Int32_Int32_$Impl_$.mul(a.high,b.low) | 0) | 0;
+	$r = new haxe__$Int64__$_$_$Int64(high,low);
+	return $r;
+}(this));
+thx__$DateTimeUtc_DateTimeUtc_$Impl_$.ticksPerHourI64 = (function($this) {
+	var $r;
+	var a = thx__$DateTimeUtc_DateTimeUtc_$Impl_$.ticksPerMinuteI64;
+	var b = new haxe__$Int64__$_$_$Int64(0,60);
+	var al = a.low & 65535;
+	var ah = a.low >>> 16;
+	var bl = b.low & 65535;
+	var bh = b.low >>> 16;
+	var p00 = haxe__$Int32_Int32_$Impl_$.mul(al,bl);
+	var p10 = haxe__$Int32_Int32_$Impl_$.mul(ah,bl);
+	var p01 = haxe__$Int32_Int32_$Impl_$.mul(al,bh);
+	var p11 = haxe__$Int32_Int32_$Impl_$.mul(ah,bh);
+	var low = p00;
+	var high = (p11 + (p01 >>> 16) | 0) + (p10 >>> 16) | 0;
+	p01 = p01 << 16;
+	low = p00 + p01 | 0;
+	if(haxe__$Int32_Int32_$Impl_$.ucompare(low,p01) < 0) {
+		++high;
+		high = high | 0;
+	}
+	p10 = p10 << 16;
+	low = low + p10 | 0;
+	if(haxe__$Int32_Int32_$Impl_$.ucompare(low,p10) < 0) {
+		++high;
+		high = high | 0;
+	}
+	high = high + (haxe__$Int32_Int32_$Impl_$.mul(a.low,b.high) + haxe__$Int32_Int32_$Impl_$.mul(a.high,b.low) | 0) | 0;
+	$r = new haxe__$Int64__$_$_$Int64(high,low);
+	return $r;
+}(this));
+thx__$DateTimeUtc_DateTimeUtc_$Impl_$.ticksPerDayI64 = (function($this) {
+	var $r;
+	var a = thx__$DateTimeUtc_DateTimeUtc_$Impl_$.ticksPerHourI64;
+	var b = new haxe__$Int64__$_$_$Int64(0,24);
+	var al = a.low & 65535;
+	var ah = a.low >>> 16;
+	var bl = b.low & 65535;
+	var bh = b.low >>> 16;
+	var p00 = haxe__$Int32_Int32_$Impl_$.mul(al,bl);
+	var p10 = haxe__$Int32_Int32_$Impl_$.mul(ah,bl);
+	var p01 = haxe__$Int32_Int32_$Impl_$.mul(al,bh);
+	var p11 = haxe__$Int32_Int32_$Impl_$.mul(ah,bh);
+	var low = p00;
+	var high = (p11 + (p01 >>> 16) | 0) + (p10 >>> 16) | 0;
+	p01 = p01 << 16;
+	low = p00 + p01 | 0;
+	if(haxe__$Int32_Int32_$Impl_$.ucompare(low,p01) < 0) {
+		++high;
+		high = high | 0;
+	}
+	p10 = p10 << 16;
+	low = low + p10 | 0;
+	if(haxe__$Int32_Int32_$Impl_$.ucompare(low,p10) < 0) {
+		++high;
+		high = high | 0;
+	}
+	high = high + (haxe__$Int32_Int32_$Impl_$.mul(a.low,b.high) + haxe__$Int32_Int32_$Impl_$.mul(a.high,b.low) | 0) | 0;
+	$r = new haxe__$Int64__$_$_$Int64(high,low);
+	return $r;
+}(this));
+thx__$DateTimeUtc_DateTimeUtc_$Impl_$.daysPerYear = 365;
+thx__$DateTimeUtc_DateTimeUtc_$Impl_$.daysPer4Years = thx__$DateTimeUtc_DateTimeUtc_$Impl_$.daysPerYear * 4 + 1;
+thx__$DateTimeUtc_DateTimeUtc_$Impl_$.daysPer100Years = thx__$DateTimeUtc_DateTimeUtc_$Impl_$.daysPer4Years * 25 - 1;
+thx__$DateTimeUtc_DateTimeUtc_$Impl_$.daysPer400Years = thx__$DateTimeUtc_DateTimeUtc_$Impl_$.daysPer100Years * 4 + 1;
+thx__$DateTimeUtc_DateTimeUtc_$Impl_$.daysTo1970 = thx__$DateTimeUtc_DateTimeUtc_$Impl_$.daysPer400Years * 4 + thx__$DateTimeUtc_DateTimeUtc_$Impl_$.daysPer100Years * 3 + thx__$DateTimeUtc_DateTimeUtc_$Impl_$.daysPer4Years * 17 + thx__$DateTimeUtc_DateTimeUtc_$Impl_$.daysPerYear;
+thx__$DateTimeUtc_DateTimeUtc_$Impl_$.unixEpochTicks = (function($this) {
+	var $r;
+	var a = thx__$DateTimeUtc_DateTimeUtc_$Impl_$.ticksPerDayI64;
+	var x = thx__$DateTimeUtc_DateTimeUtc_$Impl_$.daysTo1970;
+	var b = new haxe__$Int64__$_$_$Int64(x >> 31,x);
+	var al = a.low & 65535;
+	var ah = a.low >>> 16;
+	var bl = b.low & 65535;
+	var bh = b.low >>> 16;
+	var p00 = haxe__$Int32_Int32_$Impl_$.mul(al,bl);
+	var p10 = haxe__$Int32_Int32_$Impl_$.mul(ah,bl);
+	var p01 = haxe__$Int32_Int32_$Impl_$.mul(al,bh);
+	var p11 = haxe__$Int32_Int32_$Impl_$.mul(ah,bh);
+	var low = p00;
+	var high = (p11 + (p01 >>> 16) | 0) + (p10 >>> 16) | 0;
+	p01 = p01 << 16;
+	low = p00 + p01 | 0;
+	if(haxe__$Int32_Int32_$Impl_$.ucompare(low,p01) < 0) {
+		++high;
+		high = high | 0;
+	}
+	p10 = p10 << 16;
+	low = low + p10 | 0;
+	if(haxe__$Int32_Int32_$Impl_$.ucompare(low,p10) < 0) {
+		++high;
+		high = high | 0;
+	}
+	high = high + (haxe__$Int32_Int32_$Impl_$.mul(a.low,b.high) + haxe__$Int32_Int32_$Impl_$.mul(a.high,b.low) | 0) | 0;
+	$r = new haxe__$Int64__$_$_$Int64(high,low);
+	return $r;
+}(this));
+thx__$DateTimeUtc_DateTimeUtc_$Impl_$.DATE_PART_YEAR = 0;
+thx__$DateTimeUtc_DateTimeUtc_$Impl_$.DATE_PART_DAY_OF_YEAR = 1;
+thx__$DateTimeUtc_DateTimeUtc_$Impl_$.DATE_PART_MONTH = 2;
+thx__$DateTimeUtc_DateTimeUtc_$Impl_$.DATE_PART_DAY = 3;
+thx__$DateTimeUtc_DateTimeUtc_$Impl_$.daysToMonth365 = [0,31,59,90,120,151,181,212,243,273,304,334,365];
+thx__$DateTimeUtc_DateTimeUtc_$Impl_$.daysToMonth366 = [0,31,60,91,121,152,182,213,244,274,305,335,366];
 thx_Dates.order = thx__$Ord_Ord_$Impl_$.fromIntComparison(thx_Dates.compare);
+thx_bigint_Decimals.divisionExtraScale = 4;
+thx_bigint_Bigs.BASE = 10000000;
+thx_bigint_Bigs.DOUBLE_BASE = 100000000000000.0;
+thx_bigint_Bigs.LOG_BASE = 7;
+thx_bigint_Bigs.MAX_INT = 9007199254740992;
+thx_bigint_Bigs.MAX_INT_ARR = thx_bigint_Bigs.smallToArray(thx_bigint_Bigs.MAX_INT);
+thx_bigint_Bigs.LOG_MAX_INT = Math.log(thx_bigint_Bigs.MAX_INT);
+thx_bigint_Bigs.powersOfTwo = (function($this) {
+	var $r;
+	var powers = [1];
+	while(powers[powers.length - 1] <= 10000000) powers.push(2 * powers[powers.length - 1]);
+	$r = powers;
+	return $r;
+}(this));
+thx_bigint_Bigs.bigPowersOfTwo = thx_bigint_Bigs.powersOfTwo.map(function(v) {
+	return new thx_bigint_Small(v);
+});
+thx_bigint_Bigs.powers2Length = thx_bigint_Bigs.powersOfTwo.length;
+thx_bigint_Bigs.highestPower2 = thx_bigint_Bigs.powersOfTwo[thx_bigint_Bigs.powers2Length - 1];
+thx_bigint_Bigs.bigHighestPower2 = new thx_bigint_Small(thx_bigint_Bigs.highestPower2);
+thx_bigint_DecimalImpl.zero = thx_bigint_Decimals.fromInt(0);
+thx_bigint_DecimalImpl.one = thx_bigint_Decimals.fromInt(1);
+thx_bigint_DecimalImpl.ten = thx_bigint_Decimals.fromInt(10);
+thx__$Decimal_Decimal_$Impl_$.zero = thx_bigint_DecimalImpl.zero;
+thx__$Decimal_Decimal_$Impl_$.one = thx_bigint_DecimalImpl.one;
 thx_Floats.TOLERANCE = 10e-5;
 thx_Floats.EPSILON = 1e-9;
 thx_Floats.pattern_parse = new EReg("^(\\+|-)?\\d+(\\.\\d+)?(e-?\\d+)?$","");
@@ -16288,6 +28030,13 @@ thx_Floats.order = thx__$Ord_Ord_$Impl_$.fromIntComparison(thx_Floats.compare);
 thx_Floats.monoid = { zero : 0.0, append : function(a,b) {
 	return a + b;
 }};
+thx_Int64s.one = new haxe__$Int64__$_$_$Int64(0,1);
+thx_Int64s.two = new haxe__$Int64__$_$_$Int64(0,2);
+thx_Int64s.zero = new haxe__$Int64__$_$_$Int64(0,0);
+thx_Int64s.ten = new haxe__$Int64__$_$_$Int64(0,10);
+thx_Int64s.maxValue = new haxe__$Int64__$_$_$Int64(2147483647,-1);
+thx_Int64s.minValue = new haxe__$Int64__$_$_$Int64(-2147483648,1);
+thx_Int64s.min = new haxe__$Int64__$_$_$Int64(-2147483648,0);
 thx_Ints.pattern_parse = new EReg("^[ \t\r\n]*[+-]?(\\d+|0x[0-9A-F]+)","i");
 thx_Ints.BASE = "0123456789abcdefghijklmnopqrstuvwxyz";
 thx_Ints.order = function(i0,i1) {
@@ -16328,6 +28077,8 @@ thx_Strings.STRIPTAGS = new EReg("</?[a-z]+[^>]*>","gi");
 thx_Strings.WSG = new EReg("[ \t\r\n]+","g");
 thx_Strings.SPLIT_LINES = new EReg("\r\n|\n\r|\n|\r","g");
 thx_Strings.CANONICALIZE_LINES = new EReg("\r\n|\n\r|\r","g");
+thx__$Time_Time_$Impl_$.zero = new haxe__$Int64__$_$_$Int64(0,0);
+thx__$Time_Time_$Impl_$.oneDay = new haxe__$Int64__$_$_$Int64(0,24);
 thx_Timer.FRAME_RATE = Math.round(16.6666666666666679);
 thx_color__$CubeHelix_CubeHelix_$Impl_$.A = -0.14861;
 thx_color__$CubeHelix_CubeHelix_$Impl_$.B = 1.78277;
@@ -16536,6 +28287,681 @@ thx_unit_angle__$Turn_Turn_$Impl_$.dividerSecondOfArc = 7.71604938271604893e-07;
 thx_unit_angle__$Turn_Turn_$Impl_$.dividerSextant = 0.166666666666666657;
 thx_unit_angle__$Turn_Turn_$Impl_$.dividerTurn = 1.;
 thx_unit_angle__$Turn_Turn_$Impl_$.symbol = "τ";
+thx_unit_time__$Day_Day_$Impl_$.ofUnit = thx_bigint_Decimals.parse("86400");
+thx_unit_time__$Day_Day_$Impl_$.dividerPlankTimeUnit = thx_bigint_Decimals.parse("5.39e-44");
+thx_unit_time__$Day_Day_$Impl_$.dividerJiffyPhysics = thx_bigint_Decimals.parse("3e-24");
+thx_unit_time__$Day_Day_$Impl_$.dividerSvedberg = thx_bigint_Decimals.parse("1e-13");
+thx_unit_time__$Day_Day_$Impl_$.dividerPicosecond = thx_bigint_Decimals.parse("1e-12");
+thx_unit_time__$Day_Day_$Impl_$.dividerNanosecond = thx_bigint_Decimals.parse("1e-9");
+thx_unit_time__$Day_Day_$Impl_$.dividerShake = thx_bigint_Decimals.parse("1e-8");
+thx_unit_time__$Day_Day_$Impl_$.dividerTick = thx_bigint_Decimals.parse("1e-7");
+thx_unit_time__$Day_Day_$Impl_$.dividerMicrosecond = thx_bigint_Decimals.parse("1e-6");
+thx_unit_time__$Day_Day_$Impl_$.dividerFourth = thx_bigint_Decimals.parse("0.00027777777778");
+thx_unit_time__$Day_Day_$Impl_$.dividerMillisecond = thx_bigint_Decimals.parse("0.001");
+thx_unit_time__$Day_Day_$Impl_$.dividerThird = thx_bigint_Decimals.parse("0.01666666666667");
+thx_unit_time__$Day_Day_$Impl_$.dividerSecond = thx_bigint_Decimals.parse("1");
+thx_unit_time__$Day_Day_$Impl_$.dividerMinute = thx_bigint_Decimals.parse("60");
+thx_unit_time__$Day_Day_$Impl_$.dividerKe = thx_bigint_Decimals.parse("864");
+thx_unit_time__$Day_Day_$Impl_$.dividerKilosecond = thx_bigint_Decimals.parse("1000");
+thx_unit_time__$Day_Day_$Impl_$.dividerHour = thx_bigint_Decimals.parse("3600");
+thx_unit_time__$Day_Day_$Impl_$.dividerDay = thx_bigint_Decimals.parse("86400");
+thx_unit_time__$Day_Day_$Impl_$.dividerWeek = thx_bigint_Decimals.parse("604800");
+thx_unit_time__$Day_Day_$Impl_$.dividerMegasecond = thx_bigint_Decimals.parse("1000000");
+thx_unit_time__$Day_Day_$Impl_$.dividerFortnight = thx_bigint_Decimals.parse("1209600");
+thx_unit_time__$Day_Day_$Impl_$.dividerSynodicMonth = thx_bigint_Decimals.parse("2551442.976");
+thx_unit_time__$Day_Day_$Impl_$.dividerTropicalMonth = thx_bigint_Decimals.parse("2360584.512");
+thx_unit_time__$Day_Day_$Impl_$.dividerJulianYear = thx_bigint_Decimals.parse("31557600");
+thx_unit_time__$Day_Day_$Impl_$.dividerGigasecond = thx_bigint_Decimals.parse("1000000000");
+thx_unit_time__$Day_Day_$Impl_$.dividerTerasecond = thx_bigint_Decimals.parse("1000000000000");
+thx_unit_time__$Day_Day_$Impl_$.symbol = "day";
+thx_unit_time__$Fortnight_Fortnight_$Impl_$.ofUnit = thx_bigint_Decimals.parse("1209600");
+thx_unit_time__$Fortnight_Fortnight_$Impl_$.dividerPlankTimeUnit = thx_bigint_Decimals.parse("5.39e-44");
+thx_unit_time__$Fortnight_Fortnight_$Impl_$.dividerJiffyPhysics = thx_bigint_Decimals.parse("3e-24");
+thx_unit_time__$Fortnight_Fortnight_$Impl_$.dividerSvedberg = thx_bigint_Decimals.parse("1e-13");
+thx_unit_time__$Fortnight_Fortnight_$Impl_$.dividerPicosecond = thx_bigint_Decimals.parse("1e-12");
+thx_unit_time__$Fortnight_Fortnight_$Impl_$.dividerNanosecond = thx_bigint_Decimals.parse("1e-9");
+thx_unit_time__$Fortnight_Fortnight_$Impl_$.dividerShake = thx_bigint_Decimals.parse("1e-8");
+thx_unit_time__$Fortnight_Fortnight_$Impl_$.dividerTick = thx_bigint_Decimals.parse("1e-7");
+thx_unit_time__$Fortnight_Fortnight_$Impl_$.dividerMicrosecond = thx_bigint_Decimals.parse("1e-6");
+thx_unit_time__$Fortnight_Fortnight_$Impl_$.dividerFourth = thx_bigint_Decimals.parse("0.00027777777778");
+thx_unit_time__$Fortnight_Fortnight_$Impl_$.dividerMillisecond = thx_bigint_Decimals.parse("0.001");
+thx_unit_time__$Fortnight_Fortnight_$Impl_$.dividerThird = thx_bigint_Decimals.parse("0.01666666666667");
+thx_unit_time__$Fortnight_Fortnight_$Impl_$.dividerSecond = thx_bigint_Decimals.parse("1");
+thx_unit_time__$Fortnight_Fortnight_$Impl_$.dividerMinute = thx_bigint_Decimals.parse("60");
+thx_unit_time__$Fortnight_Fortnight_$Impl_$.dividerKe = thx_bigint_Decimals.parse("864");
+thx_unit_time__$Fortnight_Fortnight_$Impl_$.dividerKilosecond = thx_bigint_Decimals.parse("1000");
+thx_unit_time__$Fortnight_Fortnight_$Impl_$.dividerHour = thx_bigint_Decimals.parse("3600");
+thx_unit_time__$Fortnight_Fortnight_$Impl_$.dividerDay = thx_bigint_Decimals.parse("86400");
+thx_unit_time__$Fortnight_Fortnight_$Impl_$.dividerWeek = thx_bigint_Decimals.parse("604800");
+thx_unit_time__$Fortnight_Fortnight_$Impl_$.dividerMegasecond = thx_bigint_Decimals.parse("1000000");
+thx_unit_time__$Fortnight_Fortnight_$Impl_$.dividerFortnight = thx_bigint_Decimals.parse("1209600");
+thx_unit_time__$Fortnight_Fortnight_$Impl_$.dividerSynodicMonth = thx_bigint_Decimals.parse("2551442.976");
+thx_unit_time__$Fortnight_Fortnight_$Impl_$.dividerTropicalMonth = thx_bigint_Decimals.parse("2360584.512");
+thx_unit_time__$Fortnight_Fortnight_$Impl_$.dividerJulianYear = thx_bigint_Decimals.parse("31557600");
+thx_unit_time__$Fortnight_Fortnight_$Impl_$.dividerGigasecond = thx_bigint_Decimals.parse("1000000000");
+thx_unit_time__$Fortnight_Fortnight_$Impl_$.dividerTerasecond = thx_bigint_Decimals.parse("1000000000000");
+thx_unit_time__$Fortnight_Fortnight_$Impl_$.symbol = "fortnight";
+thx_unit_time__$Fourth_Fourth_$Impl_$.ofUnit = thx_bigint_Decimals.parse("0.00027777777778");
+thx_unit_time__$Fourth_Fourth_$Impl_$.dividerPlankTimeUnit = thx_bigint_Decimals.parse("5.39e-44");
+thx_unit_time__$Fourth_Fourth_$Impl_$.dividerJiffyPhysics = thx_bigint_Decimals.parse("3e-24");
+thx_unit_time__$Fourth_Fourth_$Impl_$.dividerSvedberg = thx_bigint_Decimals.parse("1e-13");
+thx_unit_time__$Fourth_Fourth_$Impl_$.dividerPicosecond = thx_bigint_Decimals.parse("1e-12");
+thx_unit_time__$Fourth_Fourth_$Impl_$.dividerNanosecond = thx_bigint_Decimals.parse("1e-9");
+thx_unit_time__$Fourth_Fourth_$Impl_$.dividerShake = thx_bigint_Decimals.parse("1e-8");
+thx_unit_time__$Fourth_Fourth_$Impl_$.dividerTick = thx_bigint_Decimals.parse("1e-7");
+thx_unit_time__$Fourth_Fourth_$Impl_$.dividerMicrosecond = thx_bigint_Decimals.parse("1e-6");
+thx_unit_time__$Fourth_Fourth_$Impl_$.dividerFourth = thx_bigint_Decimals.parse("0.00027777777778");
+thx_unit_time__$Fourth_Fourth_$Impl_$.dividerMillisecond = thx_bigint_Decimals.parse("0.001");
+thx_unit_time__$Fourth_Fourth_$Impl_$.dividerThird = thx_bigint_Decimals.parse("0.01666666666667");
+thx_unit_time__$Fourth_Fourth_$Impl_$.dividerSecond = thx_bigint_Decimals.parse("1");
+thx_unit_time__$Fourth_Fourth_$Impl_$.dividerMinute = thx_bigint_Decimals.parse("60");
+thx_unit_time__$Fourth_Fourth_$Impl_$.dividerKe = thx_bigint_Decimals.parse("864");
+thx_unit_time__$Fourth_Fourth_$Impl_$.dividerKilosecond = thx_bigint_Decimals.parse("1000");
+thx_unit_time__$Fourth_Fourth_$Impl_$.dividerHour = thx_bigint_Decimals.parse("3600");
+thx_unit_time__$Fourth_Fourth_$Impl_$.dividerDay = thx_bigint_Decimals.parse("86400");
+thx_unit_time__$Fourth_Fourth_$Impl_$.dividerWeek = thx_bigint_Decimals.parse("604800");
+thx_unit_time__$Fourth_Fourth_$Impl_$.dividerMegasecond = thx_bigint_Decimals.parse("1000000");
+thx_unit_time__$Fourth_Fourth_$Impl_$.dividerFortnight = thx_bigint_Decimals.parse("1209600");
+thx_unit_time__$Fourth_Fourth_$Impl_$.dividerSynodicMonth = thx_bigint_Decimals.parse("2551442.976");
+thx_unit_time__$Fourth_Fourth_$Impl_$.dividerTropicalMonth = thx_bigint_Decimals.parse("2360584.512");
+thx_unit_time__$Fourth_Fourth_$Impl_$.dividerJulianYear = thx_bigint_Decimals.parse("31557600");
+thx_unit_time__$Fourth_Fourth_$Impl_$.dividerGigasecond = thx_bigint_Decimals.parse("1000000000");
+thx_unit_time__$Fourth_Fourth_$Impl_$.dividerTerasecond = thx_bigint_Decimals.parse("1000000000000");
+thx_unit_time__$Fourth_Fourth_$Impl_$.symbol = "fourth";
+thx_unit_time__$Gigasecond_Gigasecond_$Impl_$.ofUnit = thx_bigint_Decimals.parse("1000000000");
+thx_unit_time__$Gigasecond_Gigasecond_$Impl_$.dividerPlankTimeUnit = thx_bigint_Decimals.parse("5.39e-44");
+thx_unit_time__$Gigasecond_Gigasecond_$Impl_$.dividerJiffyPhysics = thx_bigint_Decimals.parse("3e-24");
+thx_unit_time__$Gigasecond_Gigasecond_$Impl_$.dividerSvedberg = thx_bigint_Decimals.parse("1e-13");
+thx_unit_time__$Gigasecond_Gigasecond_$Impl_$.dividerPicosecond = thx_bigint_Decimals.parse("1e-12");
+thx_unit_time__$Gigasecond_Gigasecond_$Impl_$.dividerNanosecond = thx_bigint_Decimals.parse("1e-9");
+thx_unit_time__$Gigasecond_Gigasecond_$Impl_$.dividerShake = thx_bigint_Decimals.parse("1e-8");
+thx_unit_time__$Gigasecond_Gigasecond_$Impl_$.dividerTick = thx_bigint_Decimals.parse("1e-7");
+thx_unit_time__$Gigasecond_Gigasecond_$Impl_$.dividerMicrosecond = thx_bigint_Decimals.parse("1e-6");
+thx_unit_time__$Gigasecond_Gigasecond_$Impl_$.dividerFourth = thx_bigint_Decimals.parse("0.00027777777778");
+thx_unit_time__$Gigasecond_Gigasecond_$Impl_$.dividerMillisecond = thx_bigint_Decimals.parse("0.001");
+thx_unit_time__$Gigasecond_Gigasecond_$Impl_$.dividerThird = thx_bigint_Decimals.parse("0.01666666666667");
+thx_unit_time__$Gigasecond_Gigasecond_$Impl_$.dividerSecond = thx_bigint_Decimals.parse("1");
+thx_unit_time__$Gigasecond_Gigasecond_$Impl_$.dividerMinute = thx_bigint_Decimals.parse("60");
+thx_unit_time__$Gigasecond_Gigasecond_$Impl_$.dividerKe = thx_bigint_Decimals.parse("864");
+thx_unit_time__$Gigasecond_Gigasecond_$Impl_$.dividerKilosecond = thx_bigint_Decimals.parse("1000");
+thx_unit_time__$Gigasecond_Gigasecond_$Impl_$.dividerHour = thx_bigint_Decimals.parse("3600");
+thx_unit_time__$Gigasecond_Gigasecond_$Impl_$.dividerDay = thx_bigint_Decimals.parse("86400");
+thx_unit_time__$Gigasecond_Gigasecond_$Impl_$.dividerWeek = thx_bigint_Decimals.parse("604800");
+thx_unit_time__$Gigasecond_Gigasecond_$Impl_$.dividerMegasecond = thx_bigint_Decimals.parse("1000000");
+thx_unit_time__$Gigasecond_Gigasecond_$Impl_$.dividerFortnight = thx_bigint_Decimals.parse("1209600");
+thx_unit_time__$Gigasecond_Gigasecond_$Impl_$.dividerSynodicMonth = thx_bigint_Decimals.parse("2551442.976");
+thx_unit_time__$Gigasecond_Gigasecond_$Impl_$.dividerTropicalMonth = thx_bigint_Decimals.parse("2360584.512");
+thx_unit_time__$Gigasecond_Gigasecond_$Impl_$.dividerJulianYear = thx_bigint_Decimals.parse("31557600");
+thx_unit_time__$Gigasecond_Gigasecond_$Impl_$.dividerGigasecond = thx_bigint_Decimals.parse("1000000000");
+thx_unit_time__$Gigasecond_Gigasecond_$Impl_$.dividerTerasecond = thx_bigint_Decimals.parse("1000000000000");
+thx_unit_time__$Gigasecond_Gigasecond_$Impl_$.symbol = "Gs";
+thx_unit_time__$Hour_Hour_$Impl_$.ofUnit = thx_bigint_Decimals.parse("3600");
+thx_unit_time__$Hour_Hour_$Impl_$.dividerPlankTimeUnit = thx_bigint_Decimals.parse("5.39e-44");
+thx_unit_time__$Hour_Hour_$Impl_$.dividerJiffyPhysics = thx_bigint_Decimals.parse("3e-24");
+thx_unit_time__$Hour_Hour_$Impl_$.dividerSvedberg = thx_bigint_Decimals.parse("1e-13");
+thx_unit_time__$Hour_Hour_$Impl_$.dividerPicosecond = thx_bigint_Decimals.parse("1e-12");
+thx_unit_time__$Hour_Hour_$Impl_$.dividerNanosecond = thx_bigint_Decimals.parse("1e-9");
+thx_unit_time__$Hour_Hour_$Impl_$.dividerShake = thx_bigint_Decimals.parse("1e-8");
+thx_unit_time__$Hour_Hour_$Impl_$.dividerTick = thx_bigint_Decimals.parse("1e-7");
+thx_unit_time__$Hour_Hour_$Impl_$.dividerMicrosecond = thx_bigint_Decimals.parse("1e-6");
+thx_unit_time__$Hour_Hour_$Impl_$.dividerFourth = thx_bigint_Decimals.parse("0.00027777777778");
+thx_unit_time__$Hour_Hour_$Impl_$.dividerMillisecond = thx_bigint_Decimals.parse("0.001");
+thx_unit_time__$Hour_Hour_$Impl_$.dividerThird = thx_bigint_Decimals.parse("0.01666666666667");
+thx_unit_time__$Hour_Hour_$Impl_$.dividerSecond = thx_bigint_Decimals.parse("1");
+thx_unit_time__$Hour_Hour_$Impl_$.dividerMinute = thx_bigint_Decimals.parse("60");
+thx_unit_time__$Hour_Hour_$Impl_$.dividerKe = thx_bigint_Decimals.parse("864");
+thx_unit_time__$Hour_Hour_$Impl_$.dividerKilosecond = thx_bigint_Decimals.parse("1000");
+thx_unit_time__$Hour_Hour_$Impl_$.dividerHour = thx_bigint_Decimals.parse("3600");
+thx_unit_time__$Hour_Hour_$Impl_$.dividerDay = thx_bigint_Decimals.parse("86400");
+thx_unit_time__$Hour_Hour_$Impl_$.dividerWeek = thx_bigint_Decimals.parse("604800");
+thx_unit_time__$Hour_Hour_$Impl_$.dividerMegasecond = thx_bigint_Decimals.parse("1000000");
+thx_unit_time__$Hour_Hour_$Impl_$.dividerFortnight = thx_bigint_Decimals.parse("1209600");
+thx_unit_time__$Hour_Hour_$Impl_$.dividerSynodicMonth = thx_bigint_Decimals.parse("2551442.976");
+thx_unit_time__$Hour_Hour_$Impl_$.dividerTropicalMonth = thx_bigint_Decimals.parse("2360584.512");
+thx_unit_time__$Hour_Hour_$Impl_$.dividerJulianYear = thx_bigint_Decimals.parse("31557600");
+thx_unit_time__$Hour_Hour_$Impl_$.dividerGigasecond = thx_bigint_Decimals.parse("1000000000");
+thx_unit_time__$Hour_Hour_$Impl_$.dividerTerasecond = thx_bigint_Decimals.parse("1000000000000");
+thx_unit_time__$Hour_Hour_$Impl_$.symbol = "h";
+thx_unit_time__$JiffyPhysics_JiffyPhysics_$Impl_$.ofUnit = thx_bigint_Decimals.parse("3e-24");
+thx_unit_time__$JiffyPhysics_JiffyPhysics_$Impl_$.dividerPlankTimeUnit = thx_bigint_Decimals.parse("5.39e-44");
+thx_unit_time__$JiffyPhysics_JiffyPhysics_$Impl_$.dividerJiffyPhysics = thx_bigint_Decimals.parse("3e-24");
+thx_unit_time__$JiffyPhysics_JiffyPhysics_$Impl_$.dividerSvedberg = thx_bigint_Decimals.parse("1e-13");
+thx_unit_time__$JiffyPhysics_JiffyPhysics_$Impl_$.dividerPicosecond = thx_bigint_Decimals.parse("1e-12");
+thx_unit_time__$JiffyPhysics_JiffyPhysics_$Impl_$.dividerNanosecond = thx_bigint_Decimals.parse("1e-9");
+thx_unit_time__$JiffyPhysics_JiffyPhysics_$Impl_$.dividerShake = thx_bigint_Decimals.parse("1e-8");
+thx_unit_time__$JiffyPhysics_JiffyPhysics_$Impl_$.dividerTick = thx_bigint_Decimals.parse("1e-7");
+thx_unit_time__$JiffyPhysics_JiffyPhysics_$Impl_$.dividerMicrosecond = thx_bigint_Decimals.parse("1e-6");
+thx_unit_time__$JiffyPhysics_JiffyPhysics_$Impl_$.dividerFourth = thx_bigint_Decimals.parse("0.00027777777778");
+thx_unit_time__$JiffyPhysics_JiffyPhysics_$Impl_$.dividerMillisecond = thx_bigint_Decimals.parse("0.001");
+thx_unit_time__$JiffyPhysics_JiffyPhysics_$Impl_$.dividerThird = thx_bigint_Decimals.parse("0.01666666666667");
+thx_unit_time__$JiffyPhysics_JiffyPhysics_$Impl_$.dividerSecond = thx_bigint_Decimals.parse("1");
+thx_unit_time__$JiffyPhysics_JiffyPhysics_$Impl_$.dividerMinute = thx_bigint_Decimals.parse("60");
+thx_unit_time__$JiffyPhysics_JiffyPhysics_$Impl_$.dividerKe = thx_bigint_Decimals.parse("864");
+thx_unit_time__$JiffyPhysics_JiffyPhysics_$Impl_$.dividerKilosecond = thx_bigint_Decimals.parse("1000");
+thx_unit_time__$JiffyPhysics_JiffyPhysics_$Impl_$.dividerHour = thx_bigint_Decimals.parse("3600");
+thx_unit_time__$JiffyPhysics_JiffyPhysics_$Impl_$.dividerDay = thx_bigint_Decimals.parse("86400");
+thx_unit_time__$JiffyPhysics_JiffyPhysics_$Impl_$.dividerWeek = thx_bigint_Decimals.parse("604800");
+thx_unit_time__$JiffyPhysics_JiffyPhysics_$Impl_$.dividerMegasecond = thx_bigint_Decimals.parse("1000000");
+thx_unit_time__$JiffyPhysics_JiffyPhysics_$Impl_$.dividerFortnight = thx_bigint_Decimals.parse("1209600");
+thx_unit_time__$JiffyPhysics_JiffyPhysics_$Impl_$.dividerSynodicMonth = thx_bigint_Decimals.parse("2551442.976");
+thx_unit_time__$JiffyPhysics_JiffyPhysics_$Impl_$.dividerTropicalMonth = thx_bigint_Decimals.parse("2360584.512");
+thx_unit_time__$JiffyPhysics_JiffyPhysics_$Impl_$.dividerJulianYear = thx_bigint_Decimals.parse("31557600");
+thx_unit_time__$JiffyPhysics_JiffyPhysics_$Impl_$.dividerGigasecond = thx_bigint_Decimals.parse("1000000000");
+thx_unit_time__$JiffyPhysics_JiffyPhysics_$Impl_$.dividerTerasecond = thx_bigint_Decimals.parse("1000000000000");
+thx_unit_time__$JiffyPhysics_JiffyPhysics_$Impl_$.symbol = "jiffy";
+thx_unit_time__$JulianYear_JulianYear_$Impl_$.ofUnit = thx_bigint_Decimals.parse("31557600");
+thx_unit_time__$JulianYear_JulianYear_$Impl_$.dividerPlankTimeUnit = thx_bigint_Decimals.parse("5.39e-44");
+thx_unit_time__$JulianYear_JulianYear_$Impl_$.dividerJiffyPhysics = thx_bigint_Decimals.parse("3e-24");
+thx_unit_time__$JulianYear_JulianYear_$Impl_$.dividerSvedberg = thx_bigint_Decimals.parse("1e-13");
+thx_unit_time__$JulianYear_JulianYear_$Impl_$.dividerPicosecond = thx_bigint_Decimals.parse("1e-12");
+thx_unit_time__$JulianYear_JulianYear_$Impl_$.dividerNanosecond = thx_bigint_Decimals.parse("1e-9");
+thx_unit_time__$JulianYear_JulianYear_$Impl_$.dividerShake = thx_bigint_Decimals.parse("1e-8");
+thx_unit_time__$JulianYear_JulianYear_$Impl_$.dividerTick = thx_bigint_Decimals.parse("1e-7");
+thx_unit_time__$JulianYear_JulianYear_$Impl_$.dividerMicrosecond = thx_bigint_Decimals.parse("1e-6");
+thx_unit_time__$JulianYear_JulianYear_$Impl_$.dividerFourth = thx_bigint_Decimals.parse("0.00027777777778");
+thx_unit_time__$JulianYear_JulianYear_$Impl_$.dividerMillisecond = thx_bigint_Decimals.parse("0.001");
+thx_unit_time__$JulianYear_JulianYear_$Impl_$.dividerThird = thx_bigint_Decimals.parse("0.01666666666667");
+thx_unit_time__$JulianYear_JulianYear_$Impl_$.dividerSecond = thx_bigint_Decimals.parse("1");
+thx_unit_time__$JulianYear_JulianYear_$Impl_$.dividerMinute = thx_bigint_Decimals.parse("60");
+thx_unit_time__$JulianYear_JulianYear_$Impl_$.dividerKe = thx_bigint_Decimals.parse("864");
+thx_unit_time__$JulianYear_JulianYear_$Impl_$.dividerKilosecond = thx_bigint_Decimals.parse("1000");
+thx_unit_time__$JulianYear_JulianYear_$Impl_$.dividerHour = thx_bigint_Decimals.parse("3600");
+thx_unit_time__$JulianYear_JulianYear_$Impl_$.dividerDay = thx_bigint_Decimals.parse("86400");
+thx_unit_time__$JulianYear_JulianYear_$Impl_$.dividerWeek = thx_bigint_Decimals.parse("604800");
+thx_unit_time__$JulianYear_JulianYear_$Impl_$.dividerMegasecond = thx_bigint_Decimals.parse("1000000");
+thx_unit_time__$JulianYear_JulianYear_$Impl_$.dividerFortnight = thx_bigint_Decimals.parse("1209600");
+thx_unit_time__$JulianYear_JulianYear_$Impl_$.dividerSynodicMonth = thx_bigint_Decimals.parse("2551442.976");
+thx_unit_time__$JulianYear_JulianYear_$Impl_$.dividerTropicalMonth = thx_bigint_Decimals.parse("2360584.512");
+thx_unit_time__$JulianYear_JulianYear_$Impl_$.dividerJulianYear = thx_bigint_Decimals.parse("31557600");
+thx_unit_time__$JulianYear_JulianYear_$Impl_$.dividerGigasecond = thx_bigint_Decimals.parse("1000000000");
+thx_unit_time__$JulianYear_JulianYear_$Impl_$.dividerTerasecond = thx_bigint_Decimals.parse("1000000000000");
+thx_unit_time__$JulianYear_JulianYear_$Impl_$.symbol = "julian year";
+thx_unit_time__$Ke_Ke_$Impl_$.ofUnit = thx_bigint_Decimals.parse("864");
+thx_unit_time__$Ke_Ke_$Impl_$.dividerPlankTimeUnit = thx_bigint_Decimals.parse("5.39e-44");
+thx_unit_time__$Ke_Ke_$Impl_$.dividerJiffyPhysics = thx_bigint_Decimals.parse("3e-24");
+thx_unit_time__$Ke_Ke_$Impl_$.dividerSvedberg = thx_bigint_Decimals.parse("1e-13");
+thx_unit_time__$Ke_Ke_$Impl_$.dividerPicosecond = thx_bigint_Decimals.parse("1e-12");
+thx_unit_time__$Ke_Ke_$Impl_$.dividerNanosecond = thx_bigint_Decimals.parse("1e-9");
+thx_unit_time__$Ke_Ke_$Impl_$.dividerShake = thx_bigint_Decimals.parse("1e-8");
+thx_unit_time__$Ke_Ke_$Impl_$.dividerTick = thx_bigint_Decimals.parse("1e-7");
+thx_unit_time__$Ke_Ke_$Impl_$.dividerMicrosecond = thx_bigint_Decimals.parse("1e-6");
+thx_unit_time__$Ke_Ke_$Impl_$.dividerFourth = thx_bigint_Decimals.parse("0.00027777777778");
+thx_unit_time__$Ke_Ke_$Impl_$.dividerMillisecond = thx_bigint_Decimals.parse("0.001");
+thx_unit_time__$Ke_Ke_$Impl_$.dividerThird = thx_bigint_Decimals.parse("0.01666666666667");
+thx_unit_time__$Ke_Ke_$Impl_$.dividerSecond = thx_bigint_Decimals.parse("1");
+thx_unit_time__$Ke_Ke_$Impl_$.dividerMinute = thx_bigint_Decimals.parse("60");
+thx_unit_time__$Ke_Ke_$Impl_$.dividerKe = thx_bigint_Decimals.parse("864");
+thx_unit_time__$Ke_Ke_$Impl_$.dividerKilosecond = thx_bigint_Decimals.parse("1000");
+thx_unit_time__$Ke_Ke_$Impl_$.dividerHour = thx_bigint_Decimals.parse("3600");
+thx_unit_time__$Ke_Ke_$Impl_$.dividerDay = thx_bigint_Decimals.parse("86400");
+thx_unit_time__$Ke_Ke_$Impl_$.dividerWeek = thx_bigint_Decimals.parse("604800");
+thx_unit_time__$Ke_Ke_$Impl_$.dividerMegasecond = thx_bigint_Decimals.parse("1000000");
+thx_unit_time__$Ke_Ke_$Impl_$.dividerFortnight = thx_bigint_Decimals.parse("1209600");
+thx_unit_time__$Ke_Ke_$Impl_$.dividerSynodicMonth = thx_bigint_Decimals.parse("2551442.976");
+thx_unit_time__$Ke_Ke_$Impl_$.dividerTropicalMonth = thx_bigint_Decimals.parse("2360584.512");
+thx_unit_time__$Ke_Ke_$Impl_$.dividerJulianYear = thx_bigint_Decimals.parse("31557600");
+thx_unit_time__$Ke_Ke_$Impl_$.dividerGigasecond = thx_bigint_Decimals.parse("1000000000");
+thx_unit_time__$Ke_Ke_$Impl_$.dividerTerasecond = thx_bigint_Decimals.parse("1000000000000");
+thx_unit_time__$Ke_Ke_$Impl_$.symbol = "ke";
+thx_unit_time__$Kilosecond_Kilosecond_$Impl_$.ofUnit = thx_bigint_Decimals.parse("1000");
+thx_unit_time__$Kilosecond_Kilosecond_$Impl_$.dividerPlankTimeUnit = thx_bigint_Decimals.parse("5.39e-44");
+thx_unit_time__$Kilosecond_Kilosecond_$Impl_$.dividerJiffyPhysics = thx_bigint_Decimals.parse("3e-24");
+thx_unit_time__$Kilosecond_Kilosecond_$Impl_$.dividerSvedberg = thx_bigint_Decimals.parse("1e-13");
+thx_unit_time__$Kilosecond_Kilosecond_$Impl_$.dividerPicosecond = thx_bigint_Decimals.parse("1e-12");
+thx_unit_time__$Kilosecond_Kilosecond_$Impl_$.dividerNanosecond = thx_bigint_Decimals.parse("1e-9");
+thx_unit_time__$Kilosecond_Kilosecond_$Impl_$.dividerShake = thx_bigint_Decimals.parse("1e-8");
+thx_unit_time__$Kilosecond_Kilosecond_$Impl_$.dividerTick = thx_bigint_Decimals.parse("1e-7");
+thx_unit_time__$Kilosecond_Kilosecond_$Impl_$.dividerMicrosecond = thx_bigint_Decimals.parse("1e-6");
+thx_unit_time__$Kilosecond_Kilosecond_$Impl_$.dividerFourth = thx_bigint_Decimals.parse("0.00027777777778");
+thx_unit_time__$Kilosecond_Kilosecond_$Impl_$.dividerMillisecond = thx_bigint_Decimals.parse("0.001");
+thx_unit_time__$Kilosecond_Kilosecond_$Impl_$.dividerThird = thx_bigint_Decimals.parse("0.01666666666667");
+thx_unit_time__$Kilosecond_Kilosecond_$Impl_$.dividerSecond = thx_bigint_Decimals.parse("1");
+thx_unit_time__$Kilosecond_Kilosecond_$Impl_$.dividerMinute = thx_bigint_Decimals.parse("60");
+thx_unit_time__$Kilosecond_Kilosecond_$Impl_$.dividerKe = thx_bigint_Decimals.parse("864");
+thx_unit_time__$Kilosecond_Kilosecond_$Impl_$.dividerKilosecond = thx_bigint_Decimals.parse("1000");
+thx_unit_time__$Kilosecond_Kilosecond_$Impl_$.dividerHour = thx_bigint_Decimals.parse("3600");
+thx_unit_time__$Kilosecond_Kilosecond_$Impl_$.dividerDay = thx_bigint_Decimals.parse("86400");
+thx_unit_time__$Kilosecond_Kilosecond_$Impl_$.dividerWeek = thx_bigint_Decimals.parse("604800");
+thx_unit_time__$Kilosecond_Kilosecond_$Impl_$.dividerMegasecond = thx_bigint_Decimals.parse("1000000");
+thx_unit_time__$Kilosecond_Kilosecond_$Impl_$.dividerFortnight = thx_bigint_Decimals.parse("1209600");
+thx_unit_time__$Kilosecond_Kilosecond_$Impl_$.dividerSynodicMonth = thx_bigint_Decimals.parse("2551442.976");
+thx_unit_time__$Kilosecond_Kilosecond_$Impl_$.dividerTropicalMonth = thx_bigint_Decimals.parse("2360584.512");
+thx_unit_time__$Kilosecond_Kilosecond_$Impl_$.dividerJulianYear = thx_bigint_Decimals.parse("31557600");
+thx_unit_time__$Kilosecond_Kilosecond_$Impl_$.dividerGigasecond = thx_bigint_Decimals.parse("1000000000");
+thx_unit_time__$Kilosecond_Kilosecond_$Impl_$.dividerTerasecond = thx_bigint_Decimals.parse("1000000000000");
+thx_unit_time__$Kilosecond_Kilosecond_$Impl_$.symbol = "ks";
+thx_unit_time__$Megasecond_Megasecond_$Impl_$.ofUnit = thx_bigint_Decimals.parse("1000000");
+thx_unit_time__$Megasecond_Megasecond_$Impl_$.dividerPlankTimeUnit = thx_bigint_Decimals.parse("5.39e-44");
+thx_unit_time__$Megasecond_Megasecond_$Impl_$.dividerJiffyPhysics = thx_bigint_Decimals.parse("3e-24");
+thx_unit_time__$Megasecond_Megasecond_$Impl_$.dividerSvedberg = thx_bigint_Decimals.parse("1e-13");
+thx_unit_time__$Megasecond_Megasecond_$Impl_$.dividerPicosecond = thx_bigint_Decimals.parse("1e-12");
+thx_unit_time__$Megasecond_Megasecond_$Impl_$.dividerNanosecond = thx_bigint_Decimals.parse("1e-9");
+thx_unit_time__$Megasecond_Megasecond_$Impl_$.dividerShake = thx_bigint_Decimals.parse("1e-8");
+thx_unit_time__$Megasecond_Megasecond_$Impl_$.dividerTick = thx_bigint_Decimals.parse("1e-7");
+thx_unit_time__$Megasecond_Megasecond_$Impl_$.dividerMicrosecond = thx_bigint_Decimals.parse("1e-6");
+thx_unit_time__$Megasecond_Megasecond_$Impl_$.dividerFourth = thx_bigint_Decimals.parse("0.00027777777778");
+thx_unit_time__$Megasecond_Megasecond_$Impl_$.dividerMillisecond = thx_bigint_Decimals.parse("0.001");
+thx_unit_time__$Megasecond_Megasecond_$Impl_$.dividerThird = thx_bigint_Decimals.parse("0.01666666666667");
+thx_unit_time__$Megasecond_Megasecond_$Impl_$.dividerSecond = thx_bigint_Decimals.parse("1");
+thx_unit_time__$Megasecond_Megasecond_$Impl_$.dividerMinute = thx_bigint_Decimals.parse("60");
+thx_unit_time__$Megasecond_Megasecond_$Impl_$.dividerKe = thx_bigint_Decimals.parse("864");
+thx_unit_time__$Megasecond_Megasecond_$Impl_$.dividerKilosecond = thx_bigint_Decimals.parse("1000");
+thx_unit_time__$Megasecond_Megasecond_$Impl_$.dividerHour = thx_bigint_Decimals.parse("3600");
+thx_unit_time__$Megasecond_Megasecond_$Impl_$.dividerDay = thx_bigint_Decimals.parse("86400");
+thx_unit_time__$Megasecond_Megasecond_$Impl_$.dividerWeek = thx_bigint_Decimals.parse("604800");
+thx_unit_time__$Megasecond_Megasecond_$Impl_$.dividerMegasecond = thx_bigint_Decimals.parse("1000000");
+thx_unit_time__$Megasecond_Megasecond_$Impl_$.dividerFortnight = thx_bigint_Decimals.parse("1209600");
+thx_unit_time__$Megasecond_Megasecond_$Impl_$.dividerSynodicMonth = thx_bigint_Decimals.parse("2551442.976");
+thx_unit_time__$Megasecond_Megasecond_$Impl_$.dividerTropicalMonth = thx_bigint_Decimals.parse("2360584.512");
+thx_unit_time__$Megasecond_Megasecond_$Impl_$.dividerJulianYear = thx_bigint_Decimals.parse("31557600");
+thx_unit_time__$Megasecond_Megasecond_$Impl_$.dividerGigasecond = thx_bigint_Decimals.parse("1000000000");
+thx_unit_time__$Megasecond_Megasecond_$Impl_$.dividerTerasecond = thx_bigint_Decimals.parse("1000000000000");
+thx_unit_time__$Megasecond_Megasecond_$Impl_$.symbol = "Ms";
+thx_unit_time__$Microsecond_Microsecond_$Impl_$.ofUnit = thx_bigint_Decimals.parse("1e-6");
+thx_unit_time__$Microsecond_Microsecond_$Impl_$.dividerPlankTimeUnit = thx_bigint_Decimals.parse("5.39e-44");
+thx_unit_time__$Microsecond_Microsecond_$Impl_$.dividerJiffyPhysics = thx_bigint_Decimals.parse("3e-24");
+thx_unit_time__$Microsecond_Microsecond_$Impl_$.dividerSvedberg = thx_bigint_Decimals.parse("1e-13");
+thx_unit_time__$Microsecond_Microsecond_$Impl_$.dividerPicosecond = thx_bigint_Decimals.parse("1e-12");
+thx_unit_time__$Microsecond_Microsecond_$Impl_$.dividerNanosecond = thx_bigint_Decimals.parse("1e-9");
+thx_unit_time__$Microsecond_Microsecond_$Impl_$.dividerShake = thx_bigint_Decimals.parse("1e-8");
+thx_unit_time__$Microsecond_Microsecond_$Impl_$.dividerTick = thx_bigint_Decimals.parse("1e-7");
+thx_unit_time__$Microsecond_Microsecond_$Impl_$.dividerMicrosecond = thx_bigint_Decimals.parse("1e-6");
+thx_unit_time__$Microsecond_Microsecond_$Impl_$.dividerFourth = thx_bigint_Decimals.parse("0.00027777777778");
+thx_unit_time__$Microsecond_Microsecond_$Impl_$.dividerMillisecond = thx_bigint_Decimals.parse("0.001");
+thx_unit_time__$Microsecond_Microsecond_$Impl_$.dividerThird = thx_bigint_Decimals.parse("0.01666666666667");
+thx_unit_time__$Microsecond_Microsecond_$Impl_$.dividerSecond = thx_bigint_Decimals.parse("1");
+thx_unit_time__$Microsecond_Microsecond_$Impl_$.dividerMinute = thx_bigint_Decimals.parse("60");
+thx_unit_time__$Microsecond_Microsecond_$Impl_$.dividerKe = thx_bigint_Decimals.parse("864");
+thx_unit_time__$Microsecond_Microsecond_$Impl_$.dividerKilosecond = thx_bigint_Decimals.parse("1000");
+thx_unit_time__$Microsecond_Microsecond_$Impl_$.dividerHour = thx_bigint_Decimals.parse("3600");
+thx_unit_time__$Microsecond_Microsecond_$Impl_$.dividerDay = thx_bigint_Decimals.parse("86400");
+thx_unit_time__$Microsecond_Microsecond_$Impl_$.dividerWeek = thx_bigint_Decimals.parse("604800");
+thx_unit_time__$Microsecond_Microsecond_$Impl_$.dividerMegasecond = thx_bigint_Decimals.parse("1000000");
+thx_unit_time__$Microsecond_Microsecond_$Impl_$.dividerFortnight = thx_bigint_Decimals.parse("1209600");
+thx_unit_time__$Microsecond_Microsecond_$Impl_$.dividerSynodicMonth = thx_bigint_Decimals.parse("2551442.976");
+thx_unit_time__$Microsecond_Microsecond_$Impl_$.dividerTropicalMonth = thx_bigint_Decimals.parse("2360584.512");
+thx_unit_time__$Microsecond_Microsecond_$Impl_$.dividerJulianYear = thx_bigint_Decimals.parse("31557600");
+thx_unit_time__$Microsecond_Microsecond_$Impl_$.dividerGigasecond = thx_bigint_Decimals.parse("1000000000");
+thx_unit_time__$Microsecond_Microsecond_$Impl_$.dividerTerasecond = thx_bigint_Decimals.parse("1000000000000");
+thx_unit_time__$Microsecond_Microsecond_$Impl_$.symbol = "μs";
+thx_unit_time__$Millisecond_Millisecond_$Impl_$.ofUnit = thx_bigint_Decimals.parse("0.001");
+thx_unit_time__$Millisecond_Millisecond_$Impl_$.dividerPlankTimeUnit = thx_bigint_Decimals.parse("5.39e-44");
+thx_unit_time__$Millisecond_Millisecond_$Impl_$.dividerJiffyPhysics = thx_bigint_Decimals.parse("3e-24");
+thx_unit_time__$Millisecond_Millisecond_$Impl_$.dividerSvedberg = thx_bigint_Decimals.parse("1e-13");
+thx_unit_time__$Millisecond_Millisecond_$Impl_$.dividerPicosecond = thx_bigint_Decimals.parse("1e-12");
+thx_unit_time__$Millisecond_Millisecond_$Impl_$.dividerNanosecond = thx_bigint_Decimals.parse("1e-9");
+thx_unit_time__$Millisecond_Millisecond_$Impl_$.dividerShake = thx_bigint_Decimals.parse("1e-8");
+thx_unit_time__$Millisecond_Millisecond_$Impl_$.dividerTick = thx_bigint_Decimals.parse("1e-7");
+thx_unit_time__$Millisecond_Millisecond_$Impl_$.dividerMicrosecond = thx_bigint_Decimals.parse("1e-6");
+thx_unit_time__$Millisecond_Millisecond_$Impl_$.dividerFourth = thx_bigint_Decimals.parse("0.00027777777778");
+thx_unit_time__$Millisecond_Millisecond_$Impl_$.dividerMillisecond = thx_bigint_Decimals.parse("0.001");
+thx_unit_time__$Millisecond_Millisecond_$Impl_$.dividerThird = thx_bigint_Decimals.parse("0.01666666666667");
+thx_unit_time__$Millisecond_Millisecond_$Impl_$.dividerSecond = thx_bigint_Decimals.parse("1");
+thx_unit_time__$Millisecond_Millisecond_$Impl_$.dividerMinute = thx_bigint_Decimals.parse("60");
+thx_unit_time__$Millisecond_Millisecond_$Impl_$.dividerKe = thx_bigint_Decimals.parse("864");
+thx_unit_time__$Millisecond_Millisecond_$Impl_$.dividerKilosecond = thx_bigint_Decimals.parse("1000");
+thx_unit_time__$Millisecond_Millisecond_$Impl_$.dividerHour = thx_bigint_Decimals.parse("3600");
+thx_unit_time__$Millisecond_Millisecond_$Impl_$.dividerDay = thx_bigint_Decimals.parse("86400");
+thx_unit_time__$Millisecond_Millisecond_$Impl_$.dividerWeek = thx_bigint_Decimals.parse("604800");
+thx_unit_time__$Millisecond_Millisecond_$Impl_$.dividerMegasecond = thx_bigint_Decimals.parse("1000000");
+thx_unit_time__$Millisecond_Millisecond_$Impl_$.dividerFortnight = thx_bigint_Decimals.parse("1209600");
+thx_unit_time__$Millisecond_Millisecond_$Impl_$.dividerSynodicMonth = thx_bigint_Decimals.parse("2551442.976");
+thx_unit_time__$Millisecond_Millisecond_$Impl_$.dividerTropicalMonth = thx_bigint_Decimals.parse("2360584.512");
+thx_unit_time__$Millisecond_Millisecond_$Impl_$.dividerJulianYear = thx_bigint_Decimals.parse("31557600");
+thx_unit_time__$Millisecond_Millisecond_$Impl_$.dividerGigasecond = thx_bigint_Decimals.parse("1000000000");
+thx_unit_time__$Millisecond_Millisecond_$Impl_$.dividerTerasecond = thx_bigint_Decimals.parse("1000000000000");
+thx_unit_time__$Millisecond_Millisecond_$Impl_$.symbol = "ms";
+thx_unit_time__$Minute_Minute_$Impl_$.ofUnit = thx_bigint_Decimals.parse("60");
+thx_unit_time__$Minute_Minute_$Impl_$.dividerPlankTimeUnit = thx_bigint_Decimals.parse("5.39e-44");
+thx_unit_time__$Minute_Minute_$Impl_$.dividerJiffyPhysics = thx_bigint_Decimals.parse("3e-24");
+thx_unit_time__$Minute_Minute_$Impl_$.dividerSvedberg = thx_bigint_Decimals.parse("1e-13");
+thx_unit_time__$Minute_Minute_$Impl_$.dividerPicosecond = thx_bigint_Decimals.parse("1e-12");
+thx_unit_time__$Minute_Minute_$Impl_$.dividerNanosecond = thx_bigint_Decimals.parse("1e-9");
+thx_unit_time__$Minute_Minute_$Impl_$.dividerShake = thx_bigint_Decimals.parse("1e-8");
+thx_unit_time__$Minute_Minute_$Impl_$.dividerTick = thx_bigint_Decimals.parse("1e-7");
+thx_unit_time__$Minute_Minute_$Impl_$.dividerMicrosecond = thx_bigint_Decimals.parse("1e-6");
+thx_unit_time__$Minute_Minute_$Impl_$.dividerFourth = thx_bigint_Decimals.parse("0.00027777777778");
+thx_unit_time__$Minute_Minute_$Impl_$.dividerMillisecond = thx_bigint_Decimals.parse("0.001");
+thx_unit_time__$Minute_Minute_$Impl_$.dividerThird = thx_bigint_Decimals.parse("0.01666666666667");
+thx_unit_time__$Minute_Minute_$Impl_$.dividerSecond = thx_bigint_Decimals.parse("1");
+thx_unit_time__$Minute_Minute_$Impl_$.dividerMinute = thx_bigint_Decimals.parse("60");
+thx_unit_time__$Minute_Minute_$Impl_$.dividerKe = thx_bigint_Decimals.parse("864");
+thx_unit_time__$Minute_Minute_$Impl_$.dividerKilosecond = thx_bigint_Decimals.parse("1000");
+thx_unit_time__$Minute_Minute_$Impl_$.dividerHour = thx_bigint_Decimals.parse("3600");
+thx_unit_time__$Minute_Minute_$Impl_$.dividerDay = thx_bigint_Decimals.parse("86400");
+thx_unit_time__$Minute_Minute_$Impl_$.dividerWeek = thx_bigint_Decimals.parse("604800");
+thx_unit_time__$Minute_Minute_$Impl_$.dividerMegasecond = thx_bigint_Decimals.parse("1000000");
+thx_unit_time__$Minute_Minute_$Impl_$.dividerFortnight = thx_bigint_Decimals.parse("1209600");
+thx_unit_time__$Minute_Minute_$Impl_$.dividerSynodicMonth = thx_bigint_Decimals.parse("2551442.976");
+thx_unit_time__$Minute_Minute_$Impl_$.dividerTropicalMonth = thx_bigint_Decimals.parse("2360584.512");
+thx_unit_time__$Minute_Minute_$Impl_$.dividerJulianYear = thx_bigint_Decimals.parse("31557600");
+thx_unit_time__$Minute_Minute_$Impl_$.dividerGigasecond = thx_bigint_Decimals.parse("1000000000");
+thx_unit_time__$Minute_Minute_$Impl_$.dividerTerasecond = thx_bigint_Decimals.parse("1000000000000");
+thx_unit_time__$Minute_Minute_$Impl_$.symbol = "min";
+thx_unit_time__$Nanosecond_Nanosecond_$Impl_$.ofUnit = thx_bigint_Decimals.parse("1e-9");
+thx_unit_time__$Nanosecond_Nanosecond_$Impl_$.dividerPlankTimeUnit = thx_bigint_Decimals.parse("5.39e-44");
+thx_unit_time__$Nanosecond_Nanosecond_$Impl_$.dividerJiffyPhysics = thx_bigint_Decimals.parse("3e-24");
+thx_unit_time__$Nanosecond_Nanosecond_$Impl_$.dividerSvedberg = thx_bigint_Decimals.parse("1e-13");
+thx_unit_time__$Nanosecond_Nanosecond_$Impl_$.dividerPicosecond = thx_bigint_Decimals.parse("1e-12");
+thx_unit_time__$Nanosecond_Nanosecond_$Impl_$.dividerNanosecond = thx_bigint_Decimals.parse("1e-9");
+thx_unit_time__$Nanosecond_Nanosecond_$Impl_$.dividerShake = thx_bigint_Decimals.parse("1e-8");
+thx_unit_time__$Nanosecond_Nanosecond_$Impl_$.dividerTick = thx_bigint_Decimals.parse("1e-7");
+thx_unit_time__$Nanosecond_Nanosecond_$Impl_$.dividerMicrosecond = thx_bigint_Decimals.parse("1e-6");
+thx_unit_time__$Nanosecond_Nanosecond_$Impl_$.dividerFourth = thx_bigint_Decimals.parse("0.00027777777778");
+thx_unit_time__$Nanosecond_Nanosecond_$Impl_$.dividerMillisecond = thx_bigint_Decimals.parse("0.001");
+thx_unit_time__$Nanosecond_Nanosecond_$Impl_$.dividerThird = thx_bigint_Decimals.parse("0.01666666666667");
+thx_unit_time__$Nanosecond_Nanosecond_$Impl_$.dividerSecond = thx_bigint_Decimals.parse("1");
+thx_unit_time__$Nanosecond_Nanosecond_$Impl_$.dividerMinute = thx_bigint_Decimals.parse("60");
+thx_unit_time__$Nanosecond_Nanosecond_$Impl_$.dividerKe = thx_bigint_Decimals.parse("864");
+thx_unit_time__$Nanosecond_Nanosecond_$Impl_$.dividerKilosecond = thx_bigint_Decimals.parse("1000");
+thx_unit_time__$Nanosecond_Nanosecond_$Impl_$.dividerHour = thx_bigint_Decimals.parse("3600");
+thx_unit_time__$Nanosecond_Nanosecond_$Impl_$.dividerDay = thx_bigint_Decimals.parse("86400");
+thx_unit_time__$Nanosecond_Nanosecond_$Impl_$.dividerWeek = thx_bigint_Decimals.parse("604800");
+thx_unit_time__$Nanosecond_Nanosecond_$Impl_$.dividerMegasecond = thx_bigint_Decimals.parse("1000000");
+thx_unit_time__$Nanosecond_Nanosecond_$Impl_$.dividerFortnight = thx_bigint_Decimals.parse("1209600");
+thx_unit_time__$Nanosecond_Nanosecond_$Impl_$.dividerSynodicMonth = thx_bigint_Decimals.parse("2551442.976");
+thx_unit_time__$Nanosecond_Nanosecond_$Impl_$.dividerTropicalMonth = thx_bigint_Decimals.parse("2360584.512");
+thx_unit_time__$Nanosecond_Nanosecond_$Impl_$.dividerJulianYear = thx_bigint_Decimals.parse("31557600");
+thx_unit_time__$Nanosecond_Nanosecond_$Impl_$.dividerGigasecond = thx_bigint_Decimals.parse("1000000000");
+thx_unit_time__$Nanosecond_Nanosecond_$Impl_$.dividerTerasecond = thx_bigint_Decimals.parse("1000000000000");
+thx_unit_time__$Nanosecond_Nanosecond_$Impl_$.symbol = "ns";
+thx_unit_time__$Picosecond_Picosecond_$Impl_$.ofUnit = thx_bigint_Decimals.parse("1e-12");
+thx_unit_time__$Picosecond_Picosecond_$Impl_$.dividerPlankTimeUnit = thx_bigint_Decimals.parse("5.39e-44");
+thx_unit_time__$Picosecond_Picosecond_$Impl_$.dividerJiffyPhysics = thx_bigint_Decimals.parse("3e-24");
+thx_unit_time__$Picosecond_Picosecond_$Impl_$.dividerSvedberg = thx_bigint_Decimals.parse("1e-13");
+thx_unit_time__$Picosecond_Picosecond_$Impl_$.dividerPicosecond = thx_bigint_Decimals.parse("1e-12");
+thx_unit_time__$Picosecond_Picosecond_$Impl_$.dividerNanosecond = thx_bigint_Decimals.parse("1e-9");
+thx_unit_time__$Picosecond_Picosecond_$Impl_$.dividerShake = thx_bigint_Decimals.parse("1e-8");
+thx_unit_time__$Picosecond_Picosecond_$Impl_$.dividerTick = thx_bigint_Decimals.parse("1e-7");
+thx_unit_time__$Picosecond_Picosecond_$Impl_$.dividerMicrosecond = thx_bigint_Decimals.parse("1e-6");
+thx_unit_time__$Picosecond_Picosecond_$Impl_$.dividerFourth = thx_bigint_Decimals.parse("0.00027777777778");
+thx_unit_time__$Picosecond_Picosecond_$Impl_$.dividerMillisecond = thx_bigint_Decimals.parse("0.001");
+thx_unit_time__$Picosecond_Picosecond_$Impl_$.dividerThird = thx_bigint_Decimals.parse("0.01666666666667");
+thx_unit_time__$Picosecond_Picosecond_$Impl_$.dividerSecond = thx_bigint_Decimals.parse("1");
+thx_unit_time__$Picosecond_Picosecond_$Impl_$.dividerMinute = thx_bigint_Decimals.parse("60");
+thx_unit_time__$Picosecond_Picosecond_$Impl_$.dividerKe = thx_bigint_Decimals.parse("864");
+thx_unit_time__$Picosecond_Picosecond_$Impl_$.dividerKilosecond = thx_bigint_Decimals.parse("1000");
+thx_unit_time__$Picosecond_Picosecond_$Impl_$.dividerHour = thx_bigint_Decimals.parse("3600");
+thx_unit_time__$Picosecond_Picosecond_$Impl_$.dividerDay = thx_bigint_Decimals.parse("86400");
+thx_unit_time__$Picosecond_Picosecond_$Impl_$.dividerWeek = thx_bigint_Decimals.parse("604800");
+thx_unit_time__$Picosecond_Picosecond_$Impl_$.dividerMegasecond = thx_bigint_Decimals.parse("1000000");
+thx_unit_time__$Picosecond_Picosecond_$Impl_$.dividerFortnight = thx_bigint_Decimals.parse("1209600");
+thx_unit_time__$Picosecond_Picosecond_$Impl_$.dividerSynodicMonth = thx_bigint_Decimals.parse("2551442.976");
+thx_unit_time__$Picosecond_Picosecond_$Impl_$.dividerTropicalMonth = thx_bigint_Decimals.parse("2360584.512");
+thx_unit_time__$Picosecond_Picosecond_$Impl_$.dividerJulianYear = thx_bigint_Decimals.parse("31557600");
+thx_unit_time__$Picosecond_Picosecond_$Impl_$.dividerGigasecond = thx_bigint_Decimals.parse("1000000000");
+thx_unit_time__$Picosecond_Picosecond_$Impl_$.dividerTerasecond = thx_bigint_Decimals.parse("1000000000000");
+thx_unit_time__$Picosecond_Picosecond_$Impl_$.symbol = "ps";
+thx_unit_time__$PlankTimeUnit_PlankTimeUnit_$Impl_$.ofUnit = thx_bigint_Decimals.parse("5.39e-44");
+thx_unit_time__$PlankTimeUnit_PlankTimeUnit_$Impl_$.dividerPlankTimeUnit = thx_bigint_Decimals.parse("5.39e-44");
+thx_unit_time__$PlankTimeUnit_PlankTimeUnit_$Impl_$.dividerJiffyPhysics = thx_bigint_Decimals.parse("3e-24");
+thx_unit_time__$PlankTimeUnit_PlankTimeUnit_$Impl_$.dividerSvedberg = thx_bigint_Decimals.parse("1e-13");
+thx_unit_time__$PlankTimeUnit_PlankTimeUnit_$Impl_$.dividerPicosecond = thx_bigint_Decimals.parse("1e-12");
+thx_unit_time__$PlankTimeUnit_PlankTimeUnit_$Impl_$.dividerNanosecond = thx_bigint_Decimals.parse("1e-9");
+thx_unit_time__$PlankTimeUnit_PlankTimeUnit_$Impl_$.dividerShake = thx_bigint_Decimals.parse("1e-8");
+thx_unit_time__$PlankTimeUnit_PlankTimeUnit_$Impl_$.dividerTick = thx_bigint_Decimals.parse("1e-7");
+thx_unit_time__$PlankTimeUnit_PlankTimeUnit_$Impl_$.dividerMicrosecond = thx_bigint_Decimals.parse("1e-6");
+thx_unit_time__$PlankTimeUnit_PlankTimeUnit_$Impl_$.dividerFourth = thx_bigint_Decimals.parse("0.00027777777778");
+thx_unit_time__$PlankTimeUnit_PlankTimeUnit_$Impl_$.dividerMillisecond = thx_bigint_Decimals.parse("0.001");
+thx_unit_time__$PlankTimeUnit_PlankTimeUnit_$Impl_$.dividerThird = thx_bigint_Decimals.parse("0.01666666666667");
+thx_unit_time__$PlankTimeUnit_PlankTimeUnit_$Impl_$.dividerSecond = thx_bigint_Decimals.parse("1");
+thx_unit_time__$PlankTimeUnit_PlankTimeUnit_$Impl_$.dividerMinute = thx_bigint_Decimals.parse("60");
+thx_unit_time__$PlankTimeUnit_PlankTimeUnit_$Impl_$.dividerKe = thx_bigint_Decimals.parse("864");
+thx_unit_time__$PlankTimeUnit_PlankTimeUnit_$Impl_$.dividerKilosecond = thx_bigint_Decimals.parse("1000");
+thx_unit_time__$PlankTimeUnit_PlankTimeUnit_$Impl_$.dividerHour = thx_bigint_Decimals.parse("3600");
+thx_unit_time__$PlankTimeUnit_PlankTimeUnit_$Impl_$.dividerDay = thx_bigint_Decimals.parse("86400");
+thx_unit_time__$PlankTimeUnit_PlankTimeUnit_$Impl_$.dividerWeek = thx_bigint_Decimals.parse("604800");
+thx_unit_time__$PlankTimeUnit_PlankTimeUnit_$Impl_$.dividerMegasecond = thx_bigint_Decimals.parse("1000000");
+thx_unit_time__$PlankTimeUnit_PlankTimeUnit_$Impl_$.dividerFortnight = thx_bigint_Decimals.parse("1209600");
+thx_unit_time__$PlankTimeUnit_PlankTimeUnit_$Impl_$.dividerSynodicMonth = thx_bigint_Decimals.parse("2551442.976");
+thx_unit_time__$PlankTimeUnit_PlankTimeUnit_$Impl_$.dividerTropicalMonth = thx_bigint_Decimals.parse("2360584.512");
+thx_unit_time__$PlankTimeUnit_PlankTimeUnit_$Impl_$.dividerJulianYear = thx_bigint_Decimals.parse("31557600");
+thx_unit_time__$PlankTimeUnit_PlankTimeUnit_$Impl_$.dividerGigasecond = thx_bigint_Decimals.parse("1000000000");
+thx_unit_time__$PlankTimeUnit_PlankTimeUnit_$Impl_$.dividerTerasecond = thx_bigint_Decimals.parse("1000000000000");
+thx_unit_time__$PlankTimeUnit_PlankTimeUnit_$Impl_$.symbol = "tP";
+thx_unit_time__$Second_Second_$Impl_$.ofUnit = thx_bigint_Decimals.parse("1");
+thx_unit_time__$Second_Second_$Impl_$.dividerPlankTimeUnit = thx_bigint_Decimals.parse("5.39e-44");
+thx_unit_time__$Second_Second_$Impl_$.dividerJiffyPhysics = thx_bigint_Decimals.parse("3e-24");
+thx_unit_time__$Second_Second_$Impl_$.dividerSvedberg = thx_bigint_Decimals.parse("1e-13");
+thx_unit_time__$Second_Second_$Impl_$.dividerPicosecond = thx_bigint_Decimals.parse("1e-12");
+thx_unit_time__$Second_Second_$Impl_$.dividerNanosecond = thx_bigint_Decimals.parse("1e-9");
+thx_unit_time__$Second_Second_$Impl_$.dividerShake = thx_bigint_Decimals.parse("1e-8");
+thx_unit_time__$Second_Second_$Impl_$.dividerTick = thx_bigint_Decimals.parse("1e-7");
+thx_unit_time__$Second_Second_$Impl_$.dividerMicrosecond = thx_bigint_Decimals.parse("1e-6");
+thx_unit_time__$Second_Second_$Impl_$.dividerFourth = thx_bigint_Decimals.parse("0.00027777777778");
+thx_unit_time__$Second_Second_$Impl_$.dividerMillisecond = thx_bigint_Decimals.parse("0.001");
+thx_unit_time__$Second_Second_$Impl_$.dividerThird = thx_bigint_Decimals.parse("0.01666666666667");
+thx_unit_time__$Second_Second_$Impl_$.dividerSecond = thx_bigint_Decimals.parse("1");
+thx_unit_time__$Second_Second_$Impl_$.dividerMinute = thx_bigint_Decimals.parse("60");
+thx_unit_time__$Second_Second_$Impl_$.dividerKe = thx_bigint_Decimals.parse("864");
+thx_unit_time__$Second_Second_$Impl_$.dividerKilosecond = thx_bigint_Decimals.parse("1000");
+thx_unit_time__$Second_Second_$Impl_$.dividerHour = thx_bigint_Decimals.parse("3600");
+thx_unit_time__$Second_Second_$Impl_$.dividerDay = thx_bigint_Decimals.parse("86400");
+thx_unit_time__$Second_Second_$Impl_$.dividerWeek = thx_bigint_Decimals.parse("604800");
+thx_unit_time__$Second_Second_$Impl_$.dividerMegasecond = thx_bigint_Decimals.parse("1000000");
+thx_unit_time__$Second_Second_$Impl_$.dividerFortnight = thx_bigint_Decimals.parse("1209600");
+thx_unit_time__$Second_Second_$Impl_$.dividerSynodicMonth = thx_bigint_Decimals.parse("2551442.976");
+thx_unit_time__$Second_Second_$Impl_$.dividerTropicalMonth = thx_bigint_Decimals.parse("2360584.512");
+thx_unit_time__$Second_Second_$Impl_$.dividerJulianYear = thx_bigint_Decimals.parse("31557600");
+thx_unit_time__$Second_Second_$Impl_$.dividerGigasecond = thx_bigint_Decimals.parse("1000000000");
+thx_unit_time__$Second_Second_$Impl_$.dividerTerasecond = thx_bigint_Decimals.parse("1000000000000");
+thx_unit_time__$Second_Second_$Impl_$.symbol = "s";
+thx_unit_time__$Shake_Shake_$Impl_$.ofUnit = thx_bigint_Decimals.parse("1e-8");
+thx_unit_time__$Shake_Shake_$Impl_$.dividerPlankTimeUnit = thx_bigint_Decimals.parse("5.39e-44");
+thx_unit_time__$Shake_Shake_$Impl_$.dividerJiffyPhysics = thx_bigint_Decimals.parse("3e-24");
+thx_unit_time__$Shake_Shake_$Impl_$.dividerSvedberg = thx_bigint_Decimals.parse("1e-13");
+thx_unit_time__$Shake_Shake_$Impl_$.dividerPicosecond = thx_bigint_Decimals.parse("1e-12");
+thx_unit_time__$Shake_Shake_$Impl_$.dividerNanosecond = thx_bigint_Decimals.parse("1e-9");
+thx_unit_time__$Shake_Shake_$Impl_$.dividerShake = thx_bigint_Decimals.parse("1e-8");
+thx_unit_time__$Shake_Shake_$Impl_$.dividerTick = thx_bigint_Decimals.parse("1e-7");
+thx_unit_time__$Shake_Shake_$Impl_$.dividerMicrosecond = thx_bigint_Decimals.parse("1e-6");
+thx_unit_time__$Shake_Shake_$Impl_$.dividerFourth = thx_bigint_Decimals.parse("0.00027777777778");
+thx_unit_time__$Shake_Shake_$Impl_$.dividerMillisecond = thx_bigint_Decimals.parse("0.001");
+thx_unit_time__$Shake_Shake_$Impl_$.dividerThird = thx_bigint_Decimals.parse("0.01666666666667");
+thx_unit_time__$Shake_Shake_$Impl_$.dividerSecond = thx_bigint_Decimals.parse("1");
+thx_unit_time__$Shake_Shake_$Impl_$.dividerMinute = thx_bigint_Decimals.parse("60");
+thx_unit_time__$Shake_Shake_$Impl_$.dividerKe = thx_bigint_Decimals.parse("864");
+thx_unit_time__$Shake_Shake_$Impl_$.dividerKilosecond = thx_bigint_Decimals.parse("1000");
+thx_unit_time__$Shake_Shake_$Impl_$.dividerHour = thx_bigint_Decimals.parse("3600");
+thx_unit_time__$Shake_Shake_$Impl_$.dividerDay = thx_bigint_Decimals.parse("86400");
+thx_unit_time__$Shake_Shake_$Impl_$.dividerWeek = thx_bigint_Decimals.parse("604800");
+thx_unit_time__$Shake_Shake_$Impl_$.dividerMegasecond = thx_bigint_Decimals.parse("1000000");
+thx_unit_time__$Shake_Shake_$Impl_$.dividerFortnight = thx_bigint_Decimals.parse("1209600");
+thx_unit_time__$Shake_Shake_$Impl_$.dividerSynodicMonth = thx_bigint_Decimals.parse("2551442.976");
+thx_unit_time__$Shake_Shake_$Impl_$.dividerTropicalMonth = thx_bigint_Decimals.parse("2360584.512");
+thx_unit_time__$Shake_Shake_$Impl_$.dividerJulianYear = thx_bigint_Decimals.parse("31557600");
+thx_unit_time__$Shake_Shake_$Impl_$.dividerGigasecond = thx_bigint_Decimals.parse("1000000000");
+thx_unit_time__$Shake_Shake_$Impl_$.dividerTerasecond = thx_bigint_Decimals.parse("1000000000000");
+thx_unit_time__$Shake_Shake_$Impl_$.symbol = "shake";
+thx_unit_time__$Svedberg_Svedberg_$Impl_$.ofUnit = thx_bigint_Decimals.parse("1e-13");
+thx_unit_time__$Svedberg_Svedberg_$Impl_$.dividerPlankTimeUnit = thx_bigint_Decimals.parse("5.39e-44");
+thx_unit_time__$Svedberg_Svedberg_$Impl_$.dividerJiffyPhysics = thx_bigint_Decimals.parse("3e-24");
+thx_unit_time__$Svedberg_Svedberg_$Impl_$.dividerSvedberg = thx_bigint_Decimals.parse("1e-13");
+thx_unit_time__$Svedberg_Svedberg_$Impl_$.dividerPicosecond = thx_bigint_Decimals.parse("1e-12");
+thx_unit_time__$Svedberg_Svedberg_$Impl_$.dividerNanosecond = thx_bigint_Decimals.parse("1e-9");
+thx_unit_time__$Svedberg_Svedberg_$Impl_$.dividerShake = thx_bigint_Decimals.parse("1e-8");
+thx_unit_time__$Svedberg_Svedberg_$Impl_$.dividerTick = thx_bigint_Decimals.parse("1e-7");
+thx_unit_time__$Svedberg_Svedberg_$Impl_$.dividerMicrosecond = thx_bigint_Decimals.parse("1e-6");
+thx_unit_time__$Svedberg_Svedberg_$Impl_$.dividerFourth = thx_bigint_Decimals.parse("0.00027777777778");
+thx_unit_time__$Svedberg_Svedberg_$Impl_$.dividerMillisecond = thx_bigint_Decimals.parse("0.001");
+thx_unit_time__$Svedberg_Svedberg_$Impl_$.dividerThird = thx_bigint_Decimals.parse("0.01666666666667");
+thx_unit_time__$Svedberg_Svedberg_$Impl_$.dividerSecond = thx_bigint_Decimals.parse("1");
+thx_unit_time__$Svedberg_Svedberg_$Impl_$.dividerMinute = thx_bigint_Decimals.parse("60");
+thx_unit_time__$Svedberg_Svedberg_$Impl_$.dividerKe = thx_bigint_Decimals.parse("864");
+thx_unit_time__$Svedberg_Svedberg_$Impl_$.dividerKilosecond = thx_bigint_Decimals.parse("1000");
+thx_unit_time__$Svedberg_Svedberg_$Impl_$.dividerHour = thx_bigint_Decimals.parse("3600");
+thx_unit_time__$Svedberg_Svedberg_$Impl_$.dividerDay = thx_bigint_Decimals.parse("86400");
+thx_unit_time__$Svedberg_Svedberg_$Impl_$.dividerWeek = thx_bigint_Decimals.parse("604800");
+thx_unit_time__$Svedberg_Svedberg_$Impl_$.dividerMegasecond = thx_bigint_Decimals.parse("1000000");
+thx_unit_time__$Svedberg_Svedberg_$Impl_$.dividerFortnight = thx_bigint_Decimals.parse("1209600");
+thx_unit_time__$Svedberg_Svedberg_$Impl_$.dividerSynodicMonth = thx_bigint_Decimals.parse("2551442.976");
+thx_unit_time__$Svedberg_Svedberg_$Impl_$.dividerTropicalMonth = thx_bigint_Decimals.parse("2360584.512");
+thx_unit_time__$Svedberg_Svedberg_$Impl_$.dividerJulianYear = thx_bigint_Decimals.parse("31557600");
+thx_unit_time__$Svedberg_Svedberg_$Impl_$.dividerGigasecond = thx_bigint_Decimals.parse("1000000000");
+thx_unit_time__$Svedberg_Svedberg_$Impl_$.dividerTerasecond = thx_bigint_Decimals.parse("1000000000000");
+thx_unit_time__$Svedberg_Svedberg_$Impl_$.symbol = "S";
+thx_unit_time__$SynodicMonth_SynodicMonth_$Impl_$.ofUnit = thx_bigint_Decimals.parse("2551442.976");
+thx_unit_time__$SynodicMonth_SynodicMonth_$Impl_$.dividerPlankTimeUnit = thx_bigint_Decimals.parse("5.39e-44");
+thx_unit_time__$SynodicMonth_SynodicMonth_$Impl_$.dividerJiffyPhysics = thx_bigint_Decimals.parse("3e-24");
+thx_unit_time__$SynodicMonth_SynodicMonth_$Impl_$.dividerSvedberg = thx_bigint_Decimals.parse("1e-13");
+thx_unit_time__$SynodicMonth_SynodicMonth_$Impl_$.dividerPicosecond = thx_bigint_Decimals.parse("1e-12");
+thx_unit_time__$SynodicMonth_SynodicMonth_$Impl_$.dividerNanosecond = thx_bigint_Decimals.parse("1e-9");
+thx_unit_time__$SynodicMonth_SynodicMonth_$Impl_$.dividerShake = thx_bigint_Decimals.parse("1e-8");
+thx_unit_time__$SynodicMonth_SynodicMonth_$Impl_$.dividerTick = thx_bigint_Decimals.parse("1e-7");
+thx_unit_time__$SynodicMonth_SynodicMonth_$Impl_$.dividerMicrosecond = thx_bigint_Decimals.parse("1e-6");
+thx_unit_time__$SynodicMonth_SynodicMonth_$Impl_$.dividerFourth = thx_bigint_Decimals.parse("0.00027777777778");
+thx_unit_time__$SynodicMonth_SynodicMonth_$Impl_$.dividerMillisecond = thx_bigint_Decimals.parse("0.001");
+thx_unit_time__$SynodicMonth_SynodicMonth_$Impl_$.dividerThird = thx_bigint_Decimals.parse("0.01666666666667");
+thx_unit_time__$SynodicMonth_SynodicMonth_$Impl_$.dividerSecond = thx_bigint_Decimals.parse("1");
+thx_unit_time__$SynodicMonth_SynodicMonth_$Impl_$.dividerMinute = thx_bigint_Decimals.parse("60");
+thx_unit_time__$SynodicMonth_SynodicMonth_$Impl_$.dividerKe = thx_bigint_Decimals.parse("864");
+thx_unit_time__$SynodicMonth_SynodicMonth_$Impl_$.dividerKilosecond = thx_bigint_Decimals.parse("1000");
+thx_unit_time__$SynodicMonth_SynodicMonth_$Impl_$.dividerHour = thx_bigint_Decimals.parse("3600");
+thx_unit_time__$SynodicMonth_SynodicMonth_$Impl_$.dividerDay = thx_bigint_Decimals.parse("86400");
+thx_unit_time__$SynodicMonth_SynodicMonth_$Impl_$.dividerWeek = thx_bigint_Decimals.parse("604800");
+thx_unit_time__$SynodicMonth_SynodicMonth_$Impl_$.dividerMegasecond = thx_bigint_Decimals.parse("1000000");
+thx_unit_time__$SynodicMonth_SynodicMonth_$Impl_$.dividerFortnight = thx_bigint_Decimals.parse("1209600");
+thx_unit_time__$SynodicMonth_SynodicMonth_$Impl_$.dividerSynodicMonth = thx_bigint_Decimals.parse("2551442.976");
+thx_unit_time__$SynodicMonth_SynodicMonth_$Impl_$.dividerTropicalMonth = thx_bigint_Decimals.parse("2360584.512");
+thx_unit_time__$SynodicMonth_SynodicMonth_$Impl_$.dividerJulianYear = thx_bigint_Decimals.parse("31557600");
+thx_unit_time__$SynodicMonth_SynodicMonth_$Impl_$.dividerGigasecond = thx_bigint_Decimals.parse("1000000000");
+thx_unit_time__$SynodicMonth_SynodicMonth_$Impl_$.dividerTerasecond = thx_bigint_Decimals.parse("1000000000000");
+thx_unit_time__$SynodicMonth_SynodicMonth_$Impl_$.symbol = "synodic month";
+thx_unit_time__$Terasecond_Terasecond_$Impl_$.ofUnit = thx_bigint_Decimals.parse("1000000000000");
+thx_unit_time__$Terasecond_Terasecond_$Impl_$.dividerPlankTimeUnit = thx_bigint_Decimals.parse("5.39e-44");
+thx_unit_time__$Terasecond_Terasecond_$Impl_$.dividerJiffyPhysics = thx_bigint_Decimals.parse("3e-24");
+thx_unit_time__$Terasecond_Terasecond_$Impl_$.dividerSvedberg = thx_bigint_Decimals.parse("1e-13");
+thx_unit_time__$Terasecond_Terasecond_$Impl_$.dividerPicosecond = thx_bigint_Decimals.parse("1e-12");
+thx_unit_time__$Terasecond_Terasecond_$Impl_$.dividerNanosecond = thx_bigint_Decimals.parse("1e-9");
+thx_unit_time__$Terasecond_Terasecond_$Impl_$.dividerShake = thx_bigint_Decimals.parse("1e-8");
+thx_unit_time__$Terasecond_Terasecond_$Impl_$.dividerTick = thx_bigint_Decimals.parse("1e-7");
+thx_unit_time__$Terasecond_Terasecond_$Impl_$.dividerMicrosecond = thx_bigint_Decimals.parse("1e-6");
+thx_unit_time__$Terasecond_Terasecond_$Impl_$.dividerFourth = thx_bigint_Decimals.parse("0.00027777777778");
+thx_unit_time__$Terasecond_Terasecond_$Impl_$.dividerMillisecond = thx_bigint_Decimals.parse("0.001");
+thx_unit_time__$Terasecond_Terasecond_$Impl_$.dividerThird = thx_bigint_Decimals.parse("0.01666666666667");
+thx_unit_time__$Terasecond_Terasecond_$Impl_$.dividerSecond = thx_bigint_Decimals.parse("1");
+thx_unit_time__$Terasecond_Terasecond_$Impl_$.dividerMinute = thx_bigint_Decimals.parse("60");
+thx_unit_time__$Terasecond_Terasecond_$Impl_$.dividerKe = thx_bigint_Decimals.parse("864");
+thx_unit_time__$Terasecond_Terasecond_$Impl_$.dividerKilosecond = thx_bigint_Decimals.parse("1000");
+thx_unit_time__$Terasecond_Terasecond_$Impl_$.dividerHour = thx_bigint_Decimals.parse("3600");
+thx_unit_time__$Terasecond_Terasecond_$Impl_$.dividerDay = thx_bigint_Decimals.parse("86400");
+thx_unit_time__$Terasecond_Terasecond_$Impl_$.dividerWeek = thx_bigint_Decimals.parse("604800");
+thx_unit_time__$Terasecond_Terasecond_$Impl_$.dividerMegasecond = thx_bigint_Decimals.parse("1000000");
+thx_unit_time__$Terasecond_Terasecond_$Impl_$.dividerFortnight = thx_bigint_Decimals.parse("1209600");
+thx_unit_time__$Terasecond_Terasecond_$Impl_$.dividerSynodicMonth = thx_bigint_Decimals.parse("2551442.976");
+thx_unit_time__$Terasecond_Terasecond_$Impl_$.dividerTropicalMonth = thx_bigint_Decimals.parse("2360584.512");
+thx_unit_time__$Terasecond_Terasecond_$Impl_$.dividerJulianYear = thx_bigint_Decimals.parse("31557600");
+thx_unit_time__$Terasecond_Terasecond_$Impl_$.dividerGigasecond = thx_bigint_Decimals.parse("1000000000");
+thx_unit_time__$Terasecond_Terasecond_$Impl_$.dividerTerasecond = thx_bigint_Decimals.parse("1000000000000");
+thx_unit_time__$Terasecond_Terasecond_$Impl_$.symbol = "Ts";
+thx_unit_time__$Third_Third_$Impl_$.ofUnit = thx_bigint_Decimals.parse("0.01666666666667");
+thx_unit_time__$Third_Third_$Impl_$.dividerPlankTimeUnit = thx_bigint_Decimals.parse("5.39e-44");
+thx_unit_time__$Third_Third_$Impl_$.dividerJiffyPhysics = thx_bigint_Decimals.parse("3e-24");
+thx_unit_time__$Third_Third_$Impl_$.dividerSvedberg = thx_bigint_Decimals.parse("1e-13");
+thx_unit_time__$Third_Third_$Impl_$.dividerPicosecond = thx_bigint_Decimals.parse("1e-12");
+thx_unit_time__$Third_Third_$Impl_$.dividerNanosecond = thx_bigint_Decimals.parse("1e-9");
+thx_unit_time__$Third_Third_$Impl_$.dividerShake = thx_bigint_Decimals.parse("1e-8");
+thx_unit_time__$Third_Third_$Impl_$.dividerTick = thx_bigint_Decimals.parse("1e-7");
+thx_unit_time__$Third_Third_$Impl_$.dividerMicrosecond = thx_bigint_Decimals.parse("1e-6");
+thx_unit_time__$Third_Third_$Impl_$.dividerFourth = thx_bigint_Decimals.parse("0.00027777777778");
+thx_unit_time__$Third_Third_$Impl_$.dividerMillisecond = thx_bigint_Decimals.parse("0.001");
+thx_unit_time__$Third_Third_$Impl_$.dividerThird = thx_bigint_Decimals.parse("0.01666666666667");
+thx_unit_time__$Third_Third_$Impl_$.dividerSecond = thx_bigint_Decimals.parse("1");
+thx_unit_time__$Third_Third_$Impl_$.dividerMinute = thx_bigint_Decimals.parse("60");
+thx_unit_time__$Third_Third_$Impl_$.dividerKe = thx_bigint_Decimals.parse("864");
+thx_unit_time__$Third_Third_$Impl_$.dividerKilosecond = thx_bigint_Decimals.parse("1000");
+thx_unit_time__$Third_Third_$Impl_$.dividerHour = thx_bigint_Decimals.parse("3600");
+thx_unit_time__$Third_Third_$Impl_$.dividerDay = thx_bigint_Decimals.parse("86400");
+thx_unit_time__$Third_Third_$Impl_$.dividerWeek = thx_bigint_Decimals.parse("604800");
+thx_unit_time__$Third_Third_$Impl_$.dividerMegasecond = thx_bigint_Decimals.parse("1000000");
+thx_unit_time__$Third_Third_$Impl_$.dividerFortnight = thx_bigint_Decimals.parse("1209600");
+thx_unit_time__$Third_Third_$Impl_$.dividerSynodicMonth = thx_bigint_Decimals.parse("2551442.976");
+thx_unit_time__$Third_Third_$Impl_$.dividerTropicalMonth = thx_bigint_Decimals.parse("2360584.512");
+thx_unit_time__$Third_Third_$Impl_$.dividerJulianYear = thx_bigint_Decimals.parse("31557600");
+thx_unit_time__$Third_Third_$Impl_$.dividerGigasecond = thx_bigint_Decimals.parse("1000000000");
+thx_unit_time__$Third_Third_$Impl_$.dividerTerasecond = thx_bigint_Decimals.parse("1000000000000");
+thx_unit_time__$Third_Third_$Impl_$.symbol = "third";
+thx_unit_time__$Tick_Tick_$Impl_$.ofUnit = thx_bigint_Decimals.parse("1e-7");
+thx_unit_time__$Tick_Tick_$Impl_$.dividerPlankTimeUnit = thx_bigint_Decimals.parse("5.39e-44");
+thx_unit_time__$Tick_Tick_$Impl_$.dividerJiffyPhysics = thx_bigint_Decimals.parse("3e-24");
+thx_unit_time__$Tick_Tick_$Impl_$.dividerSvedberg = thx_bigint_Decimals.parse("1e-13");
+thx_unit_time__$Tick_Tick_$Impl_$.dividerPicosecond = thx_bigint_Decimals.parse("1e-12");
+thx_unit_time__$Tick_Tick_$Impl_$.dividerNanosecond = thx_bigint_Decimals.parse("1e-9");
+thx_unit_time__$Tick_Tick_$Impl_$.dividerShake = thx_bigint_Decimals.parse("1e-8");
+thx_unit_time__$Tick_Tick_$Impl_$.dividerTick = thx_bigint_Decimals.parse("1e-7");
+thx_unit_time__$Tick_Tick_$Impl_$.dividerMicrosecond = thx_bigint_Decimals.parse("1e-6");
+thx_unit_time__$Tick_Tick_$Impl_$.dividerFourth = thx_bigint_Decimals.parse("0.00027777777778");
+thx_unit_time__$Tick_Tick_$Impl_$.dividerMillisecond = thx_bigint_Decimals.parse("0.001");
+thx_unit_time__$Tick_Tick_$Impl_$.dividerThird = thx_bigint_Decimals.parse("0.01666666666667");
+thx_unit_time__$Tick_Tick_$Impl_$.dividerSecond = thx_bigint_Decimals.parse("1");
+thx_unit_time__$Tick_Tick_$Impl_$.dividerMinute = thx_bigint_Decimals.parse("60");
+thx_unit_time__$Tick_Tick_$Impl_$.dividerKe = thx_bigint_Decimals.parse("864");
+thx_unit_time__$Tick_Tick_$Impl_$.dividerKilosecond = thx_bigint_Decimals.parse("1000");
+thx_unit_time__$Tick_Tick_$Impl_$.dividerHour = thx_bigint_Decimals.parse("3600");
+thx_unit_time__$Tick_Tick_$Impl_$.dividerDay = thx_bigint_Decimals.parse("86400");
+thx_unit_time__$Tick_Tick_$Impl_$.dividerWeek = thx_bigint_Decimals.parse("604800");
+thx_unit_time__$Tick_Tick_$Impl_$.dividerMegasecond = thx_bigint_Decimals.parse("1000000");
+thx_unit_time__$Tick_Tick_$Impl_$.dividerFortnight = thx_bigint_Decimals.parse("1209600");
+thx_unit_time__$Tick_Tick_$Impl_$.dividerSynodicMonth = thx_bigint_Decimals.parse("2551442.976");
+thx_unit_time__$Tick_Tick_$Impl_$.dividerTropicalMonth = thx_bigint_Decimals.parse("2360584.512");
+thx_unit_time__$Tick_Tick_$Impl_$.dividerJulianYear = thx_bigint_Decimals.parse("31557600");
+thx_unit_time__$Tick_Tick_$Impl_$.dividerGigasecond = thx_bigint_Decimals.parse("1000000000");
+thx_unit_time__$Tick_Tick_$Impl_$.dividerTerasecond = thx_bigint_Decimals.parse("1000000000000");
+thx_unit_time__$Tick_Tick_$Impl_$.symbol = "tick";
+thx_unit_time__$TropicalMonth_TropicalMonth_$Impl_$.ofUnit = thx_bigint_Decimals.parse("2360584.512");
+thx_unit_time__$TropicalMonth_TropicalMonth_$Impl_$.dividerPlankTimeUnit = thx_bigint_Decimals.parse("5.39e-44");
+thx_unit_time__$TropicalMonth_TropicalMonth_$Impl_$.dividerJiffyPhysics = thx_bigint_Decimals.parse("3e-24");
+thx_unit_time__$TropicalMonth_TropicalMonth_$Impl_$.dividerSvedberg = thx_bigint_Decimals.parse("1e-13");
+thx_unit_time__$TropicalMonth_TropicalMonth_$Impl_$.dividerPicosecond = thx_bigint_Decimals.parse("1e-12");
+thx_unit_time__$TropicalMonth_TropicalMonth_$Impl_$.dividerNanosecond = thx_bigint_Decimals.parse("1e-9");
+thx_unit_time__$TropicalMonth_TropicalMonth_$Impl_$.dividerShake = thx_bigint_Decimals.parse("1e-8");
+thx_unit_time__$TropicalMonth_TropicalMonth_$Impl_$.dividerTick = thx_bigint_Decimals.parse("1e-7");
+thx_unit_time__$TropicalMonth_TropicalMonth_$Impl_$.dividerMicrosecond = thx_bigint_Decimals.parse("1e-6");
+thx_unit_time__$TropicalMonth_TropicalMonth_$Impl_$.dividerFourth = thx_bigint_Decimals.parse("0.00027777777778");
+thx_unit_time__$TropicalMonth_TropicalMonth_$Impl_$.dividerMillisecond = thx_bigint_Decimals.parse("0.001");
+thx_unit_time__$TropicalMonth_TropicalMonth_$Impl_$.dividerThird = thx_bigint_Decimals.parse("0.01666666666667");
+thx_unit_time__$TropicalMonth_TropicalMonth_$Impl_$.dividerSecond = thx_bigint_Decimals.parse("1");
+thx_unit_time__$TropicalMonth_TropicalMonth_$Impl_$.dividerMinute = thx_bigint_Decimals.parse("60");
+thx_unit_time__$TropicalMonth_TropicalMonth_$Impl_$.dividerKe = thx_bigint_Decimals.parse("864");
+thx_unit_time__$TropicalMonth_TropicalMonth_$Impl_$.dividerKilosecond = thx_bigint_Decimals.parse("1000");
+thx_unit_time__$TropicalMonth_TropicalMonth_$Impl_$.dividerHour = thx_bigint_Decimals.parse("3600");
+thx_unit_time__$TropicalMonth_TropicalMonth_$Impl_$.dividerDay = thx_bigint_Decimals.parse("86400");
+thx_unit_time__$TropicalMonth_TropicalMonth_$Impl_$.dividerWeek = thx_bigint_Decimals.parse("604800");
+thx_unit_time__$TropicalMonth_TropicalMonth_$Impl_$.dividerMegasecond = thx_bigint_Decimals.parse("1000000");
+thx_unit_time__$TropicalMonth_TropicalMonth_$Impl_$.dividerFortnight = thx_bigint_Decimals.parse("1209600");
+thx_unit_time__$TropicalMonth_TropicalMonth_$Impl_$.dividerSynodicMonth = thx_bigint_Decimals.parse("2551442.976");
+thx_unit_time__$TropicalMonth_TropicalMonth_$Impl_$.dividerTropicalMonth = thx_bigint_Decimals.parse("2360584.512");
+thx_unit_time__$TropicalMonth_TropicalMonth_$Impl_$.dividerJulianYear = thx_bigint_Decimals.parse("31557600");
+thx_unit_time__$TropicalMonth_TropicalMonth_$Impl_$.dividerGigasecond = thx_bigint_Decimals.parse("1000000000");
+thx_unit_time__$TropicalMonth_TropicalMonth_$Impl_$.dividerTerasecond = thx_bigint_Decimals.parse("1000000000000");
+thx_unit_time__$TropicalMonth_TropicalMonth_$Impl_$.symbol = "tropical month";
+thx_unit_time__$Week_Week_$Impl_$.ofUnit = thx_bigint_Decimals.parse("604800");
+thx_unit_time__$Week_Week_$Impl_$.dividerPlankTimeUnit = thx_bigint_Decimals.parse("5.39e-44");
+thx_unit_time__$Week_Week_$Impl_$.dividerJiffyPhysics = thx_bigint_Decimals.parse("3e-24");
+thx_unit_time__$Week_Week_$Impl_$.dividerSvedberg = thx_bigint_Decimals.parse("1e-13");
+thx_unit_time__$Week_Week_$Impl_$.dividerPicosecond = thx_bigint_Decimals.parse("1e-12");
+thx_unit_time__$Week_Week_$Impl_$.dividerNanosecond = thx_bigint_Decimals.parse("1e-9");
+thx_unit_time__$Week_Week_$Impl_$.dividerShake = thx_bigint_Decimals.parse("1e-8");
+thx_unit_time__$Week_Week_$Impl_$.dividerTick = thx_bigint_Decimals.parse("1e-7");
+thx_unit_time__$Week_Week_$Impl_$.dividerMicrosecond = thx_bigint_Decimals.parse("1e-6");
+thx_unit_time__$Week_Week_$Impl_$.dividerFourth = thx_bigint_Decimals.parse("0.00027777777778");
+thx_unit_time__$Week_Week_$Impl_$.dividerMillisecond = thx_bigint_Decimals.parse("0.001");
+thx_unit_time__$Week_Week_$Impl_$.dividerThird = thx_bigint_Decimals.parse("0.01666666666667");
+thx_unit_time__$Week_Week_$Impl_$.dividerSecond = thx_bigint_Decimals.parse("1");
+thx_unit_time__$Week_Week_$Impl_$.dividerMinute = thx_bigint_Decimals.parse("60");
+thx_unit_time__$Week_Week_$Impl_$.dividerKe = thx_bigint_Decimals.parse("864");
+thx_unit_time__$Week_Week_$Impl_$.dividerKilosecond = thx_bigint_Decimals.parse("1000");
+thx_unit_time__$Week_Week_$Impl_$.dividerHour = thx_bigint_Decimals.parse("3600");
+thx_unit_time__$Week_Week_$Impl_$.dividerDay = thx_bigint_Decimals.parse("86400");
+thx_unit_time__$Week_Week_$Impl_$.dividerWeek = thx_bigint_Decimals.parse("604800");
+thx_unit_time__$Week_Week_$Impl_$.dividerMegasecond = thx_bigint_Decimals.parse("1000000");
+thx_unit_time__$Week_Week_$Impl_$.dividerFortnight = thx_bigint_Decimals.parse("1209600");
+thx_unit_time__$Week_Week_$Impl_$.dividerSynodicMonth = thx_bigint_Decimals.parse("2551442.976");
+thx_unit_time__$Week_Week_$Impl_$.dividerTropicalMonth = thx_bigint_Decimals.parse("2360584.512");
+thx_unit_time__$Week_Week_$Impl_$.dividerJulianYear = thx_bigint_Decimals.parse("31557600");
+thx_unit_time__$Week_Week_$Impl_$.dividerGigasecond = thx_bigint_Decimals.parse("1000000000");
+thx_unit_time__$Week_Week_$Impl_$.dividerTerasecond = thx_bigint_Decimals.parse("1000000000000");
+thx_unit_time__$Week_Week_$Impl_$.symbol = "week";
 murmur_Canvas.main();
 })(typeof window != "undefined" ? window : typeof global != "undefined" ? global : typeof self != "undefined" ? self : this);
 

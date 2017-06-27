@@ -35,7 +35,7 @@ class Canvas{
   //boidz specific
   public var velocity=0.9;
   static var _numPeople=150;
-  public var fall:Fall;
+  
   public var randomVelocity:Bool=true;
   public var flock:Flock;
   public var canvas:js.html.CanvasElement;
@@ -114,9 +114,7 @@ class Canvas{
 
 
     //RULES
-    fall= new Fall(flock,new boidz.render.canvas.ZoneBounds(new RespectBoundaries(0,width,0,height)),null);
-    fall.enabled=false;
-    flock.addRule(fall);
+    
     steerCenter=new SteerTowardCenter(flock);
     flock.addRule(steerCenter);
     steerCenter.enabled=false;
@@ -135,7 +133,7 @@ class Canvas{
     //canvasFlock = new CanvasFlock(flock);
     
     // Walk.outBounds.add(walk.back);
-    zoneBounds= new ZoneBounds(new RespectBoundaries(20+Math.random()*800, 30+Math.random()*600, 30+Math.random()*300, 40+Math.random()*600, 50, 25));
+    zoneBounds= new ZoneBounds(new RespectBoundaries(20+Math.random()*width, 30+Math.random()*height, 30+Math.random()*300, 40+Math.random()*600, 50, 25));
 
     zone= new SteerTowardZone(flock,zoneBounds);
    // flock.addRule(zone);
@@ -245,6 +243,7 @@ class Canvas{
   function wait(state:Int){
 
     socket.SocketManager.walkSignal.add(function(dir,sprite:murmur.Sprite){
+      if (walk.gone)return;
       #if debug changeAnyColor();#end 
       trace('state=$state spriteState=${sprite.state}');
       display.removeRenderable(walk);
@@ -285,23 +284,12 @@ class Canvas{
       
 
     });
-    socket.SocketManager.ctrlSignal.add(function (type,value){
-      trace("new ctrl Signal");
-      switch (type){
-        case "color": changeColor(value);
-        case "action": doAct(value);
-        case _: 
-      }
-    });
+    
     //CanvasClient.People.signal.add(fire);
   }
 
-  //// sockets actions
-  public function doAct(val){
-      trace( 'doAct $val');
-      scenario.act(val);
-
-  }
+  
+ 
   public function changeAnyColor(){
     changeColor("#"+StringTools.hex(
         Std.int(Math.random()
@@ -331,7 +319,7 @@ class Canvas{
             offset + (width - offset * 2) * Math.random(),
             offset+ ( offset * 2),
             velocity,
-            Math.random() * 360);
+            Math.random() * 400);
       // adding a state 
       b.state=clientID;
 

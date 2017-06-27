@@ -2499,12 +2499,8 @@ msignal_Signal.prototype = {
 		if(!this.slots.nonEmpty) {
 			return true;
 		}
-		var existingSlot = this.slots.find(listener);
-		if(existingSlot == null) {
+		if(this.slots.find(listener) == null) {
 			return true;
-		}
-		if(existingSlot.once != once) {
-			throw new js__$Boot_HaxeError("You cannot addOnce() then add() the same listener without removing the relationship first.");
 		}
 		return false;
 	}
@@ -2618,9 +2614,6 @@ msignal_Slot.prototype = {
 		this.signal.remove(this.listener);
 	}
 	,set_listener: function(value) {
-		if(value == null) {
-			throw new js__$Boot_HaxeError("listener cannot be null");
-		}
 		return this.listener = value;
 	}
 	,__class__: msignal_Slot
@@ -2709,13 +2702,8 @@ msignal_Slot2.prototype = $extend(msignal_Slot.prototype,{
 var msignal_SlotList = function(head,tail) {
 	this.nonEmpty = false;
 	if(head == null && tail == null) {
-		if(msignal_SlotList.NIL != null) {
-			throw new js__$Boot_HaxeError("Parameters head and tail are null. Use the NIL element instead.");
-		}
 		this.nonEmpty = false;
-	} else if(head == null) {
-		throw new js__$Boot_HaxeError("Parameter head cannot be null.");
-	} else {
+	} else if(head != null) {
 		this.head = head;
 		this.tail = tail == null?msignal_SlotList.NIL:tail;
 		this.nonEmpty = true;
@@ -2872,7 +2860,6 @@ murmur_Canvas.prototype = {
 	,clientID: null
 	,DS: null
 	,velocity: null
-	,fall: null
 	,randomVelocity: null
 	,flock: null
 	,canvas: null
@@ -2920,9 +2907,6 @@ murmur_Canvas.prototype = {
 		this.split = new murmur_SplitBoundaries(0,this.width,0,this.height);
 		this.flock.addRule(this.split);
 		murmur_SplitBoundaries.outBounds.add($bind(this,this.removeBoid));
-		this.fall = new murmur_Fall(this.flock,new boidz_render_canvas_ZoneBounds(new boidz_rules_RespectBoundaries(0,this.width,0,this.height)),null);
-		this.fall.enabled = false;
-		this.flock.addRule(this.fall);
 		this.steerCenter = new boidz_rules_SteerTowardCenter(this.flock);
 		this.flock.addRule(this.steerCenter);
 		this.steerCenter.enabled = false;
@@ -2936,17 +2920,15 @@ murmur_Canvas.prototype = {
 		this.canvasBoundaries = new boidz_render_canvas_CanvasBoundaries(this.respectBoundaries);
 		this.canvasWaypoints = new boidz_render_canvas_CanvasIndividualWaypoints(this.waypoints);
 		this.canvasFlock = new murmur_People(this.flock);
-		var tmp2 = 20 + Math.random() * 800;
-		var tmp3 = 30 + Math.random() * 600;
+		var tmp2 = 20 + Math.random() * this.width;
+		var tmp3 = 30 + Math.random() * this.height;
 		var tmp4 = 30 + Math.random() * 300;
 		var tmp5 = 40 + Math.random() * 600;
 		var this3 = 25;
 		this.zoneBounds = new boidz_render_canvas_ZoneBounds(new boidz_rules_RespectBoundaries(tmp2,tmp3,tmp4,tmp5,50,this3));
 		this.zone = new boidz_rules_SteerTowardZone(this.flock,this.zoneBounds);
 		this.display.addRenderable(this.canvasBoundaries);
-		this.display.addRenderable(this.canvasWaypoints);
 		this.display.addRenderable(this.canvasFlock);
-		this.display.addRenderable(this.zoneBounds);
 		this.canvas.addEventListener("click",function(e) {
 			_gthis.waypoints.addGoal(e.clientX,e.clientY);
 		},false);
@@ -2969,7 +2951,7 @@ murmur_Canvas.prototype = {
 		this.scenario = new murmur_scenarios_Scenario(this,this.clientID);
 		this.scenario.init();
 		this.wait(dims.clientID);
-		haxe_Log.trace("all OK",{ fileName : "Canvas.hx", lineNumber : 229, className : "murmur.Canvas", methodName : "execute"});
+		haxe_Log.trace("all OK",{ fileName : "Canvas.hx", lineNumber : 227, className : "murmur.Canvas", methodName : "execute"});
 	}
 	,reset: function() {
 		this.addBoids(this.flock,100,1,0);
@@ -2977,8 +2959,10 @@ murmur_Canvas.prototype = {
 	,wait: function(state) {
 		var _gthis = this;
 		socket_SocketManager.walkSignal.add(function(dir,sprite) {
-			_gthis.changeAnyColor();
-			haxe_Log.trace("state=" + state + " spriteState=" + sprite.state,{ fileName : "Canvas.hx", lineNumber : 249, className : "murmur.Canvas", methodName : "wait"});
+			if(_gthis.walk.gone) {
+				return;
+			}
+			haxe_Log.trace("state=" + state + " spriteState=" + sprite.state,{ fileName : "Canvas.hx", lineNumber : 248, className : "murmur.Canvas", methodName : "wait"});
 			_gthis.display.removeRenderable(_gthis.walk);
 			_gthis.walk.enabled = false;
 			if(state != sprite.state) {
@@ -3009,35 +2993,18 @@ murmur_Canvas.prototype = {
 				_gthis.addBoid(boid);
 			}
 		});
-		socket_SocketManager.ctrlSignal.add(function(type,value) {
-			haxe_Log.trace("new ctrl Signal",{ fileName : "Canvas.hx", lineNumber : 289, className : "murmur.Canvas", methodName : "wait"});
-			switch(type) {
-			case "action":
-				_gthis.doAct(value);
-				break;
-			case "color":
-				_gthis.changeColor(value);
-				break;
-			default:
-			}
-		});
-	}
-	,doAct: function(val) {
-		haxe_Log.trace("doAct " + val,{ fileName : "Canvas.hx", lineNumber : 301, className : "murmur.Canvas", methodName : "doAct"});
-		this.scenario.act(val);
 	}
 	,changeAnyColor: function() {
 		this.changeColor("#" + StringTools.hex(Math.random() * 16777215 | 0));
 	}
 	,changeColor: function(color) {
-		window.document.body.style.backgroundColor = thx_color__$Rgb_Rgb_$Impl_$.toHex(thx_color__$Rgb_Rgb_$Impl_$.lighter(thx_color__$Rgb_Rgb_$Impl_$.fromString(color),.95));
 	}
 	,addBoids: function(flock,howMany,velocity,offset) {
 		Math.min(this.width,this.height);
 		var _g1 = 0;
 		while(_g1 < howMany) {
 			++_g1;
-			var b = new boidz_Boid(offset + (this.width - offset * 2) * Math.random(),offset + offset * 2,velocity,Math.random() * 360);
+			var b = new boidz_Boid(offset + (this.width - offset * 2) * Math.random(),offset + offset * 2,velocity,Math.random() * 400);
 			b.state = this.clientID;
 			flock.boids.push(b);
 		}
@@ -3225,7 +3192,7 @@ var murmur_People = function(flock,boidColor,crownColor,trailColor) {
 	this.pos = 0;
 	this.trailLength = 20;
 	this.renderTrail = false;
-	this.renderCentroid = true;
+	this.renderCentroid = false;
 	this.enabled = true;
 	this.boidColor = null == boidColor?"#000000":thx_color__$Rgba_Rgba_$Impl_$.toString(boidColor);
 	this.crownColor = null == crownColor?"rgba(255,255,255,100)":thx_color__$Rgba_Rgba_$Impl_$.toString(crownColor);
@@ -3320,7 +3287,7 @@ murmur_People.prototype = {
 			var yFactor = b2.y / ctx.canvas.height + 0.5;
 			ctx.globalAlpha = yFactor;
 			var wratio = im.width / im.height;
-			var newH = 100 * yFactor;
+			var newH = 300 * yFactor;
 			var newW = newH * wratio;
 			ctx.drawImage(im,b2.x - newW / 2,b2.y - newH / 2,newW,newH);
 		}
@@ -3466,6 +3433,7 @@ murmur_Sprite.prototype = {
 	,__class__: murmur_Sprite
 };
 var murmur_Walk = function(state) {
+	this.gone = false;
 	this.enabled = true;
 	this.sprite = new murmur_Sprite({ src : "anim/compiled_small.jpg", width : 400, height : 375, numberOfFrames : 13, fps : 7},state);
 };
@@ -3474,6 +3442,7 @@ murmur_Walk.__interfaces__ = [boidz_IRenderable];
 murmur_Walk.prototype = {
 	enabled: null
 	,sprite: null
+	,gone: null
 	,back: function(dir,sprite) {
 		switch(dir) {
 		case "left":
@@ -3506,7 +3475,7 @@ var murmur_Zoom = function(flock,boidColor,crownColor,trailColor) {
 	this.pos = 0;
 	this.trailLength = 20;
 	this.renderTrail = false;
-	this.renderCentroid = true;
+	this.renderCentroid = false;
 	this.enabled = true;
 	this.boidColor = null == boidColor?"#000000":thx_color__$Rgba_Rgba_$Impl_$.toString(boidColor);
 	this.crownColor = null == crownColor?"rgba(255,255,255,100)":thx_color__$Rgba_Rgba_$Impl_$.toString(crownColor);
@@ -3568,13 +3537,13 @@ murmur_Zoom.prototype = {
 			this.zoomFactor = this.zoomFactor + 0.1;
 			var wratio = im.width / im.height;
 			var newH = 300 * yFactor;
-			if(this._newH < 800) {
+			if(this._newH < ctx.canvas.height * 2) {
 				this._newH = newH + this.zoomFactor;
 				this._newW = this._newH * wratio;
 			} else {
 				this.signal.dispatch();
 			}
-			ctx.drawImage(im,b1.x - this._newW / 2,b1.y - this._newH / 2,this._newW,this._newH);
+			ctx.drawImage(im,b1.x - this._newW / 2,b1.y - this._newH,this._newW,this._newH);
 		}
 		if(this.renderCentroid) {
 			ctx.beginPath();
@@ -3605,6 +3574,7 @@ murmur_scenarios_Scenario.prototype = {
 	,midSpeed: null
 	,moreSpeed: null
 	,veryHiSpeed: null
+	,faller: null
 	,delaySign: null
 	,can: null
 	,randomVelocity: null
@@ -3616,18 +3586,33 @@ murmur_scenarios_Scenario.prototype = {
 	,zoom: null
 	,away: null
 	,init: function() {
+		var _gthis = this;
 		murmur_scenarios_Scenario.DS = murmur_DoneSignal.getInstance();
 		this.initScenarios();
 		this.chainingScenarios();
 		this.dispatch("init");
-		var this1 = 300;
-		this.away = new boidz_rules_SteerAway(500,500,this1);
-		this.can.flock.addRule(this.away);
-		this.away.enabled = false;
+		socket_signal_ControlSignal.getInstance().complete.add(function(type,value) {
+			haxe_Log.trace("new ctrl Signal",{ fileName : "Scenario.hx", lineNumber : 54, className : "murmur.scenarios.Scenario", methodName : "init"});
+			switch(type) {
+			case "action":
+				_gthis.act(value);
+				break;
+			case "color":
+				_gthis.can.changeColor(value);
+				break;
+			case "modify":
+				_gthis.modify(value);
+				break;
+			case "phase":
+				_gthis.phase(value);
+				break;
+			default:
+			}
+		});
 	}
 	,chainingScenarios: function() {
 		var _gthis = this;
-		haxe_Log.trace("chainig " + this.scenariosCount,{ fileName : "Scenario.hx", lineNumber : 56, className : "murmur.scenarios.Scenario", methodName : "chainingScenarios"});
+		haxe_Log.trace("chainig " + this.scenariosCount,{ fileName : "Scenario.hx", lineNumber : 68, className : "murmur.scenarios.Scenario", methodName : "chainingScenarios"});
 		murmur_scenarios_Scenario.currentScenario = this.scenarios[this.scenariosCount];
 		if(murmur_scenarios_Scenario.currentScenario.elapsed == null) {
 			murmur_scenarios_Scenario.currentScenario.execute();
@@ -3635,7 +3620,7 @@ murmur_scenarios_Scenario.prototype = {
 			murmur_scenarios_Scenario.currentScenario.wakeup();
 		}
 		murmur_scenarios_Scenario.currentScenario.fini.add(function() {
-			haxe_Log.trace("fini" + _gthis.scenariosCount,{ fileName : "Scenario.hx", lineNumber : 63, className : "murmur.scenarios.Scenario", methodName : "chainingScenarios"});
+			haxe_Log.trace("fini" + _gthis.scenariosCount,{ fileName : "Scenario.hx", lineNumber : 75, className : "murmur.scenarios.Scenario", methodName : "chainingScenarios"});
 			murmur_scenarios_Scenario.currentScenario.kill();
 			_gthis.chainingScenarios();
 			_gthis.dispatch("switch");
@@ -3646,61 +3631,133 @@ murmur_scenarios_Scenario.prototype = {
 			this.scenariosCount = this.scenariosCount + 1;
 		}
 	}
-	,initScenarios: function() {
-		this.scenarios.push(new murmur_scenarios_TimedScenario(this.can,this.clientID,12000,60000));
-		this.scenarios.push(new murmur_scenarios_DessinAlone(this.can,this.clientID,3333,10000));
-		this.scenarios.push(new murmur_scenarios_Slam(this.can,this.clientID,17500,70000));
+	,phase: function(value) {
+		haxe_Log.trace("phase" + value,{ fileName : "Scenario.hx", lineNumber : 88, className : "murmur.scenarios.Scenario", methodName : "phase"});
+		murmur_scenarios_Scenario.currentScenario.kill();
+		switch(value) {
+		case "dessinAlone":
+			this.scenariosCount = 1;
+			break;
+		case "slam":
+			this.scenariosCount = 2;
+			break;
+		case "timedScenario":
+			this.scenariosCount = 0;
+			break;
+		case "wall":
+			this.scenariosCount = 3;
+			break;
+		}
+		this.chainingScenarios();
 	}
-	,addWalk: function() {
+	,initScenarios: function() {
+		this.scenarios.push(new murmur_scenarios_TimedScenario(this.can,this.clientID,thx__$Decimal_Decimal_$Impl_$.fromInt(5).divide(thx__$Decimal_Decimal_$Impl_$.fromInt(5)),thx__$Decimal_Decimal_$Impl_$.fromInt(5).multiply(thx_unit_time__$Minute_Minute_$Impl_$.ofUnit).divide(thx_unit_time__$Minute_Minute_$Impl_$.dividerMillisecond).trim(null)));
+		this.scenarios.push(new murmur_scenarios_DessinAlone(this.can,this.clientID,thx__$Decimal_Decimal_$Impl_$.fromInt(1).divide(thx__$Decimal_Decimal_$Impl_$.fromInt(4)),thx__$Decimal_Decimal_$Impl_$.fromInt(1).multiply(thx_unit_time__$Minute_Minute_$Impl_$.ofUnit).divide(thx_unit_time__$Minute_Minute_$Impl_$.dividerMillisecond).trim(null)));
+		this.scenarios.push(new murmur_scenarios_Slam(this.can,this.clientID,thx__$Decimal_Decimal_$Impl_$.fromInt(7).divide(thx__$Decimal_Decimal_$Impl_$.fromInt(5)),thx__$Decimal_Decimal_$Impl_$.fromInt(7).multiply(thx_unit_time__$Minute_Minute_$Impl_$.ofUnit).divide(thx_unit_time__$Minute_Minute_$Impl_$.dividerMillisecond).trim(null)));
+		this.scenarios.push(new murmur_scenarios_WallWalk(this.can,this.clientID,thx__$Decimal_Decimal_$Impl_$.fromInt(8).divide(thx__$Decimal_Decimal_$Impl_$.fromInt(6)),thx__$Decimal_Decimal_$Impl_$.fromInt(8).multiply(thx_unit_time__$Minute_Minute_$Impl_$.ofUnit).divide(thx_unit_time__$Minute_Minute_$Impl_$.dividerMillisecond).trim(null)));
+	}
+	,addWalk: function(remote) {
+		if(remote == null) {
+			remote = false;
+		}
 		var _gthis = this;
-		thx_Timer.delay(function() {
-			_gthis.dispatch("end walk");
-			_gthis.removeWalk();
-		},30000);
+		this.can.randomVelocity = false;
+		this.can.velocity = .1;
+		this.can.updateVelocity();
+		var this1 = 23;
+		this.away = new boidz_rules_SteerAway(500,500,this1);
+		this.can.flock.addRule(this.away);
 		this.can.display.addRenderable(this.can.canvasFlock);
 		this.can.canvasFlock.enabled = false;
+		this.can.walk = new murmur_Walk(0);
 		this.zoom = new murmur_Zoom(this.can.flock);
+		haxe_Log.trace(this.away,{ fileName : "Scenario.hx", lineNumber : 132, className : "murmur.scenarios.Scenario", methodName : "addWalk"});
+		this.away.enabled = true;
 		this.zoom.signal.add(function() {
 			_gthis.can.walk.enabled = true;
+			_gthis.away.enabled = false;
+			_gthis.can.randomVelocity = true;
+			_gthis.can.velocity = _gthis.lowSpeed;
+			_gthis.can.updateVelocity();
 			if(_gthis.can.clientID == 0) {
 				_gthis.can.display.addRenderable(_gthis.can.walk);
 			}
 			_gthis.zoom.enabled = false;
 			_gthis.can.display.addRenderable(_gthis.zoom);
+			if(remote) {
+				thx_Timer.delay(function() {
+					_gthis.removeWalk(true);
+					_gthis.dispatch("end walk");
+				},30000);
+			}
 		});
-		this.can.velocity = this.hiSpeed;
-		this.can.updateVelocity();
 		this.can.display.addRenderable(this.zoom);
 	}
-	,removeWalk: function() {
-		this.away.enabled = false;
-		this.can.canvasFlock.enabled = true;
-		this.zoom.enabled = false;
-		this.can.display.addRenderable(this.zoom);
-		this.can.walk.enabled = false;
-		this.can.display.addRenderable(this.can.walk);
-		murmur_scenarios_Scenario.currentScenario.wakeup();
-		this.can.respectBoundaries.enabled = true;
-		this.can.respectBoundaries.maxSteer = 60;
-		this.can.respectBoundaries.offset = 300;
-		this.can.display.addRenderable(this.can.canvasFlock);
+	,removeWalk: function(remote) {
+		if(remote == null) {
+			remote = false;
+		}
+		var _gthis = this;
+		socket_SocketManager.walkSignal.addOnce(function(dir,sprite) {
+			_gthis.can.walk.gone = true;
+			_gthis.can.walk.enabled = false;
+			_gthis.away.enabled = false;
+			_gthis.can.canvasFlock.enabled = true;
+			_gthis.zoom.enabled = false;
+			_gthis.can.display.addRenderable(_gthis.zoom);
+			_gthis.can.display.addRenderable(_gthis.can.walk);
+			murmur_scenarios_Scenario.currentScenario.wakeup();
+			_gthis.can.respectBoundaries.enabled = true;
+			_gthis.can.respectBoundaries.maxSteer = 60;
+			_gthis.can.respectBoundaries.offset = 300;
+			_gthis.can.display.addRenderable(_gthis.can.canvasFlock);
+		});
 	}
 	,act: function(value) {
 		this.dispatch(value);
+		this.resetRules();
 		if(murmur_scenarios_Scenario.currentScenario.enabled) {
 			murmur_scenarios_Scenario.currentScenario.kill();
 		}
-		switch(value) {
-		case "nowalk":
-			this.removeWalk();
-			break;
-		case "walk":
-			this.can.walk = new murmur_Walk(0);
-			this.addWalk();
-			break;
-		default:
-			haxe_Log.trace(value,{ fileName : "Scenario.hx", lineNumber : 145, className : "murmur.scenarios.Scenario", methodName : "act"});
-			Reflect.field(this,value).apply(this,[]);
+		haxe_Log.trace(value,{ fileName : "Scenario.hx", lineNumber : 197, className : "murmur.scenarios.Scenario", methodName : "act"});
+		Reflect.field(this,value).apply(this,[true]);
+	}
+	,modify: function(value) {
+		haxe_Log.trace(value,{ fileName : "Scenario.hx", lineNumber : 213, className : "murmur.scenarios.Scenario", methodName : "modify"});
+		Reflect.field(this,value).apply(this,[]);
+	}
+	,towardUp: function() {
+		var _gthis = this;
+		thx_Timer.delay(function() {
+			_gthis.toZone.enabled = false;
+		},30000);
+		this.towardZone(0,this.can.width,0,300);
+	}
+	,towardDown: function() {
+		var _gthis = this;
+		thx_Timer.delay(function() {
+			_gthis.toZone.enabled = false;
+		},30000);
+		this.towardZone(0,this.can.width,this.can.height - 300,this.can.height);
+	}
+	,plusClient1: function() {
+		if(this.clientID == 1) {
+			this.delaygrowCrowd(200);
+		}
+	}
+	,moinsClient1: function() {
+		if(this.clientID == 1) {
+			this.delayreduceCrowd(50);
+		}
+	}
+	,plusClient0: function() {
+		if(this.clientID == 0) {
+			this.delaygrowCrowd(200);
+		}
+	}
+	,moinsClient0: function() {
+		if(this.clientID == 0) {
+			this.delayreduceCrowd(50);
 		}
 	}
 	,togDebug: function() {
@@ -3715,11 +3772,11 @@ murmur_scenarios_Scenario.prototype = {
 		this.can.respectBoundaries.maxSteer = 60;
 		this.can.respectBoundaries.offset = 300;
 		if(this.clientID == 0) {
-			this.delaygrowCrowd(300);
+			this.delaygrowCrowd(400);
 			this.can.velocity = this.midSpeed;
 			this.can.updateVelocity();
 		} else {
-			this.delayreduceCrowd(30);
+			this.delayreduceCrowd(50);
 		}
 	}
 	,invade: function() {
@@ -3756,16 +3813,28 @@ murmur_scenarios_Scenario.prototype = {
 		this.can.flock.addRule(this.toZone);
 		this.dispatch("towardZone");
 	}
-	,fall: function() {
+	,fall: function(remote) {
+		if(remote == null) {
+			remote = false;
+		}
 		var _gthis = this;
+		this.faller = new murmur_Fall(this.can.flock,new boidz_render_canvas_ZoneBounds(new boidz_rules_RespectBoundaries(0,this.can.width,0,this.can.height)),null);
+		this.faller.enabled = false;
+		this.can.flock.addRule(this.faller);
+		this.dispatch("fall");
+		this.can.randomVelocity = false;
 		this.can.velocity = this.veryHiSpeed;
 		this.can.updateVelocity();
 		this.can.avoidCollisions.enabled = false;
-		this.can.fall.enabled = true;
-		this.can.fall.signal.add(function() {
+		this.faller.enabled = true;
+		this.faller.signal.add(function() {
 			_gthis.can.display.addRenderable(new murmur_End(0));
+			_gthis.finish();
 		});
 		this.can.split.enabled = false;
+	}
+	,finish: function() {
+		murmur_scenarios_Scenario.currentScenario.kill();
 	}
 	,scene1: function() {
 		this.can.velocity = this.hiSpeed;
@@ -3775,12 +3844,21 @@ murmur_scenarios_Scenario.prototype = {
 		this.can.avoidCollisions.set_radius(80);
 		this.can.steerCenter.enabled = false;
 	}
+	,resetRules: function() {
+		var _g = 0;
+		var _g1 = this.can.flock.rules;
+		while(_g < _g1.length) {
+			var rule = _g1[_g];
+			++_g;
+			rule.enabled = false;
+		}
+	}
 	,towardCenter: function(b) {
 		if(b == null) {
 			b = true;
 		}
 		var _gthis = this;
-		haxe_Log.trace("tow" + (b == null?"null":"" + b),{ fileName : "Scenario.hx", lineNumber : 244, className : "murmur.scenarios.Scenario", methodName : "towardCenter"});
+		haxe_Log.trace("tow" + (b == null?"null":"" + b),{ fileName : "Scenario.hx", lineNumber : 364, className : "murmur.scenarios.Scenario", methodName : "towardCenter"});
 		thx_Timer.delay(function() {
 			_gthis.dispatch("end towardCenter");
 			_gthis.can.steerCenter.enabled = false;
@@ -3789,7 +3867,6 @@ murmur_scenarios_Scenario.prototype = {
 		this.can.velocity = this.lowSpeed;
 		this.can.updateVelocity();
 		this.can.steerCenter.enabled = b;
-		haxe_Log.trace("afterTow",{ fileName : "Scenario.hx", lineNumber : 255, className : "murmur.scenarios.Scenario", methodName : "towardCenter"});
 	}
 	,scene2: function() {
 		this.can.velocity = this.lowSpeed;
@@ -3847,10 +3924,10 @@ murmur_scenarios_Scenario.prototype = {
 		if(limit == null) {
 			limit = 200;
 		}
-		haxe_Log.trace("removeorAdd",{ fileName : "Scenario.hx", lineNumber : 349, className : "murmur.scenarios.Scenario", methodName : "removeorAdd"});
+		haxe_Log.trace("removeorAdd",{ fileName : "Scenario.hx", lineNumber : 469, className : "murmur.scenarios.Scenario", methodName : "removeorAdd"});
 		var num = Std.random(10);
 		var rem = Math.random() < 0.5;
-		haxe_Log.trace("num=" + num + " rem=" + (rem == null?"null":"" + rem),{ fileName : "Scenario.hx", lineNumber : 353, className : "murmur.scenarios.Scenario", methodName : "removeorAdd"});
+		haxe_Log.trace("num=" + num + " rem=" + (rem == null?"null":"" + rem),{ fileName : "Scenario.hx", lineNumber : 473, className : "murmur.scenarios.Scenario", methodName : "removeorAdd"});
 		if(rem) {
 			if(num < this.can.flock.boids.length && this.can.flock.boids.length > limit) {
 				this.can.flock.boids.splice(0,num);
@@ -3864,9 +3941,13 @@ murmur_scenarios_Scenario.prototype = {
 		var count = 0;
 		var tim = new haxe_Timer(1000);
 		tim.run = function() {
+			haxe_Log.trace("count:" + count + ", num:" + num,{ fileName : "Scenario.hx", lineNumber : 488, className : "murmur.scenarios.Scenario", methodName : "delaygrowCrowd"});
 			if(count < num) {
-				_gthis.can.addBoids(_gthis.can.flock,Std.random(5),_gthis.can.velocity,_gthis.can.respectBoundaries.offset);
-				count += 3;
+				var rand = Std.random(5);
+				haxe_Log.trace("rand=" + rand,{ fileName : "Scenario.hx", lineNumber : 492, className : "murmur.scenarios.Scenario", methodName : "delaygrowCrowd"});
+				_gthis.can.addBoids(_gthis.can.flock,rand,_gthis.can.velocity,_gthis.can.respectBoundaries.offset);
+				count += rand;
+				_gthis.can.debugRender.set_peopleID(_gthis.can.flock.boids.length);
 			} else {
 				tim.stop();
 			}
@@ -3915,8 +3996,8 @@ var murmur_scenarios_TimedScenario = function(can,clientId,delay,maxTime) {
 	this.enabled = true;
 	this.scenes = [];
 	murmur_scenarios_Scenario.call(this,can,clientId);
-	this.maxTime = maxTime;
-	this.delay = delay;
+	this.maxTime = maxTime.toFloat();
+	this.delay = delay.multiply(thx_unit_time__$Minute_Minute_$Impl_$.ofUnit).divide(thx_unit_time__$Minute_Minute_$Impl_$.dividerMillisecond).trim(null).toFloat() | 0;
 	this.fini = new msignal_Signal0();
 };
 murmur_scenarios_TimedScenario.__name__ = ["murmur","scenarios","TimedScenario"];
@@ -3928,25 +4009,28 @@ murmur_scenarios_TimedScenario.prototype = $extend(murmur_scenarios_Scenario.pro
 	,scenes: null
 	,enabled: null
 	,maxTime: null
+	,cancel: null
 	,timer: null
 	,chrono: function() {
 		var _gthis = this;
 		var start = performance.now();
-		this.fini.add(thx_Timer.frame(function(delta) {
+		this.cancel = thx_Timer.frame(function(delta) {
 			_gthis.elapsed = performance.now() - start;
 			if(_gthis.elapsed > _gthis.maxTime) {
-				haxe_Log.trace("fini",{ fileName : "TimedScenario.hx", lineNumber : 42, className : "murmur.scenarios.TimedScenario", methodName : "chrono"});
+				haxe_Log.trace("fini",{ fileName : "TimedScenario.hx", lineNumber : 43, className : "murmur.scenarios.TimedScenario", methodName : "chrono"});
 				_gthis.fini.dispatch();
 			}
 			thx_bigint_Decimals.fromFloat(_gthis.elapsed / 1000).multiply(thx_unit_time__$Second_Second_$Impl_$.ofUnit).divide(thx_unit_time__$Second_Second_$Impl_$.dividerMinute).trim(null);
-		}));
+		});
+		this.fini.add(this.cancel);
 	}
 	,execute: function() {
 		this.chrono();
 		this.timer = new haxe_Timer(this.delay);
-		this.timer.run = $bind(this,this.doScene);
-		this.pushScenes();
 		this.dispatch("execute");
+		this.pushScenes();
+		this.timer.run = $bind(this,this.doScene);
+		this.doScene();
 	}
 	,pushScenes: function() {
 		this.scenes.push($bind(this,this._scene1));
@@ -3957,9 +4041,10 @@ murmur_scenarios_TimedScenario.prototype = $extend(murmur_scenarios_Scenario.pro
 	}
 	,doScene: function() {
 		if(this.enabled) {
+			haxe_Log.trace("doscene" + this.scenes.length,{ fileName : "TimedScenario.hx", lineNumber : 75, className : "murmur.scenarios.TimedScenario", methodName : "doScene"});
 			this.can.changeAnyColor();
 			var coun = Math.abs(this.counter++ % this.scenes.length) | 0;
-			haxe_Log.trace(coun,{ fileName : "TimedScenario.hx", lineNumber : 74, className : "murmur.scenarios.TimedScenario", methodName : "doScene"});
+			haxe_Log.trace("coun=" + coun,{ fileName : "TimedScenario.hx", lineNumber : 78, className : "murmur.scenarios.TimedScenario", methodName : "doScene"});
 			this.removeorAdd();
 			this.scenes[coun]();
 		}
@@ -3974,8 +4059,6 @@ murmur_scenarios_TimedScenario.prototype = $extend(murmur_scenarios_Scenario.pro
 	,_scene2: function() {
 		this.can.velocity = .6;
 		this.can.updateVelocity();
-		this.can.avoidCollisions.enabled = true;
-		this.can.avoidCollisions.set_radius(80);
 		this.dispatch("_scene2/collision");
 	}
 	,_scene3: function() {
@@ -4010,12 +4093,13 @@ murmur_scenarios_TimedScenario.prototype = $extend(murmur_scenarios_Scenario.pro
 	}
 	,kill: function() {
 		this.enabled = false;
+		this.can.zone.enabled = true;
 		this.timer.stop();
 	}
 	,wakeup: function() {
 		this.enabled = true;
-		this.counter = 0;
 		this.chrono();
+		this.cancel();
 		this.timer = new haxe_Timer(this.delay);
 		this.timer.run = $bind(this,this.doScene);
 	}
@@ -4059,6 +4143,8 @@ murmur_scenarios_DessinAlone.prototype = $extend(murmur_scenarios_TimedScenario.
 		this.dispatch("morezoned");
 	}
 	,kill: function() {
+		this.toZone.enabled = false;
+		this.zaway.enabled = false;
 		this.enabled = false;
 		this.can.velocity = this.lowSpeed;
 		this.can.updateVelocity();
@@ -4077,6 +4163,7 @@ murmur_scenarios_Slam.prototype = $extend(murmur_scenarios_TimedScenario.prototy
 		this.scenes.push($bind(this,this.prepareSplit));
 		this.scenes.push($bind(this,this.varie));
 		this.scenes.push($bind(this,this.isole));
+		this.scenes.push($bind(this,this.invade));
 		this.scenes.push($bind(this,this.disperse));
 	}
 	,prepareSplit: function() {
@@ -4113,6 +4200,73 @@ murmur_scenarios_Slam.prototype = $extend(murmur_scenarios_TimedScenario.prototy
 		this.timer.stop();
 	}
 	,__class__: murmur_scenarios_Slam
+});
+var murmur_scenarios_WallWalk = function(can,clientId,delay,maxTime) {
+	murmur_scenarios_TimedScenario.call(this,can,clientId,delay,maxTime);
+};
+murmur_scenarios_WallWalk.__name__ = ["murmur","scenarios","WallWalk"];
+murmur_scenarios_WallWalk.__interfaces__ = [murmur_scenarios_IScenario];
+murmur_scenarios_WallWalk.__super__ = murmur_scenarios_TimedScenario;
+murmur_scenarios_WallWalk.prototype = $extend(murmur_scenarios_TimedScenario.prototype,{
+	doScene: function() {
+		if(this.enabled) {
+			haxe_Log.trace("doscene" + this.scenes.length,{ fileName : "WallWalk.hx", lineNumber : 16, className : "murmur.scenarios.WallWalk", methodName : "doScene"});
+			this.can.changeAnyColor();
+			var coun = this.counter++;
+			if(coun >= this.scenes.length) {
+				this.timer.stop();
+				this.cancel();
+				return;
+			}
+			haxe_Log.trace(coun,{ fileName : "WallWalk.hx", lineNumber : 24, className : "murmur.scenarios.WallWalk", methodName : "doScene"});
+			this.scenes[coun]();
+		}
+	}
+	,pushScenes: function() {
+		this.scenes.push($bind(this,this.addWalk));
+		this.scenes.push($bind(this,this.removeWalk));
+		this.scenes.push($bind(this,this.loin));
+		this.scenes.push($bind(this,this.zoned));
+		this.scenes.push($bind(this,this.morezoned));
+		this.scenes.push($bind(this,this.fall));
+	}
+	,zaway: null
+	,loin: function() {
+		this.can.split.enabled = true;
+		this.zaway = new boidz_rules_SteerAway(500,500);
+		this.can.randomVelocity = false;
+		this.can.velocity = this.lowSpeed;
+		this.can.updateVelocity();
+		this.can.flock.addRule(this.zaway);
+		this.zaway.enabled = true;
+		this.dispatch("loin");
+	}
+	,fake: function() {
+	}
+	,zoned: function() {
+		this.zaway.enabled = false;
+		var zone = null;
+		if(this.clientID == 0) {
+			zone = new boidz_rules_RespectBoundaries(this.can.width / 3,this.can.width,this.can.height / 3,this.can.height);
+		} else {
+			zone = new boidz_rules_RespectBoundaries(0,this.can.width / 3,this.can.height / 3,this.can.height);
+		}
+		this.toZone = new boidz_rules_SteerTowardZone(this.can.flock,new boidz_render_canvas_ZoneBounds(zone));
+		this.can.flock.addRule(this.toZone);
+		this.dispatch("zoned");
+	}
+	,morezoned: function() {
+		this.dispatch("morezoned");
+	}
+	,kill: function() {
+		this.enabled = false;
+		this.can.velocity = this.lowSpeed;
+		this.can.updateVelocity();
+		this.timer.stop();
+	}
+	,wakeup: function() {
+	}
+	,__class__: murmur_scenarios_WallWalk
 });
 var socket_SocketManager = function() {
 	this.dims = { width : 0, height : 0, clientID : 0};
@@ -4166,10 +4320,11 @@ socket_SocketManager.prototype = {
 		this._socket.on("control",function(args2) {
 			haxe_Log.trace("yo control",{ fileName : "SocketManager.hx", lineNumber : 75, className : "socket.SocketManager", methodName : "connect"});
 			socket_SocketManager.ctrlSignal.dispatch(args2.type,args2.value);
+			socket_signal_ControlSignal.getInstance().complete.dispatch(args2.type,args2.value);
 		});
 		this._socket.on("clientConnect",function(data) {
 			_gthis.clientId = data.clients;
-			haxe_Log.trace("clientId=" + _gthis.clientId,{ fileName : "SocketManager.hx", lineNumber : 81, className : "socket.SocketManager", methodName : "connect"});
+			haxe_Log.trace("clientId=" + _gthis.clientId,{ fileName : "SocketManager.hx", lineNumber : 82, className : "socket.SocketManager", methodName : "connect"});
 			_gthis.dims.clientID = _gthis.clientId;
 			_gthis.connected.dispatch(_gthis.dims);
 		});
@@ -4181,6 +4336,7 @@ socket_SocketManager.prototype = {
 };
 var socket_signal_ControlSignal = function() {
 	msignal_Signal2.call(this,String,Dynamic);
+	this.complete = new msignal_Signal2();
 };
 socket_signal_ControlSignal.__name__ = ["socket","signal","ControlSignal"];
 socket_signal_ControlSignal.getInstance = function() {
@@ -4191,7 +4347,8 @@ socket_signal_ControlSignal.getInstance = function() {
 };
 socket_signal_ControlSignal.__super__ = msignal_Signal2;
 socket_signal_ControlSignal.prototype = $extend(msignal_Signal2.prototype,{
-	__class__: socket_signal_ControlSignal
+	complete: null
+	,__class__: socket_signal_ControlSignal
 });
 var thx_Arrays = function() { };
 thx_Arrays.__name__ = ["thx","Arrays"];
@@ -27794,7 +27951,7 @@ _$Api_Color_$Impl_$.ocre = "#E6D67E";
 _$Api_Color_$Impl_$.blue = "#00AAFF";
 _$Api_Color_$Impl_$.orange = "#F27C4E";
 _$Api_Color_$Impl_$.violet = "#8116C9";
-Config.adress = "http://localhost:3700";
+Config.adress = "http://192.168.0.22:3700";
 DateTools.DAYS_OF_MONTH = [31,28,31,30,31,30,31,31,30,31,30,31];
 haxe_crypto_Base64.CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 haxe_ds_ObjectMap.count = 0;
@@ -28964,5 +29121,3 @@ thx_unit_time__$Week_Week_$Impl_$.dividerTerasecond = thx_bigint_Decimals.parse(
 thx_unit_time__$Week_Week_$Impl_$.symbol = "week";
 murmur_Canvas.main();
 })(typeof window != "undefined" ? window : typeof global != "undefined" ? global : typeof self != "undefined" ? self : this);
-
-//# sourceMappingURL=canvas.js.map

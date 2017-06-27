@@ -70,7 +70,7 @@ class Zoom implements IRenderable<CanvasRender> {
 
     for(b in flock.boids) {
 
-
+      //b.d += boidz.util.Steer.away(b, {x:ctx.canvas.width/2,y:ctx.canvas.height/2}, 200);
     
     //count=count%8;
     var im= b.image;
@@ -84,15 +84,15 @@ class Zoom implements IRenderable<CanvasRender> {
     var newH=300*yFactor;
     var newW=newH*wratio;
 
-    if( _newH<800){
+    if( _newH<ctx.canvas.height*2){
     _newH=newH+(zoomFactor);
     _newW=_newH*wratio;
-
+    
     }else{
       signal.dispatch();
     }
     //try{
-   ctx.drawImage(im,b.x-(_newW/2),b.y-(_newH/2),_newW,_newH);
+   ctx.drawImage(im,b.x-(_newW/2),b.y-(_newH),_newW,_newH);
     // }catch(msg:Dynamic){
     //   im=b.peopleImage.render();
     //   ctx.drawImage(im,b.x-(newW/2),b.y-(newH/2),newW,newH);

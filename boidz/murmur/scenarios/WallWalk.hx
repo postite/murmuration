@@ -2,7 +2,7 @@ package murmur.scenarios;
 import boidz.rules.*;
 import boidz.render.canvas.*;
 import thx.unit.time.*;
-class DessinAlone extends TimedScenario implements IScenario{
+class WallWalk extends TimedScenario implements IScenario{
 
 
 	public function new(can:murmur.Canvas,clientId,delay:Minute,?maxTime:Millisecond)
@@ -10,15 +10,38 @@ class DessinAlone extends TimedScenario implements IScenario{
     {
         super(can,clientId,delay,maxTime);
     	
-        
     } 
+    override function doScene(){
+        if( enabled){
+            trace( "doscene"+scenes.length);
+        can.changeAnyColor();
+        var coun = counter++;
+        if( coun >= scenes.length){
+           timer.stop();
+           cancel();
+           return;
+        }  
+        trace( coun);
+        //removeorAdd();
+        //this.dispatch("_scene"+coun+1);
+        scenes[coun]();
+        }
+    }
+
+    
 
     override function pushScenes(){
+        scenes.push(addWalk);
+       // scenes.push(fake);
+        scenes.push(removeWalk);
 
         scenes.push(loin);
         scenes.push(zoned);
         scenes.push(morezoned);
        
+        
+        scenes.push(fall);
+
         // scenarios.push(scene4);
         // scenarios.push(scene5);
     }
@@ -28,10 +51,15 @@ class DessinAlone extends TimedScenario implements IScenario{
      function loin(){
      	split(true);
     	 zaway=new SteerAway(500,500);
+         can.randomVelocity=false;
     	setVelocity(lowSpeed);
     	can.flock.addRule(zaway);
     	zaway.enabled=true;
     	this.dispatch("loin");
+    }
+
+    function fake(){
+
     }
     //var toZone:SteerTowardZone;
     function zoned(){
@@ -61,10 +89,13 @@ class DessinAlone extends TimedScenario implements IScenario{
     	this.dispatch("morezoned");
     }
     override function kill(){
-    	toZone.enabled=false;
-    	zaway.enabled=false;
+    	//toZone.enabled=false;
+    	//zaway.enabled=false;
     	enabled=false;
     	setVelocity(lowSpeed);
     	timer.stop();
+    }
+    override function wakeup(){
+
     }
 }

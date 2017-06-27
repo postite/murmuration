@@ -1,10 +1,11 @@
 package murmur.scenarios;
 import boidz.rules.*;
 import boidz.render.canvas.*;
+import thx.unit.time.*;
 class Slam extends TimedScenario implements IScenario{
 
 
-	public function new(can:murmur.Canvas,clientId,delay:Int,?maxTime:Int)
+	public function new(can:murmur.Canvas,clientId,delay:Minute,?maxTime:Millisecond)
      
     {
         super(can,clientId,delay,maxTime);
@@ -17,6 +18,7 @@ class Slam extends TimedScenario implements IScenario{
         
         scenes.push(varie);
         scenes.push(isole);
+        scenes.push(invade);
         scenes.push(disperse);
         
     }

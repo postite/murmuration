@@ -74,6 +74,7 @@ class SocketManager {
 		_socket.on("control",function(args:{type:String,value:Dynamic}){
 			trace( "yo control");
 			ctrlSignal.dispatch(args.type,args.value);
+			socket.signal.ControlSignal.getInstance().complete.dispatch(args.type,args.value);
 		});
 		
 		_socket.on("clientConnect",function(data){

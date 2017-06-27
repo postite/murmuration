@@ -22,10 +22,10 @@
 #-D network-sandbox
 #-D source-map-content
 -D hxnodejs_no_version_warning
--D petit
+#-D petit
 #-D nico
 #-dce no
--debug
+#-debug
 #-resource people/n&b1.png@pip
 #-cmd open -a safari  boidz/bin/index.html
 #

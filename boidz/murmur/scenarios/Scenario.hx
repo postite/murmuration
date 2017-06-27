@@ -3,7 +3,7 @@ import boidz.render.canvas.*;
 import boidz.rules.*;
 import boidz.IRenderable;
 import msignal.Signal;
-
+import thx.unit.time.*;
 class Scenario {
 
     public var hiSpeed=1;
@@ -15,6 +15,7 @@ class Scenario {
 
     //scenarios
    // var timedScenario :TimedScenario;
+   public var faller:Fall;
    static  var currentScenario:IScenario;
     var delaySign:Signal0;
 	var can:murmur.Canvas;
@@ -27,7 +28,7 @@ class Scenario {
     var clientID:Int;
     var scenariosCount:Int=0;
     var zoom:Zoom;
-    public var away:boidz.rules.SteerAway;
+    var away:boidz.rules.SteerAway;
 
 
 	public function new(can:murmur.Canvas,clientID:Int)
@@ -45,9 +46,20 @@ class Scenario {
         initScenarios();
         chainingScenarios();
         dispatch("init");
-        away=new SteerAway(500,500,300);
-        can.flock.addRule(away);
-        away.enabled=false;
+        
+
+
+        //socket.SocketManager.ctrlSignal.add(function (type,value){
+        socket.signal.ControlSignal.getInstance().complete.add(function (type,value){
+      trace("new ctrl Signal");
+      switch (type){
+        case "color": can.changeColor(value);
+        case "action": act(value);
+        case "phase": phase(value);
+        case "modify": modify(value);
+        case _: 
+      }
+    });
         
         
     }
@@ -72,47 +84,88 @@ class Scenario {
     }
 
 
+    public function phase(value){
+        trace("phase"+value);
+        currentScenario.kill();
+        switch(value){
+            case "timedScenario":
+                scenariosCount=0;
+            case "dessinAlone":
+            scenariosCount=1;
+            case "slam":
+            scenariosCount=2;
+            case "wall":
+            scenariosCount=3;
+            
+        }
+        chainingScenarios();
+
+    }
+
+
     function initScenarios(){
-        scenarios.push(new TimedScenario(can,clientID,Std.int(60000/5),60000));
-        scenarios.push(new DessinAlone(can,clientID,Std.int(10000/3),10000));
-        scenarios.push(new Slam(can,clientID,Std.int(70000/4),70000));
+         
+        scenarios.push(new TimedScenario(can,clientID,(5 : Minute)/5,(5 : Minute).toMillisecond()));
+        scenarios.push(new DessinAlone(can,clientID,(1 : Minute)/4,(1 : Minute).toMillisecond()));
+        scenarios.push(new Slam(can,clientID,(7 : Minute)/5,(7 : Minute).toMillisecond()));
+        scenarios.push(new WallWalk(can,clientID,(8: Minute)/6,( 8: Minute).toMillisecond()));
+       
        // scenarios.push(new TimedScenario());
 
     }
     
     
-    public function addWalk(){
-        thx.Timer.delay(function(){
-            dispatch("end walk");
-            removeWalk();
-        },30*1000);
+    public function addWalk(?remote:Bool=false){
+        
+        can.randomVelocity=false;
+        setVelocity(.1);
+        away=new SteerAway(500,500,23);
+        can.flock.addRule(away);
+       // away.enabled=false;
+
         removeRenderable(can.canvasFlock);
         can.canvasFlock.enabled=false;
 
+        can.walk=new Walk(0);
+        zoom=new Zoom(can.flock); 
 
-        zoom=new Zoom(can.flock);        
-        
+        trace( away);
+        away.enabled=true;
 
         
 
 
         zoom.signal.add(function (){
             can.walk.enabled=true;
-
+            away.enabled=false;
+            can.randomVelocity=true;
+            setVelocity(lowSpeed);
             if (can.clientID==0)
             addRenderable(can.walk);
             zoom.enabled=false;
             removeRenderable(zoom);
+
+            if(remote)
+            thx.Timer.delay(function(){
+            
+            removeWalk(true);
+            dispatch("end walk");
+            },30*1000);
+        
         });
 
-        setVelocity(hiSpeed);
+        //setVelocity(hiSpeed);
         addRenderable(zoom);
         
         
         
     }   
 
-    public function removeWalk(){
+    public function removeWalk(?remote:Bool=false){
+
+        socket.SocketManager.walkSignal.addOnce(function(dir,sprite:murmur.Sprite){
+        can.walk.gone=true;
+        can.walk.enabled=false;
 
         away.enabled=false;
 
@@ -122,25 +175,40 @@ class Scenario {
         zoom.enabled=false;
         removeRenderable(zoom);
 
-        can.walk.enabled=false;
+        
         removeRenderable(can.walk);
         currentScenario.wakeup();
         respectBoundaries(true);
         //can.reset();
         addRenderable(can.canvasFlock);
+        });
+
     }
 
 
     public function act(value){
         dispatch(value);
+        resetRules();
         if (currentScenario.enabled)currentScenario.kill();
         //trace( 'Sacenario Act $value');
         switch(value){
-            case "walk": 
-            can.walk= new Walk(0);
-            addWalk();
-            case "nowalk":
-            removeWalk();
+            
+            case x:
+            trace(x);
+            var methode=Reflect.field(this,x);
+            Reflect.callMethod(this,Reflect.field(this,x),[true]);
+            //
+            //wait for last run ?
+  
+        }
+        
+    }
+
+
+
+    public function modify(value){
+        switch(value){
+            
             case x:
             trace(x);
             var methode=Reflect.field(this,x);
@@ -149,8 +217,44 @@ class Scenario {
             //wait for last run ?
   
         }
-        
     }
+
+    public function towardUp(){
+        thx.Timer.delay(function(){
+            toZone.enabled=false;
+        //setVelocity(lowSpeed);
+        },30*1000);
+        towardZone(0,can.width,0,300);
+    }
+
+    public function towardDown(){
+        thx.Timer.delay(function(){
+            toZone.enabled=false;
+        //setVelocity(lowSpeed);
+        },30*1000);
+        towardZone(0,can.width,can.height-300,can.height);
+    }
+
+
+    public function plusClient1():Void {
+        if( clientID==1)
+            delaygrowCrowd(200);
+    }
+    public function moinsClient1():Void {
+        if( clientID==1)
+            delayreduceCrowd(50);
+    }
+
+    public function plusClient0():Void {
+        if( clientID==0)
+            delaygrowCrowd(200);
+    }
+    public function moinsClient0():Void {
+        if( clientID==0)
+            delayreduceCrowd(50);
+    }
+
+
 
     function togDebug(){
         can.toggleDebug();
@@ -167,10 +271,10 @@ class Scenario {
         respectBoundaries(true);
  
       if( clientID==0){
-       delaygrowCrowd(300);
+       delaygrowCrowd(400);
        setVelocity(midSpeed);
         }else{
-        delayreduceCrowd(30);
+        delayreduceCrowd(50);
     }
 
 
@@ -217,17 +321,29 @@ class Scenario {
         this.dispatch("towardZone");
     }
 
-    function fall(){
+    function fall(?remote:Bool=false){
+
+
+        faller= new murmur.Fall(can.flock,new boidz.render.canvas.ZoneBounds(new RespectBoundaries(0,can.width,0,can.height)),null);
+        faller.enabled=false;
+        can.flock.addRule(faller);
+        dispatch("fall");
+        can.randomVelocity=false;
         setVelocity(veryHiSpeed);
         collision(false);
 
-        can.fall.enabled=true;
-        can.fall.signal.add(function(){
+        faller.enabled=true;
+        faller.signal.add(function(){
            //can.changeColor("#00AAFF");
-           addRenderable(new End(0)); 
+           addRenderable(new End(0));
+           finish(); 
         });
         split(false);
 
+    }
+
+    function finish(){
+        currentScenario.kill();
     }
     
 
@@ -237,6 +353,10 @@ class Scenario {
         collision(true,80);
     	centrer(false);
         
+    }
+    function resetRules(){
+        for( rule in can.flock.rules)
+            rule.enabled=false;
     }
 
     //annule ça !
@@ -252,7 +372,7 @@ class Scenario {
         setVelocity(lowSpeed);
         centrer(b);
 
-        trace( "afterTow");
+        
        
     }
 
@@ -360,15 +480,19 @@ class Scenario {
     	}
     }
 
-function delaygrowCrowd(num){
+function delaygrowCrowd(num:Int){
         var count=0;
         var tim= new haxe.Timer(1000);
         tim.run=function(){
             //dispatch("delaygrowCrowd");
+            trace( 'count:$count, num:$num');
             if (count<num){
-                
-        can.addBoids(can.flock,Std.random(5),can.velocity, can.respectBoundaries.offset);
-        count+=3;
+
+                var rand=Std.random(5);
+                trace( 'rand=$rand');
+        can.addBoids(can.flock,rand,can.velocity, can.respectBoundaries.offset);
+        count=count+rand;
+        can.debugRender.peopleID=can.flock.boids.length;
         }else{
             tim.stop();
         }}
@@ -389,6 +513,7 @@ function delaygrowCrowd(num){
             }
         }
         ;
+
     }
     public function growCrowd(num){
 
@@ -403,10 +528,10 @@ function delaygrowCrowd(num){
     }
 
     function dispatch(action){
-#if debug
+
 var mins=(currentScenario.elapsed : thx.unit.time.Millisecond).toMinute();
         DS.dispatch(Type.getClassName(Type.getClass(currentScenario)).split(".")[2]+"/"+mins,action);
-#end    
+    
     }
 
 

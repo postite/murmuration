@@ -51,10 +51,11 @@ boidz/build.hxml
 
 -lib js-kit
 -lib hxnodejs 
--main remote.Controller
+-main remote.Remote
 -lib msignal
 -js boidz/bin/remote.js
-
+-lib thx.core
+-lib thx.unit
 -D network-sandbox
 -D source-map-content
 -D hxnodejs_no_version_warning

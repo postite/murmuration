@@ -17,7 +17,7 @@ class Walk implements IRenderable<CanvasRender> {
  // var flock : Flock;
   public var enabled : Bool = true;
   var sprite:Sprite;
-
+  public var gone:Bool=false;
  // public static var outBounds:Signal2<String,Sprite>= new Signal2();
   public static var outBounds:WalkOut= WalkOut.getInstance();
   public function new(state:Int) {

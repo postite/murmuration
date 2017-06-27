@@ -47,7 +47,7 @@ var socket_Server = function() {
 socket_Server.main = function() {
 	new socket_Server();
 };
-Config.adress = "http://localhost:3700";
+Config.adress = "http://192.168.0.22:3700";
 socket_Server.numClient = 0;
 socket_Server.main();
 })();

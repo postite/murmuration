@@ -13,18 +13,19 @@ class TimedScenario extends Scenario implements IScenario{
 	//var counter=0;
     public var fini:msignal.Signal0;
     public var elapsed:Float;
-    public var scenes=[];
+    public var scenes:Array<Dynamic>=[];
     public var enabled:Bool=true;
-    public var maxTime:Int;
+    public var maxTime:Float;
+    public var cancel:Void->Void;
     var timer:haxe.Timer;
-	public function new(can:murmur.Canvas,clientId,delay:Int,?maxTime:Int)
+	public function new(can:murmur.Canvas,clientId,delay:Minute,?maxTime:Millisecond)
      
     {
         super(can,clientId);
     	
-    	this.maxTime=maxTime;
+    	this.maxTime=maxTime.toFloat();
         //execute();
-    	this.delay=delay;
+    	this.delay=Std.int(delay.toMillisecond().toFloat());
         fini= new Signal0();
 
     
@@ -34,7 +35,7 @@ class TimedScenario extends Scenario implements IScenario{
     public function chrono(){
 
         var start = thx.Timer.time();
-      var cancel= thx.Timer.frame(function(delta) {
+       cancel= thx.Timer.frame(function(delta) {
        var time = thx.Timer.time();
          elapsed=(time-start);
         // trace( elapsed +"/"+ maxTime);
@@ -53,10 +54,12 @@ class TimedScenario extends Scenario implements IScenario{
         chrono();
         
         timer= new haxe.Timer(delay);
-        
-        timer.run=doScene;
-        pushScenes();
         dispatch("execute");
+        pushScenes();
+        timer.run=doScene;
+        
+        
+        doScene();
     }
     function pushScenes(){
         scenes.push(_scene1);
@@ -69,11 +72,12 @@ class TimedScenario extends Scenario implements IScenario{
 
     function doScene(){
         if( enabled){
+            trace( "doscene"+scenes.length);
     	can.changeAnyColor();
-    		var coun = Std.int(Math.abs(counter++ %scenes.length));
-    	trace( coun);
+    	var coun = Std.int(Math.abs(counter++ %scenes.length));
+    	trace( "coun="+coun);
     	removeorAdd();
-       // this.dispatch("_scene"+coun+1);
+        //this.dispatch("_scene"+coun+1);
     	scenes[coun]();
         }
     }
@@ -89,10 +93,8 @@ class TimedScenario extends Scenario implements IScenario{
 
     function _scene2(){
     	setVelocity(.6);
-   
-  
-
-    	collision(true,80);
+ 
+    	//collision(true,80);
     	
     	
     	dispatch("_scene2/collision");
@@ -143,14 +145,15 @@ class TimedScenario extends Scenario implements IScenario{
 
     public function kill(){
         enabled=false;
+        can.zone.enabled=true;
         timer.stop();
     }
 
     public function wakeup(){
          enabled=true;
-         counter=0;
+         //counter=0;
         chrono();
-        
+        cancel();
         timer= new haxe.Timer(delay);
         
         timer.run=doScene;

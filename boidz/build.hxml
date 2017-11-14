@@ -31,4 +31,29 @@
 #
 
 #-cmd open -a safari http://192.168.0.26:3700
-		
+--next
+-js boidz/bin/rasp.js
+-cp ../
+-cp boidz/src
+-cp boidz
+#-cp /
+-main murmur.Rasp
+#-main murmur.Demo
+#-main Paf
+-lib js-kit
+-lib hxnodejs
+-lib sui
+-lib random
+-lib dots
+-lib thx.color
+-lib thx.core
+-lib msignal
+-lib thx.stream
+-lib thx.stream.dom
+-lib thx.unit
+#-lib postite
+#-D benchmark
+#-D network-sandbox
+#-D source-map-content
+-D hxnodejs_no_version_warning
+

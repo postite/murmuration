@@ -61,7 +61,10 @@ boidz/build.hxml
 -D hxnodejs_no_version_warning
 
 -cmd node boidz/bin/server.js
--cmd open -a safari http://192.168.1.34:3700
+#-cmd open -a safari http://192.168.1.34:3700
+#-cmd open -a safari http://192.168.1.34:3700
+-cmd open -a safari http://192.168.2.46:3700
+
 
 
 

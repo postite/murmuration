@@ -24,6 +24,9 @@ var socket_Server = function() {
 	app.get("/remote",function(req1,res1) {
 		res1.render("rem",{ bip : "remote"});
 	});
+	app.get("/rasp1",function(req2,res2) {
+		res2.render("rasp1",{ bip : "rasp"});
+	});
 	io.on("connection",function(socket1) {
 		socket_Server.numClient = (socket_Server.numClient + 1) % 2;
 		socket1.emit("clientConnect",{ clients : socket_Server.numClient});
@@ -47,7 +50,7 @@ var socket_Server = function() {
 socket_Server.main = function() {
 	new socket_Server();
 };
-Config.adress = "http://192.168.0.22:3700";
+Config.adress = "http://192.168.2.46:3700";
 socket_Server.numClient = 0;
 socket_Server.main();
 })();

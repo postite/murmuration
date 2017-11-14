@@ -51,6 +51,9 @@ class Server
 		 app.get("/remote",function(req:Request,res:Response){
 		 	res.render("rem", {bip:"remote"});
 		 });
+		 app.get("/rasp1",function(req:Request,res:Response){
+		 	res.render("rasp1", {bip:"rasp"});
+		 });
 
 		// app.use(BodyParser.json());
 		// app.use(BodyParser.urlencoded({ extended: true }));

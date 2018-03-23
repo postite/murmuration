@@ -29,12 +29,12 @@ class Slam extends TimedScenario implements IScenario{
         dispatch("prepareSplit");
     }
     function varie(){
-        if( clientID==1)
+        if( clientID==2)
         towardCenter();
         dispatch("varie(toCenter");
     }
     function disperse(){
-        if(clientID==0){
+        if(clientID==1){
         thx.Timer.delay(function(){
             dispatch("end disperse");
             collision(false);
@@ -45,7 +45,7 @@ class Slam extends TimedScenario implements IScenario{
     }
     }
     function isole(){
-        if (clientID==1){
+        if (clientID==2){
             towardZone((can.width/3)-200,(can.width/3)+200,(can.height/3)-200,(can.height/3)+200 );
         }
     }

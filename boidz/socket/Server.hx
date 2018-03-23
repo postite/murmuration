@@ -40,14 +40,18 @@ class Server
 		//app.use(new Morgan('dev'));
 		//app.use(new Favicon(Node.__dirname + '/public/favicon.ico'));
 
-		 app.get("/", function(req : Request, res : Response ){
-		// 	var liveReload = "";
-		// 	#if debug
-		// 	// liveReload = '<script src="http://0.0.0.0:35729/livereload.js" type="text/javascript"></script>';
-		// 	liveReload = 'http://0.0.0.0:35729/livereload.js';
-		// 	#end
-			res.render("page", {bip:"bop"});
+		 app.get("/client/:id", function(req : Request, res : Response ){
+		
+			res.render("page", {bip:"bop",client:req});
 		});
+		//  app.get("/", function(req : Request, res : Response ){
+		
+		// 	res.render("page", {bip:"bop",client:2});
+		// });
+		//   app.get("/3", function(req : Request, res : Response ){
+		
+		// 	res.render("page", {bip:"bop",client:3});
+		// });
 		 app.get("/remote",function(req:Request,res:Response){
 		 	res.render("rem", {bip:"remote"});
 		 });
@@ -62,6 +66,7 @@ class Server
 
 		io.on('connection', function (socket) {
 			numClient=(numClient+1)%2;
+
 			socket.emit("clientConnect",untyped{clients:numClient});
 
 

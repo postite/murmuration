@@ -11,6 +11,7 @@ class Scenario {
     public var midSpeed=.7;
     public var moreSpeed=.8;
     public var veryHiSpeed=1.2;
+    public var antiSpeed:Bool=false;
     public static var DS:murmur.DoneSignal;
 
     //scenarios
@@ -105,18 +106,23 @@ class Scenario {
 
     function initScenarios(){
          
+        
         scenarios.push(new TimedScenario(can,clientID,(5 : Minute)/5,(5 : Minute).toMillisecond()));
+        
         scenarios.push(new DessinAlone(can,clientID,(1 : Minute)/4,(1 : Minute).toMillisecond()));
         scenarios.push(new Slam(can,clientID,(7 : Minute)/5,(7 : Minute).toMillisecond()));
         scenarios.push(new WallWalk(can,clientID,(8: Minute)/6,( 8: Minute).toMillisecond()));
-       
-       // scenarios.push(new TimedScenario());
+        
+        //scenarios.push(new Jam(can,clientID,(5 : Minute)/5,(5 : Minute).toMillisecond()));
+        scenarios.push(new TimedScenario(can,clientID,(5 : Minute)/5,(5 : Minute).toMillisecond()));
 
     }
     
     
     public function addWalk(?remote:Bool=false){
-        
+        #if debug
+        can.changeAnyColor();
+        #end
         can.randomVelocity=false;
         setVelocity(.1);
         away=new SteerAway(500,500,23);
@@ -126,21 +132,25 @@ class Scenario {
         removeRenderable(can.canvasFlock);
         can.canvasFlock.enabled=false;
 
-        can.walk=new Walk(0);
+        can.walk=new Walk(1);
         zoom=new Zoom(can.flock); 
 
         trace( away);
+        setVelocity(5);
         away.enabled=true;
 
-        
+         
 
 
         zoom.signal.add(function (){
+            #if debug
+        can.changeAnyColor();
+        #end
             can.walk.enabled=true;
             away.enabled=false;
             can.randomVelocity=true;
             setVelocity(lowSpeed);
-            if (can.clientID==0)
+            if (clientID==1)
             addRenderable(can.walk);
             zoom.enabled=false;
             removeRenderable(zoom);
@@ -159,6 +169,7 @@ class Scenario {
         
         
         
+        
     }   
 
     public function removeWalk(?remote:Bool=false){
@@ -171,7 +182,7 @@ class Scenario {
 
         //addRenderable(can.canvasFlock);
         can.canvasFlock.enabled=true;
-
+        setVelocity(1);
         zoom.enabled=false;
         removeRenderable(zoom);
 
@@ -187,6 +198,7 @@ class Scenario {
 
 
     public function act(value){
+        can.debugRender.affiche(value);
         dispatch(value);
         resetRules();
         if (currentScenario.enabled)currentScenario.kill();
@@ -207,6 +219,7 @@ class Scenario {
 
 
     public function modify(value){
+        can.debugRender.affiche(value);
         switch(value){
             
             case x:
@@ -235,23 +248,61 @@ class Scenario {
         towardZone(0,can.width,can.height-300,can.height);
     }
 
+    function loin1(){
+        if (clientID==1)
+            loin();
+    }
+    function loin2(){
+        if (clientID==2)
+            loin();
+    }
+    function loin3(){
+        if (clientID==3)
+            loin();
+    }
 
-    public function plusClient1():Void {
-        if( clientID==1)
+        var zaway:SteerAway;
+     function loin(){
+        split(true);
+         zaway=new SteerAway(500,500);
+         can.randomVelocity=false;
+        setVelocity(lowSpeed);
+        can.flock.addRule(zaway);
+        zaway.enabled=true;
+        respectBoundaries(true);
+        this.dispatch("loin");
+    }
+
+    public function plusClient():Void {
+        //if( clientID==2)
             delaygrowCrowd(200);
     }
-    public function moinsClient1():Void {
-        if( clientID==1)
+    public function moinsClient():Void {
+        //if( clientID==2)
             delayreduceCrowd(50);
     }
 
-    public function plusClient0():Void {
-        if( clientID==0)
-            delaygrowCrowd(200);
+    // public function plusClient1():Void {
+    //     if( clientID==1)
+    //         delaygrowCrowd(200);
+    // }
+    // public function moinsClient1():Void {
+    //     if( clientID==1)
+    //         delayreduceCrowd(50);
+    // }
+    public function plusrapide():Void {
+        
+        setVelocity(can.velocity+.5,true);
+        antiSpeed=true;
     }
-    public function moinsClient0():Void {
-        if( clientID==0)
-            delayreduceCrowd(50);
+    public function moinsrapide():Void {
+        
+        setVelocity(can.velocity-.5,true);
+        antiSpeed=true;
+    }
+    public function libereSpeed():Void {
+        antiSpeed=false;
+        
     }
 
 
@@ -265,12 +316,21 @@ class Scenario {
         js.Browser.location.reload();
     }
 
+    function jam(){
+        setVelocity(3); 
+       collision(true);
+    }
+
+    function stop(){
+        setVelocity(0,true);
+    }
+
     function contain(){
         
         split(false);
         respectBoundaries(true);
  
-      if( clientID==0){
+      if( clientID==1){
        delaygrowCrowd(400);
        setVelocity(midSpeed);
         }else{
@@ -293,7 +353,7 @@ class Scenario {
         split(true);
         respectBoundaries(false);
         currentScenario.kill();
-        if( clientID==0){
+        if( clientID==1){
           can.waypoints.maxSteer=7;
           can.waypoints.radius=72;  
         can.waypoints.addGoal(3000,72);
@@ -460,9 +520,11 @@ class Scenario {
     inline function removeRenderable(r:IRenderable<CanvasRender>)
         can.display.addRenderable(r);
 
-     inline function setVelocity(v:Float){
+     inline function setVelocity(v:Float,?bypass:Bool=false){
+        if (!antiSpeed||bypass){
         can.velocity=v;
         can.updateVelocity();
+        }
     }
 
     function removeorAdd(?limit:Int=200){

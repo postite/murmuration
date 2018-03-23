@@ -11,7 +11,7 @@ import thx.color.Rgba;
 
 class People implements IRenderable<CanvasRender> {
   var flock : Flock;
-  public var enabled : Bool = true;
+  public var enabled : Bool=true;
   public var renderCentroid : Bool = #if debug true #else false #end;
   public var renderTrail : Bool = false;
   public var trailLength : Int = 20;
@@ -104,10 +104,17 @@ class People implements IRenderable<CanvasRender> {
     //count=count%8;
     var im= b.image;
     //find canvas height >
+    var yFactor=(b.y/ctx.canvas.height)+0.5;
     
-    var yFactor=(b.y/ctx.canvas.height)+0.5; // to expose
     var opacity=yFactor;
-    ctx.globalAlpha = opacity;
+    //var opacity:Float=0;
+    // if(murmur.Canvas.CLI==3){
+
+    // yFactor=(b.y/ctx.canvas.height)+0.2;
+    // opacity=1;//yFactor+0.8;
+    // }
+    
+   //-> ctx.globalAlpha = opacity;
    
     var wratio=im.width/im.height;
     #if petit

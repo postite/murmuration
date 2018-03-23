@@ -2032,14 +2032,20 @@ remote_Remote.prototype = {
 		c.appendChild(this.generateBox("red","red").touch("modify","towardCenter").box);
 		c.appendChild(this.generateBox("red","red").touch("modify","towardUp").box);
 		c.appendChild(this.generateBox("red","red").touch("modify","towardDown").box);
-		c.appendChild(this.generateBox("red","red").touch("modify","plusClient1").box);
-		c.appendChild(this.generateBox("red","red").touch("modify","plusClient0").box);
-		c.appendChild(this.generateBox("red","red").touch("modify","moinsClient1").box);
-		c.appendChild(this.generateBox("red","red").touch("modify","moinsClient0").box);
+		c.appendChild(this.generateBox("red","red").touch("modify","plusClient").box);
+		c.appendChild(this.generateBox("red","red").touch("modify","moinsClient").box);
 		var d = this.addBar();
 		d.appendChild(this.generateBox("fall","olive").touch("action","fall").box);
 		d.appendChild(this.generateBox("invade","gray").touch("action","invade").box);
 		d.appendChild(this.generateBox("act1","green").touch("action","addWalk").box);
+		d.appendChild(this.generateBox("vitesse","yellow").touch("modify","plusrapide").box);
+		d.appendChild(this.generateBox("vitesse","yellow").touch("modify","moinsrapide").box);
+		d.appendChild(this.generateBox("vitesse","red").touch("modify","stop").box);
+		d.appendChild(this.generateBox("jam","red").touch("modify","libereSpeed").box);
+		d.appendChild(this.generateBox("jam","green").touch("action","jam").box);
+		d.appendChild(this.generateBox("jam","green").touch("action","loin1").box);
+		d.appendChild(this.generateBox("jam","green").touch("action","loin2").box);
+		d.appendChild(this.generateBox("jam","green").touch("action","loin3").box);
 	}
 	,cancel: null
 	,chrono: function() {
@@ -2087,6 +2093,7 @@ var remote_Box = function(id,color) {
 	this.htitre.innerText = "op";
 	this.box.appendChild(this.htitre);
 	this.box.style.backgroundColor = color;
+	window.document.body.className = "remote";
 	window.document.body.appendChild(this.box);
 };
 remote_Box.__name__ = ["remote","Box"];
@@ -2103,7 +2110,7 @@ remote_Box.prototype = {
 		this.titre = value;
 		this.htitre.innerText = this.titre;
 		this.box.addEventListener("click",function(e) {
-			haxe_Log.trace("click",{ fileName : "Remote.hx", lineNumber : 152, className : "remote.Box", methodName : "touch"});
+			haxe_Log.trace("click",{ fileName : "Remote.hx", lineNumber : 182, className : "remote.Box", methodName : "touch"});
 			remote_Remote.signal.dispatch(_gthis.type,_gthis.value);
 		});
 		return this;
@@ -20098,7 +20105,7 @@ _$Api_Color_$Impl_$.ocre = "#E6D67E";
 _$Api_Color_$Impl_$.blue = "#00AAFF";
 _$Api_Color_$Impl_$.orange = "#F27C4E";
 _$Api_Color_$Impl_$.violet = "#8116C9";
-Config.adress = "http://192.168.2.46:3700";
+Config.adress = "http://localhost:3700";
 DateTools.DAYS_OF_MONTH = [31,28,31,30,31,30,31,31,30,31,30,31];
 haxe_crypto_Base64.CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 haxe_ds_ObjectMap.count = 0;

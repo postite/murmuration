@@ -9,7 +9,7 @@ class PeopleImage {
 			
 			//count++;
 			count=Math.round(Math.random()*400);
-			this.path= 'people/people$count.png';
+			this.path= js.Browser.window.location.origin+'/people/people$count.png';
 			//this.render();
 	}
 

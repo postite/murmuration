@@ -11,7 +11,7 @@ class CanvasRender implements IRender {
   public function new(canvas : CanvasElement) {
     this.canvas = canvas;
     this.ctx = canvas.getContext2d();
-    this.ctx.imageSmoothingEnabled = true;
+   // this.ctx.imageSmoothingEnabled = true;
     this.ctx.save();
   }
 

@@ -29,34 +29,34 @@ class WallWalk extends TimedScenario implements IScenario{
     }
 
     
-
+//ici
     override function pushScenes(){
-        scenes.push(addWalk);
+       // scenes.push(addWalk);
        // scenes.push(fake);
-        scenes.push(removeWalk);
+       // scenes.push(removeWalk);
 
-        scenes.push(loin);
+        scenes.push(loin3);
         scenes.push(zoned);
         scenes.push(morezoned);
        
         
-        scenes.push(fall);
+        //scenes.push(fall);
 
-        // scenarios.push(scene4);
-        // scenarios.push(scene5);
+         scenes.push(scene4);
+         scenes.push(scene5);
     }
 
 
-    	var zaway:SteerAway;
-     function loin(){
-     	split(true);
-    	 zaway=new SteerAway(500,500);
-         can.randomVelocity=false;
-    	setVelocity(lowSpeed);
-    	can.flock.addRule(zaway);
-    	zaway.enabled=true;
-    	this.dispatch("loin");
-    }
+    // 	var zaway:SteerAway;
+    //  function loin(){
+    //  	split(true);
+    // 	 zaway=new SteerAway(500,500);
+    //      can.randomVelocity=false;
+    // 	setVelocity(lowSpeed);
+    // 	can.flock.addRule(zaway);
+    // 	zaway.enabled=true;
+    // 	this.dispatch("loin");
+    // }
 
     function fake(){
 
@@ -65,7 +65,7 @@ class WallWalk extends TimedScenario implements IScenario{
     function zoned(){
     	zaway.enabled=false;
     	var zone=null;
-    	if (clientID==0)
+    	if (clientID==1)
     		zone=new RespectBoundaries((can.width/3),can.width,(can.height/3),can.height);
     	else
     		zone=new RespectBoundaries(0,(can.width/3),(can.height/3),can.height);

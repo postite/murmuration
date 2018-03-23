@@ -58,17 +58,12 @@ class Remote {
     generateBox("red","red").touch("modify","towardDown").box
     );
   c.appendChild(
-    generateBox("red","red").touch("modify","plusClient1").box
+    generateBox("red","red").touch("modify","plusClient").box
     );
   c.appendChild(
-    generateBox("red","red").touch("modify","plusClient0").box
+    generateBox("red","red").touch("modify","moinsClient").box
     );
-     c.appendChild(
-    generateBox("red","red").touch("modify","moinsClient1").box
-    );
-  c.appendChild(
-    generateBox("red","red").touch("modify","moinsClient0").box
-    );
+    
   var d=addBar();
     d.appendChild(
     generateBox("fall","olive").touch("action","fall").box
@@ -82,7 +77,40 @@ class Remote {
     d.appendChild(
     generateBox("act1","green").touch("action","addWalk").box
     );
+
+    d.appendChild(
+    generateBox("vitesse","yellow").touch("modify","plusrapide").box
     
+    );
+    d.appendChild(
+    generateBox("vitesse","yellow").touch("modify","moinsrapide").box
+    
+    );
+    d.appendChild(
+    generateBox("vitesse","red").touch("modify","stop").box
+    
+    );
+    d.appendChild(
+    generateBox("jam","red").touch("modify","libereSpeed").box
+    
+    );
+    d.appendChild(
+    generateBox("jam","green").touch("action","jam").box
+    
+    );
+    d.appendChild(
+    generateBox("jam","green").touch("action","loin1").box
+    
+    );
+    d.appendChild(
+    generateBox("jam","green").touch("action","loin2").box
+    
+    );
+    d.appendChild(
+    generateBox("jam","green").touch("action","loin3").box
+    
+    );
+
    
 
   }
@@ -140,7 +168,9 @@ class Box {
 		 htitre=cast document.createElement("h6");
 		htitre.innerText="op";
 		box.appendChild(htitre);
+    
 		box.style.backgroundColor=color;
+    document.body.className="remote";
 		document.body.appendChild(box);
 	}
 	public function touch(type,value){

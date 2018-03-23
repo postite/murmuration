@@ -18,8 +18,8 @@ var socket_Server = function() {
 	app.set("views",__dirname + "/views/");
 	app.set("view engine","jade");
 	app["use"](new js_npm_express_Static(__dirname + "/"));
-	app.get("/",function(req,res) {
-		res.render("page",{ bip : "bop"});
+	app.get("/client/:id",function(req,res) {
+		res.render("page",{ bip : "bop", client : req});
 	});
 	app.get("/remote",function(req1,res1) {
 		res1.render("rem",{ bip : "remote"});
@@ -50,7 +50,7 @@ var socket_Server = function() {
 socket_Server.main = function() {
 	new socket_Server();
 };
-Config.adress = "http://192.168.2.46:3700";
+Config.adress = "http://localhost:3700";
 socket_Server.numClient = 0;
 socket_Server.main();
 })();

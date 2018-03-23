@@ -810,7 +810,6 @@ boidz_render_canvas_CanvasIndividualWaypoints.prototype = {
 var boidz_render_canvas_CanvasRender = function(canvas) {
 	this.canvas = canvas;
 	this.ctx = canvas.getContext("2d",null);
-	this.ctx.imageSmoothingEnabled = true;
 	this.ctx.save();
 };
 boidz_render_canvas_CanvasRender.__name__ = ["boidz","render","canvas","CanvasRender"];
@@ -836,11 +835,13 @@ var boidz_render_canvas_DebugRender = function(container) {
 	this.action = window.document.createElement("p");
 	this.peoples = window.document.createElement("h2");
 	this.scenario = window.document.createElement("h2");
+	this.modulo = window.document.createElement("h2");
 	this.set_scenarioID("rien");
 	this.container.appendChild(this.client);
 	this.container.appendChild(this.action);
 	this.container.appendChild(this.peoples);
 	this.container.appendChild(this.scenario);
+	this.container.appendChild(this.modulo);
 };
 boidz_render_canvas_DebugRender.__name__ = ["boidz","render","canvas","DebugRender"];
 boidz_render_canvas_DebugRender.__interfaces__ = [boidz_IRender];
@@ -850,16 +851,22 @@ boidz_render_canvas_DebugRender.prototype = {
 	,actionID: null
 	,peopleID: null
 	,scenarioID: null
+	,moduloID: null
 	,client: null
 	,action: null
 	,peoples: null
 	,scenario: null
+	,modulo: null
 	,toggle: function() {
 		this.container.style.display = this.container.style.display == "none"?"block":"none";
 	}
 	,set_clientID: function(c) {
 		this.client.innerText = Std.string("client" + c);
 		return this.clientID = c;
+	}
+	,set_moduloID: function(c) {
+		this.modulo.innerText = c == null?"null":"" + c;
+		return this.moduloID = c;
 	}
 	,set_actionID: function(c) {
 		this.action.innerText = c;
@@ -872,6 +879,8 @@ boidz_render_canvas_DebugRender.prototype = {
 	,set_scenarioID: function(c) {
 		this.scenario.innerText = c == null?"null":"" + c;
 		return this.scenarioID = c;
+	}
+	,affiche: function(z) {
 	}
 	,clear: function() {
 	}
@@ -2824,6 +2833,115 @@ msignal_SlotList.prototype = {
 	}
 	,__class__: msignal_SlotList
 };
+var murmur_Overlay = function(width,height) {
+	this.memoOut = { x : 0, y : 0};
+	this.memoIn = { x : 0, y : 0};
+	this.width = width;
+	this.height = height;
+};
+murmur_Overlay.__name__ = ["murmur","Overlay"];
+murmur_Overlay.prototype = {
+	signal: null
+	,memoIn: null
+	,memoOut: null
+	,width: null
+	,height: null
+	,ctx: null
+	,rec: null
+	,listen: function() {
+		this.signal = new msignal_Signal1();
+		window.document.addEventListener("mousedown",$bind(this,this.onEnter));
+		haxe_Log.trace("listen",{ fileName : "CanOver.hx", lineNumber : 37, className : "murmur.Overlay", methodName : "listen"});
+	}
+	,onEnter: function(e) {
+		haxe_Log.trace("onEnter",{ fileName : "CanOver.hx", lineNumber : 40, className : "murmur.Overlay", methodName : "onEnter"});
+		window.document.addEventListener("mousemove",$bind(this,this.onMove));
+		window.document.addEventListener("mouseup",$bind(this,this.onUp));
+		this.memoIn = { x : e.offsetX, y : e.offsetY};
+	}
+	,onMove: function(e) {
+		haxe_Log.trace("move",{ fileName : "CanOver.hx", lineNumber : 47, className : "murmur.Overlay", methodName : "onMove"});
+		this.memoOut = { x : e.offsetX, y : e.offsetY};
+		this.rec = { x : this.memoIn.x, y : this.memoIn.y, width : this.memoOut.x - this.memoIn.x, height : this.memoOut.y - this.memoIn.y};
+	}
+	,onUp: function(e) {
+		haxe_Log.trace("onUp",{ fileName : "CanOver.hx", lineNumber : 55, className : "murmur.Overlay", methodName : "onUp"});
+		this.memoOut = { x : e.offsetX, y : e.offsetY};
+		window.document.removeEventListener("mousemove",$bind(this,this.onMove));
+		window.document.removeEventListener("mouseup",$bind(this,this.onUp));
+		this.signal.dispatch(this.rec);
+	}
+	,drawRec: function(ctx) {
+		this.ctx.fillStyle = "#00AAFF";
+		haxe_Log.trace("" + this.memoIn.x + "," + this.memoIn.y + "," + this.memoOut.x + "," + this.memoOut.y,{ fileName : "CanOver.hx", lineNumber : 66, className : "murmur.Overlay", methodName : "drawRec"});
+		ctx.fillRect(this.memoIn.x,this.memoIn.y,this.memoOut.x - this.memoIn.x,this.memoOut.y - this.memoIn.y);
+	}
+	,render: function(ctx) {
+		this.drawRec(ctx);
+	}
+	,clear: function(ctx) {
+		ctx.clearRect(0,0,this.width,this.height);
+	}
+	,__class__: murmur_Overlay
+};
+var murmur_CanOver = function() {
+	this.canvas = murmur_CanOver.getCanvas();
+	this.ctx = this.canvas.getContext("2d",null);
+	var over = new murmur_Overlay(600,800);
+	over.listen();
+	over.signal.add($bind(this,this.render));
+	this.ctx.save();
+};
+murmur_CanOver.__name__ = ["murmur","CanOver"];
+murmur_CanOver.__interfaces__ = [boidz_IRender];
+murmur_CanOver.getCanvas = function() {
+	var canvas = window.document.createElement("canvas");
+	canvas.width = murmur_CanOver.width;
+	canvas.height = murmur_CanOver.height;
+	window.document.body.appendChild(canvas);
+	return canvas;
+};
+murmur_CanOver.main = function() {
+	haxe_Log.trace("helllo",{ fileName : "CanOver.hx", lineNumber : 139, className : "murmur.CanOver", methodName : "main"});
+	new murmur_CanOver();
+};
+murmur_CanOver.prototype = {
+	canvas: null
+	,ctx: null
+	,beforeEach: function() {
+		this.ctx.save();
+	}
+	,afterEach: function() {
+		this.ctx.restore();
+	}
+	,clear: function() {
+		this.ctx.clearRect(0,0,this.canvas.width,this.canvas.height);
+	}
+	,render: function(rec) {
+		haxe_Log.trace("render",{ fileName : "CanOver.hx", lineNumber : 123, className : "murmur.CanOver", methodName : "render"});
+		this.ctx.fillStyle = "#00AAFF";
+		this.ctx.fillRect(rec.x,rec.y,rec.width,rec.height);
+	}
+	,__class__: murmur_CanOver
+};
+var murmur_Over = function() {
+	this.enabled = true;
+	this.over = new murmur_Overlay(800,600);
+	this.over.listen();
+};
+murmur_Over.__name__ = ["murmur","Over"];
+murmur_Over.__interfaces__ = [boidz_IRenderable];
+murmur_Over.prototype = {
+	enabled: null
+	,over: null
+	,render: function(render) {
+		var rec = this.over.rec;
+		if(rec != null) {
+			render.ctx.fillRect(rec.x,rec.y,rec.width,rec.height);
+		}
+	}
+	,__class__: murmur_Over
+};
 var murmur_Canvas = function() {
 	this.randomVelocity = true;
 	this.velocity = 0.9;
@@ -2879,8 +2997,15 @@ murmur_Canvas.prototype = {
 	,debugRender: null
 	,execute: function(dims) {
 		var _gthis = this;
+		murmur_Canvas.CLI = Std.parseInt(HxOverrides.substr(window.location.pathname,-1,1));
+		haxe_Log.trace("cli=" + murmur_Canvas.CLI,{ fileName : "Canvas.hx", lineNumber : 75, className : "murmur.Canvas", methodName : "execute"});
+		haxe_Log.trace("path=" + window.location.pathname,{ fileName : "Canvas.hx", lineNumber : 76, className : "murmur.Canvas", methodName : "execute"});
+		haxe_Log.trace("origin=" + window.location.origin,{ fileName : "Canvas.hx", lineNumber : 77, className : "murmur.Canvas", methodName : "execute"});
 		this.width = dims.width;
 		this.height = dims.height;
+		if(murmur_Canvas.CLI == 3) {
+			this.height = 630;
+		}
 		this.clientID = dims.clientID;
 		murmur_Canvas.spaceKeydown($bind(this,this.toggleDebug));
 		this.DS = murmur_DoneSignal.getInstance();
@@ -2889,6 +3014,7 @@ murmur_Canvas.prototype = {
 		this.render = new boidz_render_canvas_CanvasRender(this.canvas);
 		this.debugRender = new boidz_render_canvas_DebugRender(this.getDebugContainer());
 		this.debugRender.set_clientID(dims.clientID);
+		this.debugRender.set_clientID(murmur_Canvas.CLI);
 		this.display = new boidz_Display(this.render);
 		var debugDisplay = new boidz_Display(this.debugRender);
 		debugDisplay.render();
@@ -2896,6 +3022,7 @@ murmur_Canvas.prototype = {
 			_gthis.debugRender.set_actionID(val);
 			_gthis.debugRender.set_peopleID(_gthis.flock.boids.length);
 			_gthis.debugRender.set_scenarioID(scenario);
+			_gthis.debugRender.set_moduloID(0);
 			debugDisplay.render();
 		});
 		var this1 = 25;
@@ -2921,6 +3048,7 @@ murmur_Canvas.prototype = {
 		this.canvasBoundaries = new boidz_render_canvas_CanvasBoundaries(this.respectBoundaries);
 		this.canvasWaypoints = new boidz_render_canvas_CanvasIndividualWaypoints(this.waypoints);
 		this.canvasFlock = new murmur_People(this.flock);
+		var over = new murmur_Over();
 		var tmp2 = 20 + Math.random() * this.width;
 		var tmp3 = 30 + Math.random() * this.height;
 		var tmp4 = 30 + Math.random() * 300;
@@ -2930,6 +3058,7 @@ murmur_Canvas.prototype = {
 		this.zone = new boidz_rules_SteerTowardZone(this.flock,this.zoneBounds);
 		this.display.addRenderable(this.canvasBoundaries);
 		this.display.addRenderable(this.canvasFlock);
+		this.display.addRenderable(over);
 		this.canvas.addEventListener("click",function(e) {
 			_gthis.waypoints.addGoal(e.clientX,e.clientY);
 		},false);
@@ -2949,10 +3078,10 @@ murmur_Canvas.prototype = {
 			renderings.splice(1,10);
 			renderings.push(performance.now() - before);
 		});
-		this.scenario = new murmur_scenarios_Scenario(this,this.clientID);
+		this.scenario = new murmur_scenarios_Scenario(this,murmur_Canvas.CLI);
 		this.scenario.init();
-		this.wait(dims.clientID);
-		haxe_Log.trace("all OK",{ fileName : "Canvas.hx", lineNumber : 227, className : "murmur.Canvas", methodName : "execute"});
+		this.wait(murmur_Canvas.CLI);
+		haxe_Log.trace("all OK",{ fileName : "Canvas.hx", lineNumber : 259, className : "murmur.Canvas", methodName : "execute"});
 	}
 	,reset: function() {
 		this.addBoids(this.flock,100,1,0);
@@ -2963,11 +3092,19 @@ murmur_Canvas.prototype = {
 			if(_gthis.walk.gone) {
 				return;
 			}
-			haxe_Log.trace("state=" + state + " spriteState=" + sprite.state,{ fileName : "Canvas.hx", lineNumber : 248, className : "murmur.Canvas", methodName : "wait"});
+			haxe_Log.trace("state=" + state + " spriteState=" + sprite.state,{ fileName : "Canvas.hx", lineNumber : 280, className : "murmur.Canvas", methodName : "wait"});
 			_gthis.display.removeRenderable(_gthis.walk);
 			_gthis.walk.enabled = false;
-			if(state != sprite.state) {
-				_gthis.walk.setState(state);
+			var modulo = (sprite.state + 1) % 4;
+			if(modulo > murmur_Canvas.numClient) {
+				modulo = 1;
+			}
+			if(modulo == 0) {
+				modulo = 1;
+			}
+			_gthis.debugRender.set_moduloID(modulo);
+			if(modulo == state) {
+				_gthis.walk.setState(modulo);
 				_gthis.display.addRenderable(_gthis.walk);
 				switch(dir) {
 				case "left":
@@ -2981,17 +3118,34 @@ murmur_Canvas.prototype = {
 			}
 		});
 		socket_SocketManager.emitSignal.add(function(dir1,boid) {
+			var maxClient = murmur_Canvas.numClient;
+			haxe_Log.trace("new" + state + "boid-state=" + boid.state,{ fileName : "Canvas.hx", lineNumber : 314, className : "murmur.Canvas", methodName : "wait"});
 			if(state != boid.state) {
-				boid.state = state;
+				var moduloLeft = (state + 1) % 4;
+				var moduloRight = (state - 1) % 4;
+				if(moduloRight < 1) {
+					moduloRight = maxClient;
+				}
+				if(moduloLeft > maxClient) {
+					moduloLeft = 1;
+				}
+				haxe_Log.trace("modulo-reight=" + moduloRight + "modulo-left=" + moduloLeft,{ fileName : "Canvas.hx", lineNumber : 322, className : "murmur.Canvas", methodName : "wait"});
 				switch(dir1) {
 				case "left":
-					boid.x = _gthis.width;
+					if(boid.state == moduloLeft) {
+						boid.x = _gthis.width;
+						boid.state = state;
+						_gthis.addBoid(boid);
+					}
 					break;
 				case "right":
-					boid.x = 0;
+					if(boid.state == moduloRight) {
+						boid.x = 0;
+						boid.state = state;
+						_gthis.addBoid(boid);
+					}
 					break;
 				}
-				_gthis.addBoid(boid);
 			}
 		});
 	}
@@ -3006,7 +3160,7 @@ murmur_Canvas.prototype = {
 		while(_g1 < howMany) {
 			++_g1;
 			var b = new boidz_Boid(offset + (this.width - offset * 2) * Math.random(),offset + offset * 2,velocity,Math.random() * 400);
-			b.state = this.clientID;
+			b.state = murmur_Canvas.CLI;
 			flock.boids.push(b);
 		}
 	}
@@ -3033,10 +3187,14 @@ murmur_Canvas.prototype = {
 			boid.v = this.velocity * (this.randomVelocity?Math.random() * 2:this.velocity);
 		}
 	}
-	,getCanvas: function() {
+	,getCanvas: function(id) {
+		if(id == null) {
+			id = "can";
+		}
 		var canvas = window.document.createElement("canvas");
 		canvas.width = this.width;
 		canvas.height = this.height;
+		canvas.id = id;
 		window.document.body.appendChild(canvas);
 		return canvas;
 	}
@@ -3286,7 +3444,6 @@ murmur_People.prototype = {
 			++_g4;
 			var im = b2.image;
 			var yFactor = b2.y / ctx.canvas.height + 0.5;
-			ctx.globalAlpha = yFactor;
 			var wratio = im.width / im.height;
 			var newH = 300 * yFactor;
 			var newW = newH * wratio;
@@ -3303,7 +3460,7 @@ murmur_People.prototype = {
 };
 var murmur_PeopleImage = function() {
 	murmur_PeopleImage.count = Math.round(Math.random() * 400);
-	this.path = "people/people" + murmur_PeopleImage.count + ".png";
+	this.path = window.location.origin + ("/people/people" + murmur_PeopleImage.count + ".png");
 };
 murmur_PeopleImage.__name__ = ["murmur","PeopleImage"];
 murmur_PeopleImage.prototype = {
@@ -3436,7 +3593,7 @@ murmur_Sprite.prototype = {
 var murmur_Walk = function(state) {
 	this.gone = false;
 	this.enabled = true;
-	this.sprite = new murmur_Sprite({ src : "anim/compiled_small.jpg", width : 400, height : 375, numberOfFrames : 13, fps : 7},state);
+	this.sprite = new murmur_Sprite({ src : window.location.origin + "/anim/compiled_small.jpg", width : 400, height : 375, numberOfFrames : 13, fps : 7},state);
 };
 murmur_Walk.__name__ = ["murmur","Walk"];
 murmur_Walk.__interfaces__ = [boidz_IRenderable];
@@ -3560,6 +3717,7 @@ var murmur_scenarios_Scenario = function(can,clientID) {
 	this.counter = 0;
 	this.scenarios = [];
 	this.randomVelocity = false;
+	this.antiSpeed = false;
 	this.veryHiSpeed = 1.2;
 	this.moreSpeed = .8;
 	this.midSpeed = .7;
@@ -3575,6 +3733,7 @@ murmur_scenarios_Scenario.prototype = {
 	,midSpeed: null
 	,moreSpeed: null
 	,veryHiSpeed: null
+	,antiSpeed: null
 	,faller: null
 	,delaySign: null
 	,can: null
@@ -3593,7 +3752,7 @@ murmur_scenarios_Scenario.prototype = {
 		this.chainingScenarios();
 		this.dispatch("init");
 		socket_signal_ControlSignal.getInstance().complete.add(function(type,value) {
-			haxe_Log.trace("new ctrl Signal",{ fileName : "Scenario.hx", lineNumber : 54, className : "murmur.scenarios.Scenario", methodName : "init"});
+			haxe_Log.trace("new ctrl Signal",{ fileName : "Scenario.hx", lineNumber : 55, className : "murmur.scenarios.Scenario", methodName : "init"});
 			switch(type) {
 			case "action":
 				_gthis.act(value);
@@ -3613,7 +3772,7 @@ murmur_scenarios_Scenario.prototype = {
 	}
 	,chainingScenarios: function() {
 		var _gthis = this;
-		haxe_Log.trace("chainig " + this.scenariosCount,{ fileName : "Scenario.hx", lineNumber : 68, className : "murmur.scenarios.Scenario", methodName : "chainingScenarios"});
+		haxe_Log.trace("chainig " + this.scenariosCount,{ fileName : "Scenario.hx", lineNumber : 69, className : "murmur.scenarios.Scenario", methodName : "chainingScenarios"});
 		murmur_scenarios_Scenario.currentScenario = this.scenarios[this.scenariosCount];
 		if(murmur_scenarios_Scenario.currentScenario.elapsed == null) {
 			murmur_scenarios_Scenario.currentScenario.execute();
@@ -3621,7 +3780,7 @@ murmur_scenarios_Scenario.prototype = {
 			murmur_scenarios_Scenario.currentScenario.wakeup();
 		}
 		murmur_scenarios_Scenario.currentScenario.fini.add(function() {
-			haxe_Log.trace("fini" + _gthis.scenariosCount,{ fileName : "Scenario.hx", lineNumber : 75, className : "murmur.scenarios.Scenario", methodName : "chainingScenarios"});
+			haxe_Log.trace("fini" + _gthis.scenariosCount,{ fileName : "Scenario.hx", lineNumber : 76, className : "murmur.scenarios.Scenario", methodName : "chainingScenarios"});
 			murmur_scenarios_Scenario.currentScenario.kill();
 			_gthis.chainingScenarios();
 			_gthis.dispatch("switch");
@@ -3633,7 +3792,7 @@ murmur_scenarios_Scenario.prototype = {
 		}
 	}
 	,phase: function(value) {
-		haxe_Log.trace("phase" + value,{ fileName : "Scenario.hx", lineNumber : 88, className : "murmur.scenarios.Scenario", methodName : "phase"});
+		haxe_Log.trace("phase" + value,{ fileName : "Scenario.hx", lineNumber : 89, className : "murmur.scenarios.Scenario", methodName : "phase"});
 		murmur_scenarios_Scenario.currentScenario.kill();
 		switch(value) {
 		case "dessinAlone":
@@ -3656,6 +3815,7 @@ murmur_scenarios_Scenario.prototype = {
 		this.scenarios.push(new murmur_scenarios_DessinAlone(this.can,this.clientID,thx__$Decimal_Decimal_$Impl_$.fromInt(1).divide(thx__$Decimal_Decimal_$Impl_$.fromInt(4)),thx__$Decimal_Decimal_$Impl_$.fromInt(1).multiply(thx_unit_time__$Minute_Minute_$Impl_$.ofUnit).divide(thx_unit_time__$Minute_Minute_$Impl_$.dividerMillisecond).trim(null)));
 		this.scenarios.push(new murmur_scenarios_Slam(this.can,this.clientID,thx__$Decimal_Decimal_$Impl_$.fromInt(7).divide(thx__$Decimal_Decimal_$Impl_$.fromInt(5)),thx__$Decimal_Decimal_$Impl_$.fromInt(7).multiply(thx_unit_time__$Minute_Minute_$Impl_$.ofUnit).divide(thx_unit_time__$Minute_Minute_$Impl_$.dividerMillisecond).trim(null)));
 		this.scenarios.push(new murmur_scenarios_WallWalk(this.can,this.clientID,thx__$Decimal_Decimal_$Impl_$.fromInt(8).divide(thx__$Decimal_Decimal_$Impl_$.fromInt(6)),thx__$Decimal_Decimal_$Impl_$.fromInt(8).multiply(thx_unit_time__$Minute_Minute_$Impl_$.ofUnit).divide(thx_unit_time__$Minute_Minute_$Impl_$.dividerMillisecond).trim(null)));
+		this.scenarios.push(new murmur_scenarios_TimedScenario(this.can,this.clientID,thx__$Decimal_Decimal_$Impl_$.fromInt(5).divide(thx__$Decimal_Decimal_$Impl_$.fromInt(5)),thx__$Decimal_Decimal_$Impl_$.fromInt(5).multiply(thx_unit_time__$Minute_Minute_$Impl_$.ofUnit).divide(thx_unit_time__$Minute_Minute_$Impl_$.dividerMillisecond).trim(null)));
 	}
 	,addWalk: function(remote) {
 		if(remote == null) {
@@ -3663,24 +3823,33 @@ murmur_scenarios_Scenario.prototype = {
 		}
 		var _gthis = this;
 		this.can.randomVelocity = false;
-		this.can.velocity = .1;
-		this.can.updateVelocity();
+		if(!this.antiSpeed) {
+			this.can.velocity = .1;
+			this.can.updateVelocity();
+		}
 		var this1 = 23;
 		this.away = new boidz_rules_SteerAway(500,500,this1);
 		this.can.flock.addRule(this.away);
 		this.can.display.addRenderable(this.can.canvasFlock);
 		this.can.canvasFlock.enabled = false;
-		this.can.walk = new murmur_Walk(0);
+		this.can.walk = new murmur_Walk(1);
 		this.zoom = new murmur_Zoom(this.can.flock);
-		haxe_Log.trace(this.away,{ fileName : "Scenario.hx", lineNumber : 132, className : "murmur.scenarios.Scenario", methodName : "addWalk"});
+		haxe_Log.trace(this.away,{ fileName : "Scenario.hx", lineNumber : 138, className : "murmur.scenarios.Scenario", methodName : "addWalk"});
+		if(!this.antiSpeed) {
+			this.can.velocity = 5;
+			this.can.updateVelocity();
+		}
 		this.away.enabled = true;
 		this.zoom.signal.add(function() {
 			_gthis.can.walk.enabled = true;
 			_gthis.away.enabled = false;
 			_gthis.can.randomVelocity = true;
-			_gthis.can.velocity = _gthis.lowSpeed;
-			_gthis.can.updateVelocity();
-			if(_gthis.can.clientID == 0) {
+			var v = _gthis.lowSpeed;
+			if(!_gthis.antiSpeed) {
+				_gthis.can.velocity = v;
+				_gthis.can.updateVelocity();
+			}
+			if(_gthis.clientID == 1) {
 				_gthis.can.display.addRenderable(_gthis.can.walk);
 			}
 			_gthis.zoom.enabled = false;
@@ -3704,6 +3873,10 @@ murmur_scenarios_Scenario.prototype = {
 			_gthis.can.walk.enabled = false;
 			_gthis.away.enabled = false;
 			_gthis.can.canvasFlock.enabled = true;
+			if(!_gthis.antiSpeed) {
+				_gthis.can.velocity = 1;
+				_gthis.can.updateVelocity();
+			}
 			_gthis.zoom.enabled = false;
 			_gthis.can.display.addRenderable(_gthis.zoom);
 			_gthis.can.display.addRenderable(_gthis.can.walk);
@@ -3715,16 +3888,18 @@ murmur_scenarios_Scenario.prototype = {
 		});
 	}
 	,act: function(value) {
+		this.can.debugRender.affiche(value);
 		this.dispatch(value);
 		this.resetRules();
 		if(murmur_scenarios_Scenario.currentScenario.enabled) {
 			murmur_scenarios_Scenario.currentScenario.kill();
 		}
-		haxe_Log.trace(value,{ fileName : "Scenario.hx", lineNumber : 197, className : "murmur.scenarios.Scenario", methodName : "act"});
+		haxe_Log.trace(value,{ fileName : "Scenario.hx", lineNumber : 209, className : "murmur.scenarios.Scenario", methodName : "act"});
 		Reflect.field(this,value).apply(this,[true]);
 	}
 	,modify: function(value) {
-		haxe_Log.trace(value,{ fileName : "Scenario.hx", lineNumber : 213, className : "murmur.scenarios.Scenario", methodName : "modify"});
+		this.can.debugRender.affiche(value);
+		haxe_Log.trace(value,{ fileName : "Scenario.hx", lineNumber : 226, className : "murmur.scenarios.Scenario", methodName : "modify"});
 		Reflect.field(this,value).apply(this,[]);
 	}
 	,towardUp: function() {
@@ -3741,25 +3916,58 @@ murmur_scenarios_Scenario.prototype = {
 		},30000);
 		this.towardZone(0,this.can.width,this.can.height - 300,this.can.height);
 	}
-	,plusClient1: function() {
+	,loin1: function() {
 		if(this.clientID == 1) {
-			this.delaygrowCrowd(200);
+			this.loin();
 		}
 	}
-	,moinsClient1: function() {
-		if(this.clientID == 1) {
-			this.delayreduceCrowd(50);
+	,loin2: function() {
+		if(this.clientID == 2) {
+			this.loin();
 		}
 	}
-	,plusClient0: function() {
-		if(this.clientID == 0) {
-			this.delaygrowCrowd(200);
+	,loin3: function() {
+		if(this.clientID == 3) {
+			this.loin();
 		}
 	}
-	,moinsClient0: function() {
-		if(this.clientID == 0) {
-			this.delayreduceCrowd(50);
+	,zaway: null
+	,loin: function() {
+		this.can.split.enabled = true;
+		this.zaway = new boidz_rules_SteerAway(500,500);
+		this.can.randomVelocity = false;
+		var v = this.lowSpeed;
+		if(!this.antiSpeed) {
+			this.can.velocity = v;
+			this.can.updateVelocity();
 		}
+		this.can.flock.addRule(this.zaway);
+		this.zaway.enabled = true;
+		this.can.respectBoundaries.enabled = true;
+		this.can.respectBoundaries.maxSteer = 60;
+		this.can.respectBoundaries.offset = 300;
+		this.dispatch("loin");
+	}
+	,plusClient: function() {
+		this.delaygrowCrowd(200);
+	}
+	,moinsClient: function() {
+		this.delayreduceCrowd(50);
+	}
+	,plusrapide: function() {
+		var v = this.can.velocity + .5;
+		this.can.velocity = v;
+		this.can.updateVelocity();
+		this.antiSpeed = true;
+	}
+	,moinsrapide: function() {
+		var v = this.can.velocity - .5;
+		this.can.velocity = v;
+		this.can.updateVelocity();
+		this.antiSpeed = true;
+	}
+	,libereSpeed: function() {
+		this.antiSpeed = false;
 	}
 	,togDebug: function() {
 		this.can.toggleDebug();
@@ -3767,15 +3975,29 @@ murmur_scenarios_Scenario.prototype = {
 	,reload: function() {
 		window.location.reload();
 	}
+	,jam: function() {
+		if(!this.antiSpeed) {
+			this.can.velocity = 3;
+			this.can.updateVelocity();
+		}
+		this.can.avoidCollisions.enabled = true;
+	}
+	,stop: function() {
+		this.can.velocity = 0;
+		this.can.updateVelocity();
+	}
 	,contain: function() {
 		this.can.split.enabled = false;
 		this.can.respectBoundaries.enabled = true;
 		this.can.respectBoundaries.maxSteer = 60;
 		this.can.respectBoundaries.offset = 300;
-		if(this.clientID == 0) {
+		if(this.clientID == 1) {
 			this.delaygrowCrowd(400);
-			this.can.velocity = this.midSpeed;
-			this.can.updateVelocity();
+			var v = this.midSpeed;
+			if(!this.antiSpeed) {
+				this.can.velocity = v;
+				this.can.updateVelocity();
+			}
 		} else {
 			this.delayreduceCrowd(50);
 		}
@@ -3786,8 +4008,11 @@ murmur_scenarios_Scenario.prototype = {
 			_gthis.dispatch("end invade");
 			_gthis.can.waypoints.goals = [];
 			_gthis.can.waypoints.enabled = false;
-			_gthis.can.velocity = _gthis.lowSpeed;
-			_gthis.can.updateVelocity();
+			var v = _gthis.lowSpeed;
+			if(!_gthis.antiSpeed) {
+				_gthis.can.velocity = v;
+				_gthis.can.updateVelocity();
+			}
 		},30000);
 		this.can.avoidCollisions.enabled = false;
 		this.can.split.enabled = true;
@@ -3795,15 +4020,18 @@ murmur_scenarios_Scenario.prototype = {
 		this.can.respectBoundaries.maxSteer = 60;
 		this.can.respectBoundaries.offset = 300;
 		murmur_scenarios_Scenario.currentScenario.kill();
-		if(this.clientID == 0) {
+		if(this.clientID == 1) {
 			this.can.waypoints.set_maxSteer(7);
 			this.can.waypoints.radius = 72;
 			this.can.waypoints.addGoal(3000,72);
 			this.can.waypoints.enabled = true;
 			this.dispatch("end invade");
 			this.can.randomVelocity = true;
-			this.can.velocity = this.veryHiSpeed;
-			this.can.updateVelocity();
+			var v1 = this.veryHiSpeed;
+			if(!this.antiSpeed) {
+				this.can.velocity = v1;
+				this.can.updateVelocity();
+			}
 		}
 	}
 	,toZone: null
@@ -3824,8 +4052,11 @@ murmur_scenarios_Scenario.prototype = {
 		this.can.flock.addRule(this.faller);
 		this.dispatch("fall");
 		this.can.randomVelocity = false;
-		this.can.velocity = this.veryHiSpeed;
-		this.can.updateVelocity();
+		var v = this.veryHiSpeed;
+		if(!this.antiSpeed) {
+			this.can.velocity = v;
+			this.can.updateVelocity();
+		}
 		this.can.avoidCollisions.enabled = false;
 		this.faller.enabled = true;
 		this.faller.signal.add(function() {
@@ -3838,8 +4069,11 @@ murmur_scenarios_Scenario.prototype = {
 		murmur_scenarios_Scenario.currentScenario.kill();
 	}
 	,scene1: function() {
-		this.can.velocity = this.hiSpeed;
-		this.can.updateVelocity();
+		var v = this.hiSpeed;
+		if(!this.antiSpeed) {
+			this.can.velocity = v;
+			this.can.updateVelocity();
+		}
 		this.can.waypoints.goals = [];
 		this.can.avoidCollisions.enabled = true;
 		this.can.avoidCollisions.set_radius(80);
@@ -3859,37 +4093,52 @@ murmur_scenarios_Scenario.prototype = {
 			b = true;
 		}
 		var _gthis = this;
-		haxe_Log.trace("tow" + (b == null?"null":"" + b),{ fileName : "Scenario.hx", lineNumber : 364, className : "murmur.scenarios.Scenario", methodName : "towardCenter"});
+		haxe_Log.trace("tow" + (b == null?"null":"" + b),{ fileName : "Scenario.hx", lineNumber : 424, className : "murmur.scenarios.Scenario", methodName : "towardCenter"});
 		thx_Timer.delay(function() {
 			_gthis.dispatch("end towardCenter");
 			_gthis.can.steerCenter.enabled = false;
 		},3000);
 		this.dispatch("toward center b" + (b == null?"null":"" + b));
-		this.can.velocity = this.lowSpeed;
-		this.can.updateVelocity();
+		var v = this.lowSpeed;
+		if(!this.antiSpeed) {
+			this.can.velocity = v;
+			this.can.updateVelocity();
+		}
 		this.can.steerCenter.enabled = b;
 	}
 	,scene2: function() {
-		this.can.velocity = this.lowSpeed;
-		this.can.updateVelocity();
+		var v = this.lowSpeed;
+		if(!this.antiSpeed) {
+			this.can.velocity = v;
+			this.can.updateVelocity();
+		}
 		this.can.steerCenter.enabled = false;
 		this.can.avoidCollisions.enabled = true;
 		this.can.avoidCollisions.set_radius(80);
 	}
 	,scene3: function() {
-		this.can.velocity = this.midSpeed;
-		this.can.updateVelocity();
+		var v = this.midSpeed;
+		if(!this.antiSpeed) {
+			this.can.velocity = v;
+			this.can.updateVelocity();
+		}
 	}
 	,scene4: function() {
-		this.can.velocity = this.midSpeed;
-		this.can.updateVelocity();
+		var v = this.midSpeed;
+		if(!this.antiSpeed) {
+			this.can.velocity = v;
+			this.can.updateVelocity();
+		}
 		this.can.avoidCollisions.enabled = false;
 		this.can.waypoints.addGoal(Math.random() * this.can.width,Math.random() * this.can.height);
 		this.can.waypoints.enabled = true;
 	}
 	,scene5: function() {
-		this.can.velocity = this.midSpeed;
-		this.can.updateVelocity();
+		var v = this.midSpeed;
+		if(!this.antiSpeed) {
+			this.can.velocity = v;
+			this.can.updateVelocity();
+		}
 	}
 	,respectBoundaries: function(b) {
 		this.can.respectBoundaries.enabled = b;
@@ -3917,18 +4166,23 @@ murmur_scenarios_Scenario.prototype = {
 	,removeRenderable: function(r) {
 		this.can.display.addRenderable(r);
 	}
-	,setVelocity: function(v) {
-		this.can.velocity = v;
-		this.can.updateVelocity();
+	,setVelocity: function(v,bypass) {
+		if(bypass == null) {
+			bypass = false;
+		}
+		if(!this.antiSpeed || bypass) {
+			this.can.velocity = v;
+			this.can.updateVelocity();
+		}
 	}
 	,removeorAdd: function(limit) {
 		if(limit == null) {
 			limit = 200;
 		}
-		haxe_Log.trace("removeorAdd",{ fileName : "Scenario.hx", lineNumber : 469, className : "murmur.scenarios.Scenario", methodName : "removeorAdd"});
+		haxe_Log.trace("removeorAdd",{ fileName : "Scenario.hx", lineNumber : 531, className : "murmur.scenarios.Scenario", methodName : "removeorAdd"});
 		var num = Std.random(10);
 		var rem = Math.random() < 0.5;
-		haxe_Log.trace("num=" + num + " rem=" + (rem == null?"null":"" + rem),{ fileName : "Scenario.hx", lineNumber : 473, className : "murmur.scenarios.Scenario", methodName : "removeorAdd"});
+		haxe_Log.trace("num=" + num + " rem=" + (rem == null?"null":"" + rem),{ fileName : "Scenario.hx", lineNumber : 535, className : "murmur.scenarios.Scenario", methodName : "removeorAdd"});
 		if(rem) {
 			if(num < this.can.flock.boids.length && this.can.flock.boids.length > limit) {
 				this.can.flock.boids.splice(0,num);
@@ -3942,10 +4196,10 @@ murmur_scenarios_Scenario.prototype = {
 		var count = 0;
 		var tim = new haxe_Timer(1000);
 		tim.run = function() {
-			haxe_Log.trace("count:" + count + ", num:" + num,{ fileName : "Scenario.hx", lineNumber : 488, className : "murmur.scenarios.Scenario", methodName : "delaygrowCrowd"});
+			haxe_Log.trace("count:" + count + ", num:" + num,{ fileName : "Scenario.hx", lineNumber : 550, className : "murmur.scenarios.Scenario", methodName : "delaygrowCrowd"});
 			if(count < num) {
 				var rand = Std.random(5);
-				haxe_Log.trace("rand=" + rand,{ fileName : "Scenario.hx", lineNumber : 492, className : "murmur.scenarios.Scenario", methodName : "delaygrowCrowd"});
+				haxe_Log.trace("rand=" + rand,{ fileName : "Scenario.hx", lineNumber : 554, className : "murmur.scenarios.Scenario", methodName : "delaygrowCrowd"});
 				_gthis.can.addBoids(_gthis.can.flock,rand,_gthis.can.velocity,_gthis.can.respectBoundaries.offset);
 				count += rand;
 				_gthis.can.debugRender.set_peopleID(_gthis.can.flock.boids.length);
@@ -4051,27 +4305,35 @@ murmur_scenarios_TimedScenario.prototype = $extend(murmur_scenarios_Scenario.pro
 		}
 	}
 	,_scene1: function() {
-		this.can.velocity = .5;
-		this.can.updateVelocity();
+		if(!this.antiSpeed) {
+			this.can.velocity = .5;
+			this.can.updateVelocity();
+		}
 		this.can.waypoints.goals = [];
 		this.can.avoidCollisions.enabled = false;
 		this.dispatch("_scene1/normal");
 	}
 	,_scene2: function() {
-		this.can.velocity = .6;
-		this.can.updateVelocity();
+		if(!this.antiSpeed) {
+			this.can.velocity = .6;
+			this.can.updateVelocity();
+		}
 		this.dispatch("_scene2/collision");
 	}
 	,_scene3: function() {
-		this.can.velocity = .7;
-		this.can.updateVelocity();
+		if(!this.antiSpeed) {
+			this.can.velocity = .7;
+			this.can.updateVelocity();
+		}
 		this.can.avoidCollisions.enabled = false;
 		this.can.flock.addRule(this.can.zone);
 		this.dispatch("_scene3/zone/velocity");
 	}
 	,_scene4: function() {
-		this.can.velocity = .6;
-		this.can.updateVelocity();
+		if(!this.antiSpeed) {
+			this.can.velocity = .6;
+			this.can.updateVelocity();
+		}
 		this.can.zone.enabled = false;
 		this.can.avoidCollisions.enabled = false;
 		this.can.waypoints.addGoal(Math.random() * this.can.width,Math.random() * this.can.height);
@@ -4082,11 +4344,17 @@ murmur_scenarios_TimedScenario.prototype = $extend(murmur_scenarios_Scenario.pro
 		thx_Timer.delay(function() {
 			_gthis.dispatch("end scene5");
 			_gthis.can.zone.enabled = false;
-			_gthis.can.velocity = _gthis.lowSpeed;
-			_gthis.can.updateVelocity();
+			var v = _gthis.lowSpeed;
+			if(!_gthis.antiSpeed) {
+				_gthis.can.velocity = v;
+				_gthis.can.updateVelocity();
+			}
 		},3000);
-		this.can.velocity = this.moreSpeed;
-		this.can.updateVelocity();
+		var v1 = this.moreSpeed;
+		if(!this.antiSpeed) {
+			this.can.velocity = v1;
+			this.can.updateVelocity();
+		}
 		var this1 = 25;
 		this.can.zoneBounds = new boidz_render_canvas_ZoneBounds(new boidz_rules_RespectBoundaries(400,800,200,500,50,this1));
 		this.can.flock.addRule(this.can.zone);
@@ -4118,20 +4386,10 @@ murmur_scenarios_DessinAlone.prototype = $extend(murmur_scenarios_TimedScenario.
 		this.scenes.push($bind(this,this.zoned));
 		this.scenes.push($bind(this,this.morezoned));
 	}
-	,zaway: null
-	,loin: function() {
-		this.can.split.enabled = true;
-		this.zaway = new boidz_rules_SteerAway(500,500);
-		this.can.velocity = this.lowSpeed;
-		this.can.updateVelocity();
-		this.can.flock.addRule(this.zaway);
-		this.zaway.enabled = true;
-		this.dispatch("loin");
-	}
 	,zoned: function() {
 		this.zaway.enabled = false;
 		var zone = null;
-		if(this.clientID == 0) {
+		if(this.clientID == 3) {
 			zone = new boidz_rules_RespectBoundaries(this.can.width / 3,this.can.width,this.can.height / 3,this.can.height);
 		} else {
 			zone = new boidz_rules_RespectBoundaries(0,this.can.width / 3,this.can.height / 3,this.can.height);
@@ -4147,8 +4405,11 @@ murmur_scenarios_DessinAlone.prototype = $extend(murmur_scenarios_TimedScenario.
 		this.toZone.enabled = false;
 		this.zaway.enabled = false;
 		this.enabled = false;
-		this.can.velocity = this.lowSpeed;
-		this.can.updateVelocity();
+		var v = this.lowSpeed;
+		if(!this.antiSpeed) {
+			this.can.velocity = v;
+			this.can.updateVelocity();
+		}
 		this.timer.stop();
 	}
 	,__class__: murmur_scenarios_DessinAlone
@@ -4172,26 +4433,29 @@ murmur_scenarios_Slam.prototype = $extend(murmur_scenarios_TimedScenario.prototy
 		this.dispatch("prepareSplit");
 	}
 	,varie: function() {
-		if(this.clientID == 1) {
+		if(this.clientID == 2) {
 			this.towardCenter();
 		}
 		this.dispatch("varie(toCenter");
 	}
 	,disperse: function() {
 		var _gthis = this;
-		if(this.clientID == 0) {
+		if(this.clientID == 1) {
 			thx_Timer.delay(function() {
 				_gthis.dispatch("end disperse");
 				_gthis.can.avoidCollisions.enabled = false;
 			},3000);
 			this.scene1();
-			this.can.velocity = this.lowSpeed;
-			this.can.updateVelocity();
+			var v = this.lowSpeed;
+			if(!this.antiSpeed) {
+				this.can.velocity = v;
+				this.can.updateVelocity();
+			}
 			this.dispatch("disperse");
 		}
 	}
 	,isole: function() {
-		if(this.clientID == 1) {
+		if(this.clientID == 2) {
 			this.towardZone(this.can.width / 3 - 200,this.can.width / 3 + 200,this.can.height / 3 - 200,this.can.height / 3 + 200);
 		}
 	}
@@ -4224,30 +4488,18 @@ murmur_scenarios_WallWalk.prototype = $extend(murmur_scenarios_TimedScenario.pro
 		}
 	}
 	,pushScenes: function() {
-		this.scenes.push($bind(this,this.addWalk));
-		this.scenes.push($bind(this,this.removeWalk));
-		this.scenes.push($bind(this,this.loin));
+		this.scenes.push($bind(this,this.loin3));
 		this.scenes.push($bind(this,this.zoned));
 		this.scenes.push($bind(this,this.morezoned));
-		this.scenes.push($bind(this,this.fall));
-	}
-	,zaway: null
-	,loin: function() {
-		this.can.split.enabled = true;
-		this.zaway = new boidz_rules_SteerAway(500,500);
-		this.can.randomVelocity = false;
-		this.can.velocity = this.lowSpeed;
-		this.can.updateVelocity();
-		this.can.flock.addRule(this.zaway);
-		this.zaway.enabled = true;
-		this.dispatch("loin");
+		this.scenes.push($bind(this,this.scene4));
+		this.scenes.push($bind(this,this.scene5));
 	}
 	,fake: function() {
 	}
 	,zoned: function() {
 		this.zaway.enabled = false;
 		var zone = null;
-		if(this.clientID == 0) {
+		if(this.clientID == 1) {
 			zone = new boidz_rules_RespectBoundaries(this.can.width / 3,this.can.width,this.can.height / 3,this.can.height);
 		} else {
 			zone = new boidz_rules_RespectBoundaries(0,this.can.width / 3,this.can.height / 3,this.can.height);
@@ -4261,8 +4513,11 @@ murmur_scenarios_WallWalk.prototype = $extend(murmur_scenarios_TimedScenario.pro
 	}
 	,kill: function() {
 		this.enabled = false;
-		this.can.velocity = this.lowSpeed;
-		this.can.updateVelocity();
+		var v = this.lowSpeed;
+		if(!this.antiSpeed) {
+			this.can.velocity = v;
+			this.can.updateVelocity();
+		}
 		this.timer.stop();
 	}
 	,wakeup: function() {
@@ -27952,11 +28207,14 @@ _$Api_Color_$Impl_$.ocre = "#E6D67E";
 _$Api_Color_$Impl_$.blue = "#00AAFF";
 _$Api_Color_$Impl_$.orange = "#F27C4E";
 _$Api_Color_$Impl_$.violet = "#8116C9";
-Config.adress = "http://192.168.2.46:3700";
+Config.adress = "http://localhost:3700";
 DateTools.DAYS_OF_MONTH = [31,28,31,30,31,30,31,31,30,31,30,31];
 haxe_crypto_Base64.CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 haxe_ds_ObjectMap.count = 0;
 js_Boot.__toStr = { }.toString;
+murmur_CanOver.width = 800;
+murmur_CanOver.height = 600;
+murmur_Canvas.numClient = 3;
 murmur_Canvas.paused = 0;
 murmur_Canvas._numPeople = 150;
 murmur_End.outBounds = socket_signal_WalkOut.getInstance();

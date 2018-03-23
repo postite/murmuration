@@ -22,7 +22,7 @@ class Walk implements IRenderable<CanvasRender> {
   public static var outBounds:WalkOut= WalkOut.getInstance();
   public function new(state:Int) {
      sprite= new Sprite({
-		src:"anim/compiled_small.jpg",
+		src:js.Browser.window.location.origin+"/anim/compiled_small.jpg",
 		width:400,
 		height:375,
 		

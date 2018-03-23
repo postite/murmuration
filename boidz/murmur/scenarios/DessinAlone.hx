@@ -17,27 +17,27 @@ class DessinAlone extends TimedScenario implements IScenario{
 
         scenes.push(loin);
         scenes.push(zoned);
-        scenes.push(morezoned);
+        scenes.push(morezoned);//
        
         // scenarios.push(scene4);
         // scenarios.push(scene5);
     }
 
 
-    	var zaway:SteerAway;
-     function loin(){
-     	split(true);
-    	 zaway=new SteerAway(500,500);
-    	setVelocity(lowSpeed);
-    	can.flock.addRule(zaway);
-    	zaway.enabled=true;
-    	this.dispatch("loin");
-    }
+    // 	var zaway:SteerAway;
+    //  function loin(){
+    //  	split(true);
+    // 	 zaway=new SteerAway(500,500);
+    // 	setVelocity(lowSpeed);
+    // 	can.flock.addRule(zaway);
+    // 	zaway.enabled=true;
+    // 	this.dispatch("loin");
+    // }
     //var toZone:SteerTowardZone;
     function zoned(){
     	zaway.enabled=false;
     	var zone=null;
-    	if (clientID==0)
+    	if (clientID==3)
     		zone=new RespectBoundaries((can.width/3),can.width,(can.height/3),can.height);
     	else
     		zone=new RespectBoundaries(0,(can.width/3),(can.height/3),can.height);

@@ -1,7 +1,16 @@
-body {
+body,html {
 margin:0;
+padding:0;
 /*background-color:pink;*/
+
 }
+body {
+    overflow:hidden;
+}
+body.remote{
+	overflow: auto;
+}
+
 #clientId{
 	position:absolute;
 }
@@ -15,6 +24,11 @@ margin:0;
 }
 h6{
 	font-size: 2em;
+}
+.aff{
+	font-size: 10em;
+	color:white;
+	background-color: green;
 }
 
 /*.box{

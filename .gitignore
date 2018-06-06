@@ -6,3 +6,5 @@ boidz/bin/reds
 photos
 haxe3
 Murmuration photos
+.gitignore
+.vscode

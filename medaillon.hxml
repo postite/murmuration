@@ -1,0 +1,9 @@
+-cp boidz
+-main murmur.Medaille
+-lib thx.color
+-lib tweenx
+-lib polygonal-ds
+-lib msignal
+#-js med/medaillon.js
+-js boidz/bin/medaillon.js
+-cmd open med/medaillon.html

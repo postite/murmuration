@@ -1,7 +1,10 @@
 body,html {
 margin:0;
 padding:0;
-/*background-color:pink;*/
+background-color:black;
+
+
+
 
 }
 body {
@@ -11,6 +14,9 @@ body.remote{
 	overflow: auto;
 }
 
+canvas{
+	background-color: white;
+}
 #clientId{
 	position:absolute;
 }
@@ -26,7 +32,7 @@ h6{
 	font-size: 2em;
 }
 .aff{
-	font-size: 10em;
+	font-size: 4em;
 	color:white;
 	background-color: green;
 }

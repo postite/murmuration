@@ -18,7 +18,7 @@ class TimedScenario extends Scenario implements IScenario{
     public var maxTime:Float;
     public var cancel:Void->Void;
     var timer:haxe.Timer;
-	public function new(can:murmur.Canvas,clientId,delay:Minute,?maxTime:Millisecond)
+	public function new(can:murmur.StartMur,clientId,delay:Minute,?maxTime:Millisecond)
      
     {
         super(can,clientId);
@@ -72,7 +72,7 @@ class TimedScenario extends Scenario implements IScenario{
 
     function doScene(){
         if( enabled){
-            trace( "doscene"+scenes.length);
+            trace( "il y a "+scenes.length +"scenes");
     	can.changeAnyColor();
     	var coun = Std.int(Math.abs(counter++ %scenes.length));
     	trace( "coun="+coun);
@@ -94,7 +94,7 @@ class TimedScenario extends Scenario implements IScenario{
     function _scene2(){
     	setVelocity(.6);
  
-    	//collision(true,80);
+    	collision(true,80);
     	
     	
     	dispatch("_scene2/collision");

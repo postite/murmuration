@@ -4,6 +4,7 @@ import boidz.rules.*;
 import boidz.IRenderable;
 import msignal.Signal;
 import thx.unit.time.*;
+
 class Scenario {
 
     public var hiSpeed=1;
@@ -16,13 +17,13 @@ class Scenario {
 
     //scenarios
    // var timedScenario :TimedScenario;
-   public var faller:Fall;
-   static  var currentScenario:IScenario;
+    public var faller:Fall;
+    static  var currentScenario:IScenario=null;
+
     var delaySign:Signal0;
-	var can:murmur.Canvas;
+	var can:murmur.StartMur;
 	var randomVelocity = false;
 	var delay:Int;
-
 	var scenarios:Array<murmur.scenarios.IScenario>=[];
 
 	var counter=0;
@@ -32,8 +33,7 @@ class Scenario {
     var away:boidz.rules.SteerAway;
 
 
-	public function new(can:murmur.Canvas,clientID:Int)
-     
+	public function new(can:murmur.StartMur,clientID:Int)
     {
     	this.can=can;
         this.clientID=clientID;
@@ -51,7 +51,13 @@ class Scenario {
 
 
         //socket.SocketManager.ctrlSignal.add(function (type,value){
-        socket.signal.ControlSignal.getInstance().complete.add(function (type,value){
+      
+        listenRemote();
+        
+    }
+
+    public function listenRemote(){
+          socket.signal.ControlSignal.getInstance().complete.add(function (type,value){
       trace("new ctrl Signal");
       switch (type){
         case "color": can.changeColor(value);
@@ -61,9 +67,8 @@ class Scenario {
         case _: 
       }
     });
-        
-        
     }
+
 
     function chainingScenarios(){
         trace( "chainig "+ scenariosCount);
@@ -86,6 +91,7 @@ class Scenario {
 
 
     public function phase(value){
+        if(currentScenario==null)return;
         trace("phase"+value);
         currentScenario.kill();
         switch(value){
@@ -108,12 +114,16 @@ class Scenario {
          
         
         scenarios.push(new TimedScenario(can,clientID,(5 : Minute)/5,(5 : Minute).toMillisecond()));
-        
-        scenarios.push(new DessinAlone(can,clientID,(1 : Minute)/4,(1 : Minute).toMillisecond()));
+        //à lombez on boucle
+        scenarios.push(new TimedScenario(can,clientID,(5 : Minute)/5,(5 : Minute).toMillisecond()));
+        scenarios.push(new TimedScenario(can,clientID,(5 : Minute)/5,(5 : Minute).toMillisecond()));
+        scenarios.push(new TimedScenario(can,clientID,(5 : Minute)/5,(5 : Minute).toMillisecond()));
+        //chez Etienne pas ! 
+        //scenarios.push(new DessinAlone(can,clientID,(1 : Minute)/4,(1 : Minute).toMillisecond()));
         scenarios.push(new Slam(can,clientID,(7 : Minute)/5,(7 : Minute).toMillisecond()));
-        scenarios.push(new WallWalk(can,clientID,(8: Minute)/6,( 8: Minute).toMillisecond()));
+        //scenarios.push(new WallWalk(can,clientID,(8: Minute)/6,( 8: Minute).toMillisecond()));
         
-        //scenarios.push(new Jam(can,clientID,(5 : Minute)/5,(5 : Minute).toMillisecond()));
+        scenarios.push(new Jam(can,clientID,(5 : Minute)/5,(5 : Minute).toMillisecond()));
         scenarios.push(new TimedScenario(can,clientID,(5 : Minute)/5,(5 : Minute).toMillisecond()));
 
     }
@@ -201,6 +211,7 @@ class Scenario {
         can.debugRender.affiche(value);
         dispatch(value);
         resetRules();
+        if(currentScenario!=null)
         if (currentScenario.enabled)currentScenario.kill();
         //trace( 'Sacenario Act $value');
         switch(value){
@@ -534,8 +545,10 @@ class Scenario {
     	//rem=false;
     	trace( 'num=$num rem=$rem');
     	if(rem){
-    		if( num<can.flock.boids.length && can.flock.boids.length>limit)
-    		can.flock.boids.splice(0, num);
+    		if( num<can.flock.boids.length && can.flock.boids.length>limit){
+                if( can.flock.boids.length-num > 10)// 
+    		      can.flock.boids.splice(0, num);
+            }
     	}else{
             if(can.flock.boids.length>limit)
     	can.addBoids(can.flock, num , can.velocity, can.respectBoundaries.offset);
@@ -584,13 +597,13 @@ function delaygrowCrowd(num:Int){
     }
 
     public function reduceCrowd(num){
-        if( num<can.flock.boids.length)
+        if( num<can.flock.boids.length && can.flock.boids.length>4)
             can.flock.boids.splice(0, num);
         can.debugRender.peopleID=can.flock.boids.length;
     }
 
     function dispatch(action){
-
+if (currentScenario==null)return;
 var mins=(currentScenario.elapsed : thx.unit.time.Millisecond).toMinute();
         DS.dispatch(Type.getClassName(Type.getClass(currentScenario)).split(".")[2]+"/"+mins,action);
     

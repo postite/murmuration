@@ -1,0 +1,72 @@
+
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "launchMurMur",
+            "command": "open",
+            "args": [
+                "-a",
+                "safari",
+                "http://192.168.1.34:3700/client/1"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "dependsOn": [
+                "build boidz",
+                "buildNodeServer",
+                "build remote",
+                //"startNode"
+            ],
+            "problemMatcher": [
+                "$haxe"
+            ]
+        },
+        {
+            "label": "startNode",
+            "command": "node",
+            "args": [
+                "boidz/bin/server.js"
+            ]
+        },
+        {
+            "label": "build boidz",
+            "command": "haxe",
+            "args": [
+                "boidz/build.hxml"
+            ],
+            "problemMatcher": [
+                "$haxe"
+            ]
+        },
+        {
+            "label": "buildNodeServer",
+            "command": "haxe",
+            "args": [
+                "buildNodeServer.hxml"
+            ],
+            "problemMatcher": [
+                "$haxe"
+            ]
+        },
+        {
+            "label": "build remote",
+            "command": "haxe",
+            "args": [
+                "remote.hxml"
+            ],
+            "problemMatcher": [
+                "$haxe"
+            ]
+        },
+        {
+            "label": "kill Node",
+            "command": "killall",
+            "args": [
+                "node"
+            ]
+        }
+    ]
+}

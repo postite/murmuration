@@ -14,7 +14,7 @@ class SocketManager {
 	var _messages=[];
 	var clientId:Int;
 	private var _socket : Socket;
-	public var dims={width:0,height:0,clientID:0};
+	public var dims={width:0,height:0,clientID:1};
 	public function new() {
 		var window= js.Browser.window;
 		var document= js.Browser.document;

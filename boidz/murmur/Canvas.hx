@@ -15,44 +15,40 @@ import murmur.MurmurTools;
 import murmur.People;
 import js.Browser.*;
 import murmur.scenarios.*;
-class Canvas{
+class Canvas extends murmur.StartMur.Mur{
 
   /// dimensions
   
   public var scenario:Scenario;
-  public var walk:Walk;
-  public var width  = #if nico 1600 #else 1440 #end;
-  public var height = 900;
+  
+ 
+
   public var clientID:Int;
-  public static  var CLI:Int;
+ 
  static  public var numClient:Int=3;
   //storing velocityfunction
-  static var velocityfunc;
+ 
   var DS:murmur.DoneSignal;
   
 
-  static var paused = 0;
+  //static var paused = 0;
 
   //boidz specific
-  public var velocity=0.9;
+
   static var _numPeople=150;
   
-  public var randomVelocity:Bool=true;
-  public var flock:Flock;
+
+
   public var canvas:js.html.CanvasElement;
   public var render:boidz.render.canvas.CanvasRender;
-  public var display:Display<boidz.render.canvas.CanvasRender>;
-  public var avoidCollisions:boidz.rules.AvoidCollisions;
-  public var respectBoundaries:boidz.rules.RespectBoundaries;
-  public var waypoints:boidz.rules.IndividualWaypoints;
+
+
+
+ 
   public var canvasBoundaries:boidz.render.canvas.CanvasBoundaries;
   public var canvasWaypoints:boidz.render.canvas.CanvasIndividualWaypoints;
-  public var canvasFlock:boidz.IRenderable<CanvasRender>;
-  public var zoneBounds:boidz.render.canvas.ZoneBounds;
-  public var zone:boidz.rules.SteerTowardZone;
-  public var steerCenter:SteerTowardCenter;
-  public var split:murmur.SplitBoundaries;
-  public var debugRender:boidz.render.canvas.DebugRender;
+ 
+
  
   
   // signal for Timed Scenario
@@ -127,7 +123,8 @@ class Canvas{
 
     // display.addRenderable(new CanvasBoundaries()
      avoidCollisions = new AvoidCollisions(flock, 100, 25);
-     respectBoundaries = new RespectBoundaries(-300, width+300, -300, height+300, 50, 25);
+     //respectBoundaries = new RespectBoundaries(-300, width+300, -300, height+300, 50, 25);
+     respectBoundaries = new RespectBoundaries(100, 100, 100,100, 50, 25);
      waypoints = new IndividualWaypoints(flock, 10);
      //velocity = _velocity;
 
@@ -147,8 +144,8 @@ class Canvas{
     flock.addRule(avoidCollisions);
     avoidCollisions.enabled=false;
     flock.addRule(respectBoundaries);
+    //respectBoundaries.enabled=true;
     respectBoundaries.enabled=false;
-    //respectBoundaries.enabled=false;
     addBoids(flock, _numPeople, velocity, respectBoundaries.offset);
 
     canvasBoundaries = new CanvasBoundaries(respectBoundaries);
@@ -251,10 +248,10 @@ class Canvas{
     //
     //
     //
-    //scenario= new Scenario(this,clientID);
+ 
     scenario= new Scenario(this,CLI);
     scenario.init();
-   // wait(dims.clientID);
+  
     wait(CLI);
     trace( "all OK");
    
@@ -349,71 +346,18 @@ debugRender.moduloID=modulo;
 
   
  
-  public function changeAnyColor(){
-    changeColor("#"+StringTools.hex(
-        Std.int(Math.random()
-        * 0xFFFFFF ))
-      );
-  }
-  public function changeColor(color:String){
-    #if debug
-    var rgb:Rgb=color;
-    var lightcolor= rgb.lighter(.30);
-    js.Browser.document.body.style.backgroundColor=lightcolor.toHex();
-    #end
-  }
+
 
   /*___________end sockets________*/
 
   
   
-  //---------------
-  // Boid utilities
-  //---------------
-  public function addBoids(flock : Flock, howMany : Int, velocity : Float, offset : Float) {
-    var w = Math.min(width, height);
-    for (i in 0...howMany) {
-      // create a new boid and add it to the stage
-      var b = new Boid(
-            offset + (width - offset * 2) * Math.random(),
-            offset+ ( offset * 2),
-            velocity,
-            Math.random() * 400);
-      // adding a state 
-      b.state=CLI;
-
-      flock.boids.push(b);
-    }
-  }
   
-  function addBoid(b:Boid){
-   // trace( "addBoid in"+ b.peopleImage.path);
-    var img = new js.html.Image();
-      img.src = b.peopleImage.path;
-      img.onload=function(e){
-        var i:js.html.Image= e.target;
-        b.image=i;
-        flock.boids.push(b);
-        //trace( 'w=${i.width} h=${i.height}');
-      }
-
-      debugRender.peopleID=flock.boids.length;
-    
-
-  }
-
-  function removeBoid(dir:String,b:Boid){
-    flock.boids.remove(b);
-    debugRender.peopleID=flock.boids.length;
-  }
+  
 
   /*________________*/
 
-  // realTime velocity update
-  public function updateVelocity() {
-      for(boid in flock.boids)
-        boid.v = velocity * (randomVelocity ? Math.random()*2 : velocity);
-  }
+
 
 
    // just find the canvas on htmlPage
@@ -434,28 +378,5 @@ debugRender.moduloID=modulo;
     return container;
   }
 
-   //pausing onspaceBAr
-  static function pause(){
-    velocityfunc(paused);
-    if( paused==0)paused=1
-      else
-      paused=0; 
-  }
-  public function toggleDebug(){
-    debugRender.toggle();
-  }
-  //listening spaceBar
-    static function spaceKeydown(callback:Void->Void){
-     document.addEventListener("keydown", function(e) {
-
-      if (e.keyCode == 13) {
-
-       callback();
-      }
-      }, false);
-    }
-  //reload every ...
-  static  function timed(){
-     js.Browser.location.reload();
-  }
+ 
 }

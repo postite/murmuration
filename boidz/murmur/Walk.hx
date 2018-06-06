@@ -25,7 +25,6 @@ class Walk implements IRenderable<CanvasRender> {
 		src:js.Browser.window.location.origin+"/anim/compiled_small.jpg",
 		width:400,
 		height:375,
-		
 		numberOfFrames:13,
 		fps:7
 		}

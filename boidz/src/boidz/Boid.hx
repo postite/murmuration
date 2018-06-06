@@ -2,6 +2,10 @@ package boidz;
 
 import thx.unit.angle.Degree;
 import murmur.PeopleImage;
+enum BoidType{
+  Normal;
+  Red;
+}
 class Boid {
   public var x : Float;
   public var y : Float;
@@ -10,7 +14,7 @@ class Boid {
 
   public var peopleImage:PeopleImage;
   public var image:js.html.Image;
-
+  @:isVar public var type(default,set):BoidType;
   public var state:Int;
 
   public function new (x : Float, y : Float, ?v = 0.0, ?d : Degree) {
@@ -21,7 +25,14 @@ class Boid {
     this.v = v;
     this.d = d;
 
-    peopleImage= new PeopleImage();
+    peopleImage= new PeopleImage(type);
     image= peopleImage.render();
   }
+  function set_type(type:BoidType):BoidType{
+  
+  peopleImage= new PeopleImage(type);
+    image= peopleImage.render();
+    return this.type=type;
+  }
 }
+

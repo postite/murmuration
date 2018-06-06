@@ -1,0 +1,17 @@
+
+-cp boidz
+-lib hx3compat
+-lib js-kit
+-lib hxnodejs 
+-main remote.Remote
+-lib msignal
+-js boidz/bin/remote.js
+-lib thx.core
+-lib thx.unit
+-D network-sandbox
+-D source-map-content
+-D hxnodejs_no_version_warning
+
+#-cmd node boidz/bin/server.js
+#-cmd open -a safari http://192.168.1.34:3700
+#-cmd open -a safari http://192.168.1.34:3700

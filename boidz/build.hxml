@@ -1,22 +1,30 @@
+
+
+
+
 -js boidz/bin/canvas.js
 -cp ../
 -cp boidz/src
 -cp boidz
 #-cp /
--main murmur.Canvas
-#-main murmur.Demo
+#
+#-main murmur.Canvas
+-main murmur.Lombez
 #-main Paf
 #-debug
+--times
+-lib hx3compat
 -lib js-kit
 -lib hxnodejs
--lib sui
+#-lib sui
 -lib random
--lib dots
+-lib tink_core
+#-lib dots
 -lib thx.color
 -lib thx.core
 -lib msignal
--lib thx.stream
--lib thx.stream.dom
+#-lib thx.stream
+#-lib thx.stream.dom
 -lib thx.unit
 #-lib postite
 #-D benchmark

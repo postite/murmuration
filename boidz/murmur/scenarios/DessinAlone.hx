@@ -5,7 +5,7 @@ import thx.unit.time.*;
 class DessinAlone extends TimedScenario implements IScenario{
 
 
-	public function new(can:murmur.Canvas,clientId,delay:Minute,?maxTime:Millisecond)
+	public function new(can:murmur.StartMur,clientId,delay:Minute,?maxTime:Millisecond)
      
     {
         super(can,clientId,delay,maxTime);

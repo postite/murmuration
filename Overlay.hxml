@@ -1,0 +1,9 @@
+-cp boidz
+-cp boidz/src
+-main murmur.CanOver
+-lib thx.color
+-lib tweenx
+-lib polygonal-ds
+-lib msignal
+-js overlay.js
+-cmd open overlay.html

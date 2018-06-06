@@ -680,10 +680,10 @@ boidz_Flock.prototype = {
 		while(_g4 < _g11.length) {
 			var boid1 = _g11[_g4];
 			++_g4;
-			var this1 = boid1.d * thx_unit_angle__$Degree_Degree_$Impl_$.ofUnit / thx_unit_angle__$Degree_Degree_$Impl_$.dividerRadian;
-			boid1.x += boid1.v * Math.cos(this1);
 			var this2 = boid1.d * thx_unit_angle__$Degree_Degree_$Impl_$.ofUnit / thx_unit_angle__$Degree_Degree_$Impl_$.dividerRadian;
-			boid1.y += boid1.v * Math.sin(this2);
+			boid1.x += boid1.v * Math.cos(this2);
+			var this21 = boid1.d * thx_unit_angle__$Degree_Degree_$Impl_$.ofUnit / thx_unit_angle__$Degree_Degree_$Impl_$.dividerRadian;
+			boid1.y += boid1.v * Math.sin(this21);
 		}
 	}
 	,setFlockAverages: function() {
@@ -706,8 +706,8 @@ boidz_Flock.prototype = {
 		this.x /= l;
 		this.y /= l;
 		this.v /= l;
-		var this3 = this.d / l;
-		this.d = this3;
+		var this21 = this.d / l;
+		this.d = this21;
 	}
 	,__class__: boidz_Flock
 };
@@ -967,15 +967,15 @@ boidz_rules_AvoidCollisions.prototype = {
 		if(this.proportional) {
 			var dist = Math.sqrt((this.a.x - b.x) * (this.a.x - b.x) + (this.a.y - b.y) * (this.a.y - b.y));
 			var this1 = b.d;
-			var this2 = this.maxSteer;
-			var this3 = boidz_util_Steer.away(b,this.a,this2) * (this.get_radius() - dist);
-			var this4 = this3 / this.get_radius();
-			var this5 = this1 + this4;
-			b.d = this5;
+			var this11 = this.maxSteer;
+			var this2 = boidz_util_Steer.away(b,this.a,this11) * (this.get_radius() - dist);
+			var this21 = this2 / this.get_radius();
+			var this22 = this1 + this21;
+			b.d = this22;
 		} else {
-			var this6 = this.maxSteer;
-			var this7 = b.d + boidz_util_Steer.away(b,this.a,this6);
-			b.d = this7;
+			var this12 = this.maxSteer;
+			var this23 = b.d + boidz_util_Steer.away(b,this.a,this12);
+			b.d = this23;
 		}
 	}
 	,get_radius: function() {
@@ -1123,9 +1123,9 @@ boidz_rules_RespectBoundaries.prototype = {
 			b.d = this2;
 		}
 		if(b.y < this.miny + this.offset && boidz_util_Steer.facingUp(b.d) || b.y > this.maxy - this.offset && boidz_util_Steer.facingDown(b.d)) {
-			var this3 = this.maxSteer * (b.d < 0 ? -1 : 1);
-			var this4 = b.d + this3;
-			b.d = this4;
+			var this11 = this.maxSteer * (b.d < 0 ? -1 : 1);
+			var this21 = b.d + this11;
+			b.d = this21;
 		}
 	}
 	,__class__: boidz_rules_RespectBoundaries
@@ -3230,57 +3230,57 @@ murmur_scenarios_Scenario.prototype = {
 		var tmp2 = this.clientID;
 		var this1 = thx__$Decimal_Decimal_$Impl_$.fromInt(5);
 		var this2 = this1.divide(thx__$Decimal_Decimal_$Impl_$.fromInt(5));
-		var this3 = thx__$Decimal_Decimal_$Impl_$.fromInt(5);
-		var this4 = this3.multiply(thx_unit_time__$Minute_Minute_$Impl_$.ofUnit).divide(thx_unit_time__$Minute_Minute_$Impl_$.dividerMillisecond).trim(null);
-		tmp.push(new murmur_scenarios_TimedScenario(tmp1,tmp2,this2,this4));
+		var this11 = thx__$Decimal_Decimal_$Impl_$.fromInt(5);
+		var this21 = this11.multiply(thx_unit_time__$Minute_Minute_$Impl_$.ofUnit).divide(thx_unit_time__$Minute_Minute_$Impl_$.dividerMillisecond).trim(null);
+		tmp.push(new murmur_scenarios_TimedScenario(tmp1,tmp2,this2,this21));
 		var tmp3 = this.scenarios;
 		var tmp4 = this.can;
 		var tmp5 = this.clientID;
-		var this5 = thx__$Decimal_Decimal_$Impl_$.fromInt(5);
-		var this6 = this5.divide(thx__$Decimal_Decimal_$Impl_$.fromInt(5));
-		var this7 = thx__$Decimal_Decimal_$Impl_$.fromInt(5);
-		var this8 = this7.multiply(thx_unit_time__$Minute_Minute_$Impl_$.ofUnit).divide(thx_unit_time__$Minute_Minute_$Impl_$.dividerMillisecond).trim(null);
-		tmp3.push(new murmur_scenarios_TimedScenario(tmp4,tmp5,this6,this8));
+		var this12 = thx__$Decimal_Decimal_$Impl_$.fromInt(5);
+		var this22 = this12.divide(thx__$Decimal_Decimal_$Impl_$.fromInt(5));
+		var this13 = thx__$Decimal_Decimal_$Impl_$.fromInt(5);
+		var this23 = this13.multiply(thx_unit_time__$Minute_Minute_$Impl_$.ofUnit).divide(thx_unit_time__$Minute_Minute_$Impl_$.dividerMillisecond).trim(null);
+		tmp3.push(new murmur_scenarios_TimedScenario(tmp4,tmp5,this22,this23));
 		var tmp6 = this.scenarios;
 		var tmp7 = this.can;
 		var tmp8 = this.clientID;
-		var this9 = thx__$Decimal_Decimal_$Impl_$.fromInt(5);
-		var this10 = this9.divide(thx__$Decimal_Decimal_$Impl_$.fromInt(5));
-		var this11 = thx__$Decimal_Decimal_$Impl_$.fromInt(5);
-		var this12 = this11.multiply(thx_unit_time__$Minute_Minute_$Impl_$.ofUnit).divide(thx_unit_time__$Minute_Minute_$Impl_$.dividerMillisecond).trim(null);
-		tmp6.push(new murmur_scenarios_TimedScenario(tmp7,tmp8,this10,this12));
+		var this14 = thx__$Decimal_Decimal_$Impl_$.fromInt(5);
+		var this24 = this14.divide(thx__$Decimal_Decimal_$Impl_$.fromInt(5));
+		var this15 = thx__$Decimal_Decimal_$Impl_$.fromInt(5);
+		var this25 = this15.multiply(thx_unit_time__$Minute_Minute_$Impl_$.ofUnit).divide(thx_unit_time__$Minute_Minute_$Impl_$.dividerMillisecond).trim(null);
+		tmp6.push(new murmur_scenarios_TimedScenario(tmp7,tmp8,this24,this25));
 		var tmp9 = this.scenarios;
 		var tmp10 = this.can;
 		var tmp11 = this.clientID;
-		var this13 = thx__$Decimal_Decimal_$Impl_$.fromInt(5);
-		var this14 = this13.divide(thx__$Decimal_Decimal_$Impl_$.fromInt(5));
-		var this15 = thx__$Decimal_Decimal_$Impl_$.fromInt(5);
-		var this16 = this15.multiply(thx_unit_time__$Minute_Minute_$Impl_$.ofUnit).divide(thx_unit_time__$Minute_Minute_$Impl_$.dividerMillisecond).trim(null);
-		tmp9.push(new murmur_scenarios_TimedScenario(tmp10,tmp11,this14,this16));
+		var this16 = thx__$Decimal_Decimal_$Impl_$.fromInt(5);
+		var this26 = this16.divide(thx__$Decimal_Decimal_$Impl_$.fromInt(5));
+		var this17 = thx__$Decimal_Decimal_$Impl_$.fromInt(5);
+		var this27 = this17.multiply(thx_unit_time__$Minute_Minute_$Impl_$.ofUnit).divide(thx_unit_time__$Minute_Minute_$Impl_$.dividerMillisecond).trim(null);
+		tmp9.push(new murmur_scenarios_TimedScenario(tmp10,tmp11,this26,this27));
 		var tmp12 = this.scenarios;
 		var tmp13 = this.can;
 		var tmp14 = this.clientID;
-		var this17 = thx__$Decimal_Decimal_$Impl_$.fromInt(7);
-		var this18 = this17.divide(thx__$Decimal_Decimal_$Impl_$.fromInt(5));
+		var this18 = thx__$Decimal_Decimal_$Impl_$.fromInt(7);
+		var this28 = this18.divide(thx__$Decimal_Decimal_$Impl_$.fromInt(5));
 		var this19 = thx__$Decimal_Decimal_$Impl_$.fromInt(7);
-		var this20 = this19.multiply(thx_unit_time__$Minute_Minute_$Impl_$.ofUnit).divide(thx_unit_time__$Minute_Minute_$Impl_$.dividerMillisecond).trim(null);
-		tmp12.push(new murmur_scenarios_Slam(tmp13,tmp14,this18,this20));
+		var this29 = this19.multiply(thx_unit_time__$Minute_Minute_$Impl_$.ofUnit).divide(thx_unit_time__$Minute_Minute_$Impl_$.dividerMillisecond).trim(null);
+		tmp12.push(new murmur_scenarios_Slam(tmp13,tmp14,this28,this29));
 		var tmp15 = this.scenarios;
 		var tmp16 = this.can;
 		var tmp17 = this.clientID;
-		var this21 = thx__$Decimal_Decimal_$Impl_$.fromInt(5);
-		var this22 = this21.divide(thx__$Decimal_Decimal_$Impl_$.fromInt(5));
-		var this23 = thx__$Decimal_Decimal_$Impl_$.fromInt(5);
-		var this24 = this23.multiply(thx_unit_time__$Minute_Minute_$Impl_$.ofUnit).divide(thx_unit_time__$Minute_Minute_$Impl_$.dividerMillisecond).trim(null);
-		tmp15.push(new murmur_scenarios_Jam(tmp16,tmp17,this22,this24));
+		var this110 = thx__$Decimal_Decimal_$Impl_$.fromInt(5);
+		var this210 = this110.divide(thx__$Decimal_Decimal_$Impl_$.fromInt(5));
+		var this111 = thx__$Decimal_Decimal_$Impl_$.fromInt(5);
+		var this211 = this111.multiply(thx_unit_time__$Minute_Minute_$Impl_$.ofUnit).divide(thx_unit_time__$Minute_Minute_$Impl_$.dividerMillisecond).trim(null);
+		tmp15.push(new murmur_scenarios_Jam(tmp16,tmp17,this210,this211));
 		var tmp18 = this.scenarios;
 		var tmp19 = this.can;
 		var tmp20 = this.clientID;
-		var this25 = thx__$Decimal_Decimal_$Impl_$.fromInt(5);
-		var this26 = this25.divide(thx__$Decimal_Decimal_$Impl_$.fromInt(5));
-		var this27 = thx__$Decimal_Decimal_$Impl_$.fromInt(5);
-		var this28 = this27.multiply(thx_unit_time__$Minute_Minute_$Impl_$.ofUnit).divide(thx_unit_time__$Minute_Minute_$Impl_$.dividerMillisecond).trim(null);
-		tmp18.push(new murmur_scenarios_TimedScenario(tmp19,tmp20,this26,this28));
+		var this112 = thx__$Decimal_Decimal_$Impl_$.fromInt(5);
+		var this212 = this112.divide(thx__$Decimal_Decimal_$Impl_$.fromInt(5));
+		var this113 = thx__$Decimal_Decimal_$Impl_$.fromInt(5);
+		var this213 = this113.multiply(thx_unit_time__$Minute_Minute_$Impl_$.ofUnit).divide(thx_unit_time__$Minute_Minute_$Impl_$.dividerMillisecond).trim(null);
+		tmp18.push(new murmur_scenarios_TimedScenario(tmp19,tmp20,this212,this213));
 	}
 	,addWalk: function(remote) {
 		if(remote == null) {
@@ -3723,8 +3723,8 @@ var murmur_scenarios_TimedScenario = function(can,clientId,delay,maxTime) {
 	this.scenes = [];
 	murmur_scenarios_Scenario.call(this,can,clientId);
 	this.maxTime = maxTime.toFloat();
-	var this1 = delay.multiply(thx_unit_time__$Minute_Minute_$Impl_$.ofUnit).divide(thx_unit_time__$Minute_Minute_$Impl_$.dividerMillisecond).trim(null);
-	this.delay = this1.toFloat() | 0;
+	var this2 = delay.multiply(thx_unit_time__$Minute_Minute_$Impl_$.ofUnit).divide(thx_unit_time__$Minute_Minute_$Impl_$.dividerMillisecond).trim(null);
+	this.delay = this2.toFloat() | 0;
 	this.fini = new msignal_Signal0();
 };
 murmur_scenarios_TimedScenario.__name__ = ["murmur","scenarios","TimedScenario"];
@@ -4220,8 +4220,8 @@ murmur_Lombez.prototype = $extend(murmur_Mur.prototype,{
 		});
 		var this1 = 25;
 		this.avoidCollisions = new boidz_rules_AvoidCollisions(this.flock,100,this1);
-		var this2 = 25;
-		this.respectBoundaries = new boidz_rules_RespectBoundaries(-300,this.width + 300,-300,this.height + 300,50,this2);
+		var this11 = 25;
+		this.respectBoundaries = new boidz_rules_RespectBoundaries(-300,this.width + 300,-300,this.height + 300,50,this11);
 		this.waypoints = new boidz_rules_IndividualWaypoints(this.flock,10);
 		this.split = new murmur_SplitBoundaries(0,this.width,0,this.height);
 		this.flock.addRule(this.split);
@@ -4243,8 +4243,8 @@ murmur_Lombez.prototype = $extend(murmur_Mur.prototype,{
 			_gthis.debugRender.affiche("rec=" + Std.string(rec));
 		});
 		over.enabled = true;
-		var this3 = 25;
-		this.zoneBounds = new boidz_render_canvas_ZoneBounds(new boidz_rules_RespectBoundaries(20 + Math.random() * this.width,30 + Math.random() * this.height,30 + Math.random() * 300,40 + Math.random() * 600,50,this3));
+		var this12 = 25;
+		this.zoneBounds = new boidz_render_canvas_ZoneBounds(new boidz_rules_RespectBoundaries(20 + Math.random() * this.width,30 + Math.random() * this.height,30 + Math.random() * 300,40 + Math.random() * 600,50,this12));
 		this.zone = new boidz_rules_SteerTowardZone(this.flock,this.zoneBounds);
 		this.flock.addRule(this.zone);
 		this.display.addRenderable(over);
@@ -4276,11 +4276,11 @@ murmur_Lombez.prototype = $extend(murmur_Mur.prototype,{
 		this.display.addRenderable(this.canvasFlock);
 		if(this.CLI == 0) {
 			var decScenar = this.CLI;
-			var this4 = thx__$Decimal_Decimal_$Impl_$.fromInt(5);
-			var this5 = this4.divide(thx__$Decimal_Decimal_$Impl_$.fromInt(5));
-			var this6 = thx__$Decimal_Decimal_$Impl_$.fromInt(20);
-			var this7 = this6.multiply(thx_unit_time__$Minute_Minute_$Impl_$.ofUnit).divide(thx_unit_time__$Minute_Minute_$Impl_$.dividerMillisecond).trim(null);
-			var decScenar1 = new murmur_DecorScenario(this,decScenar,this5,this7);
+			var this13 = thx__$Decimal_Decimal_$Impl_$.fromInt(5);
+			var this2 = this13.divide(thx__$Decimal_Decimal_$Impl_$.fromInt(5));
+			var this14 = thx__$Decimal_Decimal_$Impl_$.fromInt(20);
+			var this21 = this14.multiply(thx_unit_time__$Minute_Minute_$Impl_$.ofUnit).divide(thx_unit_time__$Minute_Minute_$Impl_$.dividerMillisecond).trim(null);
+			var decScenar1 = new murmur_DecorScenario(this,decScenar,this2,this21);
 			decScenar1.listenRemote();
 			decScenar1.execute();
 		}
@@ -4573,9 +4573,9 @@ murmur_SplitBoundaries.prototype = {
 			b.d = this2;
 		}
 		if(b.y < this.miny + this.offset && boidz_util_Steer.facingUp(b.d) || b.y > this.maxy - this.offset && boidz_util_Steer.facingDown(b.d)) {
-			var this3 = this.maxSteer * (b.d < 0 ? -1 : 1);
-			var this4 = b.d + this3;
-			b.d = this4;
+			var this11 = this.maxSteer * (b.d < 0 ? -1 : 1);
+			var this21 = b.d + this11;
+			b.d = this21;
 		}
 	}
 	,__class__: murmur_SplitBoundaries

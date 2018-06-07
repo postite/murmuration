@@ -680,10 +680,10 @@ boidz_Flock.prototype = {
 		while(_g4 < _g11.length) {
 			var boid1 = _g11[_g4];
 			++_g4;
+			var this1 = boid1.d * thx_unit_angle__$Degree_Degree_$Impl_$.ofUnit / thx_unit_angle__$Degree_Degree_$Impl_$.dividerRadian;
+			boid1.x += boid1.v * Math.cos(this1);
 			var this2 = boid1.d * thx_unit_angle__$Degree_Degree_$Impl_$.ofUnit / thx_unit_angle__$Degree_Degree_$Impl_$.dividerRadian;
-			boid1.x += boid1.v * Math.cos(this2);
-			var this21 = boid1.d * thx_unit_angle__$Degree_Degree_$Impl_$.ofUnit / thx_unit_angle__$Degree_Degree_$Impl_$.dividerRadian;
-			boid1.y += boid1.v * Math.sin(this21);
+			boid1.y += boid1.v * Math.sin(this2);
 		}
 	}
 	,setFlockAverages: function() {
@@ -706,8 +706,8 @@ boidz_Flock.prototype = {
 		this.x /= l;
 		this.y /= l;
 		this.v /= l;
-		var this21 = this.d / l;
-		this.d = this21;
+		var this3 = this.d / l;
+		this.d = this3;
 	}
 	,__class__: boidz_Flock
 };
@@ -967,15 +967,15 @@ boidz_rules_AvoidCollisions.prototype = {
 		if(this.proportional) {
 			var dist = Math.sqrt((this.a.x - b.x) * (this.a.x - b.x) + (this.a.y - b.y) * (this.a.y - b.y));
 			var this1 = b.d;
-			var this11 = this.maxSteer;
-			var this2 = boidz_util_Steer.away(b,this.a,this11) * (this.get_radius() - dist);
-			var this21 = this2 / this.get_radius();
-			var this22 = this1 + this21;
-			b.d = this22;
+			var this2 = this.maxSteer;
+			var this3 = boidz_util_Steer.away(b,this.a,this2) * (this.get_radius() - dist);
+			var this4 = this3 / this.get_radius();
+			var this5 = this1 + this4;
+			b.d = this5;
 		} else {
-			var this12 = this.maxSteer;
-			var this23 = b.d + boidz_util_Steer.away(b,this.a,this12);
-			b.d = this23;
+			var this6 = this.maxSteer;
+			var this7 = b.d + boidz_util_Steer.away(b,this.a,this6);
+			b.d = this7;
 		}
 	}
 	,get_radius: function() {
@@ -1123,9 +1123,9 @@ boidz_rules_RespectBoundaries.prototype = {
 			b.d = this2;
 		}
 		if(b.y < this.miny + this.offset && boidz_util_Steer.facingUp(b.d) || b.y > this.maxy - this.offset && boidz_util_Steer.facingDown(b.d)) {
-			var this11 = this.maxSteer * (b.d < 0 ? -1 : 1);
-			var this21 = b.d + this11;
-			b.d = this21;
+			var this3 = this.maxSteer * (b.d < 0 ? -1 : 1);
+			var this4 = b.d + this3;
+			b.d = this4;
 		}
 	}
 	,__class__: boidz_rules_RespectBoundaries
@@ -4573,9 +4573,9 @@ murmur_SplitBoundaries.prototype = {
 			b.d = this2;
 		}
 		if(b.y < this.miny + this.offset && boidz_util_Steer.facingUp(b.d) || b.y > this.maxy - this.offset && boidz_util_Steer.facingDown(b.d)) {
-			var this11 = this.maxSteer * (b.d < 0 ? -1 : 1);
-			var this21 = b.d + this11;
-			b.d = this21;
+			var this3 = this.maxSteer * (b.d < 0 ? -1 : 1);
+			var this4 = b.d + this3;
+			b.d = this4;
 		}
 	}
 	,__class__: murmur_SplitBoundaries
